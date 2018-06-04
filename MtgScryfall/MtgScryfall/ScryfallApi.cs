@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 
 namespace MtgScryfall
 {
-    public class ScryfallApi
+    public class ScryfallApi : IScryfallApi
     {
         private const string _baseAddress = "https://api.scryfall.com/";
 

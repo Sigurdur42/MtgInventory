@@ -1,10 +1,33 @@
-﻿using System.Net.Http;
+﻿using MtgScryfall.Models;
+using Newtonsoft.Json;
+using System.Linq;
+using System.Net.Http;
 
 namespace MtgScryfall
 {
     public static class RequestResultExtension
     {
-        public static RequestResult CreateResult(this HttpResponseMessage response)
+        public static SetData[] DeserializeSetData(this RequestResult result)
+        {
+            if (!result.Success)
+            {
+                return new SetData[0];
+            }
+
+            var definition = new { Name = "" };
+
+            var deserialized = JsonConvert.DeserializeObject<JsonSetDataRootObject>(result.JsonResult);
+            return deserialized.data.Select(d => new SetData
+            {
+                SetCode = d.code,
+                SetName = d.name,
+                SvgUrl = d.icon_svg_uri,
+                IsDigitalOnly = d.digital,
+                SetType = d.set_type
+            }).ToArray();
+        }
+
+        internal static RequestResult CreateResult(this HttpResponseMessage response)
         {
             var result = new RequestResult
             {
