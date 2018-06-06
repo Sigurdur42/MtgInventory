@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using Castle.Core.Logging;
+using Moq;
+using NUnit.Framework;
 
 namespace MtgScryfall.UnitTests
 {
@@ -20,7 +22,7 @@ namespace MtgScryfall.UnitTests
         [Test]
         public void ScryfallApi_GetAllSet_Test()
         {
-            var target = new ScryfallApi();
+            var target = new ScryfallApi(null);
             var result = target.GetAllSets();
         }
     }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
@@ -7,11 +9,22 @@ namespace MtgScryfall
     public class ScryfallApi : IScryfallApi
     {
         private const string _baseAddress = "https://api.scryfall.com/";
+        private readonly ILogger _logger;
+
+        public ScryfallApi(ILoggerFactory factory)
+        {
+            _logger = factory.CreateLogger<ScryfallApi>();
+        }
 
         public RequestResult GetAllSets()
         {
+            var stopwatch = Stopwatch.StartNew();
+            _logger?.LogDebug($"{nameof(GetAllSets)}: Starting request...");
             var client = CreateHttpClient();
             var response = client.GetAsync("sets").Result;
+
+            stopwatch.Stop();
+            _logger?.LogDebug($"{nameof(GetAllSets)}: Request took {stopwatch.Elapsed} and returned with status {response.StatusCode}");
 
             return response.CreateResult();
         }
