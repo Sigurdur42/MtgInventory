@@ -1,14 +1,14 @@
-﻿using MtgBinders.Domain.ValueObjects;
+using MtgBinders.Domain.ValueObjects;
 using MtgScryfall;
 using System.Linq;
 
 namespace MtgBinders.Domain.Scryfall
 {
-    public class ScryfallService : IScryfallService
+    internal class ScryfallService : IScryfallService
     {
         private IScryfallApi _scryfallApi;
 
-        internal ScryfallService(IScryfallApi api)
+        public ScryfallService(IScryfallApi api)
         {
             _scryfallApi = api;
         }
