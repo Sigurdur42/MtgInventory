@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.ValueObjects;
 using MtgScryfall;
 using System.Linq;
@@ -6,11 +7,15 @@ namespace MtgBinders.Domain.Scryfall
 {
     internal class ScryfallService : IScryfallService
     {
-        private IScryfallApi _scryfallApi;
+        private readonly ILogger _logger;
+        private readonly IScryfallApi _scryfallApi;
 
-        public ScryfallService(IScryfallApi api)
+        public ScryfallService(
+            ILoggerFactory loggerFactory,
+            IScryfallApi api)
         {
             _scryfallApi = api;
+            _logger = loggerFactory?.CreateLogger<ScryfallService>();
         }
 
         public MagicSetInfo[] LoadAllSets()
@@ -22,7 +27,10 @@ namespace MtgBinders.Domain.Scryfall
                 return new MagicSetInfo[0];
             }
 
-            return allSets.DeserializeSetData().Select(s => new MagicSetInfo
+            var deserialzed = allSets.DeserializeSetData();
+            _logger?.LogDebug($"{nameof(LoadAllSets)} - Loaded {deserialzed.Length} sets");
+
+            return deserialzed.Select(s => new MagicSetInfo
             {
                 SetCode = s.SetCode,
                 IsDigitalOnly = s.IsDigitalOnly,
