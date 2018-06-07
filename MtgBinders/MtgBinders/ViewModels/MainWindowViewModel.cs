@@ -1,16 +1,29 @@
+using MtgBinders.Domain.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MtgBinders.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    internal class MainWindowViewModel : ViewModelBase
     {
-        public MainWindowViewModel()
-        {
+        private readonly IMtgSetService _mtgSetService;
 
+        public MainWindowViewModel(
+            SystemPageViewModel systemPageViewModel,
+            IMtgSetService mtgSetService)
+        {
+            _mtgSetService = mtgSetService;
+            SystemPageViewModel = systemPageViewModel;
+
+            // Launch the initialization in a separate task:
+            Task.Factory.StartNew(() =>
+            {
+                _mtgSetService.Initialize();
+            });
         }
 
-        public string Greeting => "Hello World!";
+        public SystemPageViewModel SystemPageViewModel { get; }
     }
 }

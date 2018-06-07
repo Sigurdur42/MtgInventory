@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Scryfall;
+using MtgBinders.Domain.Services;
 using MtgScryfall;
 
 namespace MtgBinders.Domain.DependencyInjection
@@ -22,6 +20,8 @@ namespace MtgBinders.Domain.DependencyInjection
             serviceCollection.AddSingleton<IBinderDomainConfigurationProvider, BinderDomainConfigurationProvider>();
             serviceCollection.AddSingleton<IScryfallApi, ScryfallApi>();
             serviceCollection.AddSingleton<IScryfallService, ScryfallService>();
+            serviceCollection.AddSingleton<IMtgSetService, MtgSetService>();
+            // serviceCollection.AddSingleton<IMtgSetRepository, MtgSetRepository>();
             serviceCollection.AddSingleton<IJsonConfigurationSerializer, JsonConfigurationSerializer>();
 
             //// serviceCollection.AddSingleton<IScryfallService>((serviceProvider) => new ScryfallService(serviceProvider.GetService<IScryfallApi>()));

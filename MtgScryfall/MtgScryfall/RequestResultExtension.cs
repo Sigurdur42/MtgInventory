@@ -23,7 +23,8 @@ namespace MtgScryfall
                 SetName = d.name,
                 SvgUrl = d.icon_svg_uri,
                 IsDigitalOnly = d.digital,
-                SetType = d.set_type
+                SetType = d.set_type,
+                NumberOfCards = d.card_count
             }).ToArray();
         }
 

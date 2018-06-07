@@ -1,15 +1,13 @@
-using System;
-using System.IO;
 using Avalonia;
 using Avalonia.Logging.Serilog;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.DependencyInjection;
-using MtgBinders.Domain.Scryfall;
 using MtgBinders.ViewModels;
 using MtgBinders.Views;
-using MtgScryfall;
+using System;
+using System.IO;
 
 namespace MtgBinders
 {
@@ -33,8 +31,10 @@ namespace MtgBinders
             var initLogger = loggerFactory.CreateLogger("Bootstrap");
 
             initLogger.LogDebug("Configuring DI for MtgBinder...");
-            serviceCollection.AddSingleton((serviceProvider) => loggerFactory);
-            serviceCollection.AddSingleton<MainWindowViewModel>();
+            serviceCollection
+                .AddSingleton((serviceProvider) => loggerFactory)
+                .AddSingleton<MainWindowViewModel>()
+                .AddSingleton<SystemPageViewModel>();
 
             // Configure DI
             BindMicrosoftDi.BindProductiveEnvironment(initLogger, serviceCollection);
@@ -44,8 +44,10 @@ namespace MtgBinders
             domainConfiguration.Initialize(
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MtgBinder"));
 
+            var mainViewModel = provider.GetService<MainWindowViewModel>();
+
             initLogger.LogDebug("Launching UI...");
-            BuildAvaloniaApp().Start<MainWindow>(() => provider.GetService<MainWindowViewModel>());
+            BuildAvaloniaApp().Start<MainWindow>(() => mainViewModel);
         }
     }
 }

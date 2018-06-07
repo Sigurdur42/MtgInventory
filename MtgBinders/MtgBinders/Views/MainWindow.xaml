@@ -4,10 +4,6 @@
         Icon="resm:MtgBinders.Assets.avalonia-logo.ico"
         Title="MtgBinders">
 
-  <Design.DataContext>
-    <vm:MainWindowViewModel/>
-  </Design.DataContext>
-
   <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <!--
     <TabItem Header="Dummy for later"></TabItem>
@@ -19,8 +15,47 @@
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- Mtg Database details -->
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <TextBlock Grid.ColumnSpan="2" FontWeight="Bold">Mtg Database Details</TextBlock>
+          <TextBlock Grid.Row="1" Grid.Column="0">Last Updated:</TextBlock>
+          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SystemPageViewModel.SetLastUpdateDate}" />
+          <Button Grid.Row="1" Grid.Column="2" Click="OnUpdateSets">Update Sets from Scryfall</Button>
+          <TextBlock Grid.Row="2" Grid.Column="0">Number of Sets:</TextBlock>
+          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfSets}" />
+        </Grid>
+
+        <!-- Technical Details -->
+        <Grid Grid.Row="1" Margin="0,15,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <TextBlock Grid.ColumnSpan="2" FontWeight="Bold">Technical Details</TextBlock>
+          <TextBlock Grid.Row="1" Grid.Column="0">Cache and settings folder:</TextBlock>
+          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SystemPageViewModel.AppDataFolder}" />
+        </Grid>
       </Grid>
     </TabItem>
   </TabControl>
-
 </Window>

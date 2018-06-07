@@ -1,16 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using MtgBinders.Domain.ValueObjects;
 
 namespace MtgBinders.Domain.Entities
 {
-    class MtgSetRepository
+    internal class MtgSetRepository : IMtgSetRepository
     {
-        MtgSetInfo[] setData
-        public MtgSetRepository(MtgSetInfo[] setData)
-        {
+        public int NumberOfSets { get; private set; }
+        public MtgSetInfo[] SetData { get; private set; }
 
+        internal void SetSetData(MtgSetInfo[] setData)
+        {
+            NumberOfSets = setData.Length;
+            SetData = setData;
         }
     }
 }
