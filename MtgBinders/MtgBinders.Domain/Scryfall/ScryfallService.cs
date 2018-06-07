@@ -18,19 +18,19 @@ namespace MtgBinders.Domain.Scryfall
             _logger = loggerFactory?.CreateLogger<ScryfallService>();
         }
 
-        public MagicSetInfo[] LoadAllSets()
+        public MtgSetInfo[] LoadAllSets()
         {
             var allSets = _scryfallApi.GetAllSets();
             if (!allSets.Success)
             {
                 // TODO: actual error handling
-                return new MagicSetInfo[0];
+                return new MtgSetInfo[0];
             }
 
             var deserialzed = allSets.DeserializeSetData();
             _logger?.LogDebug($"{nameof(LoadAllSets)} - Loaded {deserialzed.Length} sets");
 
-            return deserialzed.Select(s => new MagicSetInfo
+            return deserialzed.Select(s => new MtgSetInfo
             {
                 SetCode = s.SetCode,
                 IsDigitalOnly = s.IsDigitalOnly,

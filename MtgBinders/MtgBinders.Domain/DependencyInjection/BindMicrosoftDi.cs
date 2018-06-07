@@ -22,7 +22,9 @@ namespace MtgBinders.Domain.DependencyInjection
             serviceCollection.AddSingleton<IBinderDomainConfigurationProvider, BinderDomainConfigurationProvider>();
             serviceCollection.AddSingleton<IScryfallApi, ScryfallApi>();
             serviceCollection.AddSingleton<IScryfallService, ScryfallService>();
-            // serviceCollection.AddSingleton<IScryfallService>((serviceProvider) => new ScryfallService(serviceProvider.GetService<IScryfallApi>()));
+            serviceCollection.AddSingleton<IJsonConfigurationSerializer, JsonConfigurationSerializer>();
+
+            //// serviceCollection.AddSingleton<IScryfallService>((serviceProvider) => new ScryfallService(serviceProvider.GetService<IScryfallApi>()));
         }
     }
 }

@@ -1,9 +1,9 @@
-﻿using MtgBinders.Domain.ValueObjects;
+using MtgBinders.Domain.ValueObjects;
 
 namespace MtgBinders.Domain.Scryfall
 {
     public interface IScryfallService
     {
-        MagicSetInfo[] LoadAllSets();
+        MtgSetInfo[] LoadAllSets();
     }
 }

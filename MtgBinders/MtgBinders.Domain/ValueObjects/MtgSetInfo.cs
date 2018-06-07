@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace MtgBinders.Domain.ValueObjects
 {
-    public class MagicSetInfo
+    public class MtgSetInfo
     {
         public bool IsDigitalOnly { get; set; }
         public string SetCode { get; set; }
