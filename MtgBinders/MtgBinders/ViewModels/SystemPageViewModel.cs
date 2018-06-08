@@ -1,4 +1,4 @@
-﻿using MtgBinders.Domain.Configuration;
+using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Services;
 using System;
 using System.Collections.Generic;
@@ -12,20 +12,26 @@ namespace MtgBinders.ViewModels
     {
         private readonly IBinderDomainConfigurationProvider _configurationProvider;
         private readonly IMtgSetService _setService;
+        private readonly IMtgCardService _cardService;
 
         public SystemPageViewModel(
             IMtgSetService setService,
+            IMtgCardService cardService,
             IBinderDomainConfigurationProvider configurationProvider)
         {
             _setService = setService;
+            _cardService = cardService;
             _configurationProvider = configurationProvider;
 
             _setService.InitializeDone += (sender, e) => FireSetServiceChanges();
+            _cardService.InitializeDone += (sender, e) => FireCardServiceChanges();
         }
 
         public string AppDataFolder => _configurationProvider.AppDataFolder;
 
         public int NumberOfSets => _setService.SetRepository.NumberOfSets;
+
+        public int NumberOfCards => _cardService.NumberOfCards;
 
         public string SetLastUpdateDate => _setService.LastUpdatedCacheAt?.ToString();
 
@@ -42,6 +48,11 @@ namespace MtgBinders.ViewModels
         {
             this.RaisePropertyChanged(nameof(NumberOfSets));
             this.RaisePropertyChanged(nameof(SetLastUpdateDate));
+        }
+
+        private void FireCardServiceChanges()
+        {
+            this.RaisePropertyChanged(nameof(NumberOfCards));
         }
     }
 }

@@ -38,6 +38,8 @@
           <Button Grid.Row="1" Grid.Column="2" Click="OnUpdateSets">Update Sets from Scryfall</Button>
           <TextBlock Grid.Row="2" Grid.Column="0">Number of Sets:</TextBlock>
           <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfSets}" />
+          <TextBlock Grid.Row="3" Grid.Column="0">Number of Cards:</TextBlock>
+          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfSets}" />
         </Grid>
 
         <!-- Technical Details -->

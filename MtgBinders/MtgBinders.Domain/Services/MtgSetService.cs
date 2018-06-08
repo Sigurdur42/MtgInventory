@@ -1,11 +1,11 @@
+using System;
+using System.IO;
 using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Entities;
 using MtgBinders.Domain.Scryfall;
 using MtgBinders.Domain.Services.Sets;
 using MtgBinders.Domain.ValueObjects;
-using System;
-using System.IO;
 
 namespace MtgBinders.Domain.Services
 {
@@ -16,8 +16,8 @@ namespace MtgBinders.Domain.Services
         private readonly ILogger _logger;
         private readonly IScryfallService _scryfallService;
         private readonly string _setCacheFileName;
+        private readonly MtgSetRepository _setRepository;
         private SetServiceConfiguration _configuration;
-        private MtgSetRepository _setRepository;
 
         public MtgSetService(
             IJsonConfigurationSerializer configurationSerializer,

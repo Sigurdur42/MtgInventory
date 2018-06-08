@@ -21,6 +21,7 @@ namespace MtgBinders.ViewModels
             Task.Factory.StartNew(() =>
             {
                 _mtgSetService.Initialize();
+                
             });
         }
 
