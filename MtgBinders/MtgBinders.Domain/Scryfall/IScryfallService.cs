@@ -5,5 +5,7 @@ namespace MtgBinders.Domain.Scryfall
     public interface IScryfallService
     {
         MtgSetInfo[] LoadAllSets();
+
+        MtgFullCard[] LoadCardsOfSet(string setCode);
     }
 }

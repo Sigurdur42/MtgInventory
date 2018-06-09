@@ -8,20 +8,19 @@ namespace MtgBinders.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
-        private readonly IMtgSetService _mtgSetService;
+        private readonly IMtgDatabaseService _mtgDatabaseService;
 
         public MainWindowViewModel(
             SystemPageViewModel systemPageViewModel,
-            IMtgSetService mtgSetService)
+            IMtgDatabaseService mtgDatabaseService)
         {
-            _mtgSetService = mtgSetService;
+            _mtgDatabaseService = mtgDatabaseService;
             SystemPageViewModel = systemPageViewModel;
 
             // Launch the initialization in a separate task:
             Task.Factory.StartNew(() =>
             {
-                _mtgSetService.Initialize();
-                
+                _mtgDatabaseService.Initialize();
             });
         }
 

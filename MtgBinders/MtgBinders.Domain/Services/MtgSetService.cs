@@ -16,17 +16,18 @@ namespace MtgBinders.Domain.Services
         private readonly ILogger _logger;
         private readonly IScryfallService _scryfallService;
         private readonly string _setCacheFileName;
-        private readonly MtgSetRepository _setRepository;
+        private readonly IMtgSetRepository _setRepository;
         private SetServiceConfiguration _configuration;
 
         public MtgSetService(
             IJsonConfigurationSerializer configurationSerializer,
             IBinderDomainConfigurationProvider configurationProvider,
             ILoggerFactory loggerFactory,
-            IScryfallService scryfallService)
+            IScryfallService scryfallService,
+            IMtgSetRepository setRepository)
         {
-            _setRepository = new MtgSetRepository();
-            _logger = loggerFactory.CreateLogger<MtgSetService>();
+            _setRepository = setRepository;
+            _logger = loggerFactory.CreateLogger(nameof(MtgSetService));
             _configurationSerializer = configurationSerializer;
             _scryfallService = scryfallService;
 
@@ -70,8 +71,14 @@ namespace MtgBinders.Domain.Services
             InitializeDone?.Invoke(this, EventArgs.Empty);
         }
 
-        public void UpdateSetsFromScryfall()
+        public void UpdateSetsFromScryfall(bool checkLastUpdateDate)
         {
+            if (_configuration.LastUpdate.Date < DateTime.UtcNow.AddDays(-7))
+            {
+                _logger.LogDebug($"Skipping set update until {_configuration.LastUpdate.Date.AddDays(7)}");
+                return;
+            }
+
             _logger.LogDebug("Starting update from Scryfall...");
 
             var newSets = _scryfallService.LoadAllSets();

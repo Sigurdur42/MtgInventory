@@ -35,8 +35,31 @@ namespace MtgBinders.Domain.Scryfall
                 SetCode = s.SetCode,
                 IsDigitalOnly = s.IsDigitalOnly,
                 SetName = s.SetName,
-                SvgUrl = s.SvgUrl
+                SvgUrl = s.SvgUrl,
+                NumberOfCards = s.NumberOfCards,
             }).ToArray();
+        }
+
+        public MtgFullCard[] LoadCardsOfSet(string setCode)
+        {
+            _logger?.LogDebug($"Loading cards for set {setCode}...");
+            var loadResult = _scryfallApi.GetCardsBySet(setCode);
+            if (!loadResult.Success)
+            {
+                _logger?.LogError($"Load cards for set {setCode} failed with status code {loadResult.StatusCode}");
+                return new MtgFullCard[0];
+            }
+
+            var result = loadResult.CardData.Select(c => new MtgFullCard
+            {
+                Name = c.Name,
+                SetCode = c.SetCode,
+                Rarity = c.Rarity.ToMtgRarity(_logger),
+            }).ToArray();
+
+            _logger?.LogInformation($"Loaded {result.Length} cards for set {setCode}.");
+
+            return result;
         }
     }
 }

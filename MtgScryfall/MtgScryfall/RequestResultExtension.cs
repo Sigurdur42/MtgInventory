@@ -22,6 +22,12 @@ namespace MtgScryfall
                 Name = c.name,
                 SetCode = c.set,
                 Rarity = c.rarity,
+                ManaCost = c.mana_cost,
+                ConvertedManaCost = c.cmc,
+                ImageLarge = c.image_uris?.large,
+                TypeLine = c.type_line,
+                OracleText = c.oracle_text,
+                CollectorNumber = c.collector_number,
             }).ToArray();
 
             return result;

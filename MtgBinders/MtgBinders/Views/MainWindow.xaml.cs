@@ -18,14 +18,14 @@ namespace MtgBinders.Views
 
         private MainWindowViewModel MainWindowViewModel => DataContext as MainWindowViewModel;
 
+        public void OnUpdateSets(object sender, RoutedEventArgs e)
+        {
+            MainWindowViewModel?.SystemPageViewModel?.UpdateSetsFromScryfall();
+        }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-        }
-
-        private void OnUpdateSets(object sender, RoutedEventArgs e)
-        {
-            MainWindowViewModel?.SystemPageViewModel?.UpdateSetsFromScryfall();
         }
     }
 }

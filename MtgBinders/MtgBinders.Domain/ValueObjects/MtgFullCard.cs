@@ -7,7 +7,7 @@ namespace MtgBinders.Domain.ValueObjects
     public sealed class MtgFullCard
     {
         public string Name { get; set; }
-        public string NumberInSet { get; set; }
         public string SetCode { get; set; }
+        public MtgRarity Rarity { get; set; }
     }
 }

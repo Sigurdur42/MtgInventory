@@ -10,5 +10,6 @@ namespace MtgBinders.Domain.ValueObjects
         public string SetCode { get; set; }
         public string SetName { get; set; }
         public string SvgUrl { get; set; }
+        public int NumberOfCards { get; set; }
     }
 }

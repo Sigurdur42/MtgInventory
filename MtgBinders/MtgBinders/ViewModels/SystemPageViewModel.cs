@@ -13,15 +13,18 @@ namespace MtgBinders.ViewModels
         private readonly IBinderDomainConfigurationProvider _configurationProvider;
         private readonly IMtgSetService _setService;
         private readonly IMtgCardService _cardService;
+        private readonly IMtgDatabaseService _mtgDatabase;
 
         public SystemPageViewModel(
             IMtgSetService setService,
             IMtgCardService cardService,
-            IBinderDomainConfigurationProvider configurationProvider)
+            IBinderDomainConfigurationProvider configurationProvider,
+            IMtgDatabaseService mtgDatabase)
         {
             _setService = setService;
             _cardService = cardService;
             _configurationProvider = configurationProvider;
+            _mtgDatabase = mtgDatabase;
 
             _setService.InitializeDone += (sender, e) => FireSetServiceChanges();
             _cardService.InitializeDone += (sender, e) => FireCardServiceChanges();
@@ -39,7 +42,7 @@ namespace MtgBinders.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                _setService.UpdateSetsFromScryfall();
+                _mtgDatabase.UpdateDatabase(false);
                 FireSetServiceChanges();
             });
         }

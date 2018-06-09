@@ -39,7 +39,7 @@
           <TextBlock Grid.Row="2" Grid.Column="0">Number of Sets:</TextBlock>
           <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfSets}" />
           <TextBlock Grid.Row="3" Grid.Column="0">Number of Cards:</TextBlock>
-          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfSets}" />
+          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfCards}" />
         </Grid>
 
         <!-- Technical Details -->

@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Entities;
 using MtgBinders.Domain.Scryfall;
 using MtgBinders.Domain.Services.Sets;
 using MtgBinders.Domain.ValueObjects;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace MtgBinders.Domain.Services
 {
@@ -19,16 +19,17 @@ namespace MtgBinders.Domain.Services
         private readonly ILogger _logger;
         private readonly IScryfallService _scryfallService;
         private readonly string _cardsCacheFolder;
-        private readonly MtgCardRepository _cardRepository;
+        private readonly IMtgCardRepository _cardRepository;
         private CardServiceConfiguration _configuration;
 
         public MtgCardService(
             IJsonConfigurationSerializer configurationSerializer,
             IBinderDomainConfigurationProvider configurationProvider,
             ILoggerFactory loggerFactory,
-            IScryfallService scryfallService)
+            IScryfallService scryfallService,
+            IMtgCardRepository cardRepository)
         {
-            _cardRepository=new MtgCardRepository();
+            _cardRepository = cardRepository;
             _logger = loggerFactory.CreateLogger<MtgSetService>();
             _configurationSerializer = configurationSerializer;
             _scryfallService = scryfallService;
@@ -37,12 +38,11 @@ namespace MtgBinders.Domain.Services
             _cardsCacheFolder = configurationProvider.AppDataFolder;
 
             _logger.LogDebug($"Configuarion details: {Environment.NewLine}- Configuration: {_configurationFileName}{Environment.NewLine}");
-
         }
 
-        public int NumberOfCards => _cardRepository.NumberOfCards;
-
         public event EventHandler InitializeDone;
+
+        public int NumberOfCards => _cardRepository.NumberOfCards;
 
         public void Initialize()
         {
@@ -61,7 +61,7 @@ namespace MtgBinders.Domain.Services
 
             // Look for cached cards
             var allCards = new List<MtgFullCard>();
-            var cachedCardFiles = Directory.EnumerateFiles(_cardsCacheFolder, "CarcCache*.json");
+            var cachedCardFiles = Directory.EnumerateFiles(_cardsCacheFolder, "CardCache*.json");
             foreach (var cachedCardFile in cachedCardFiles)
             {
                 var cards = _configurationSerializer.Deserialize<MtgFullCard[]>(cachedCardFile);
@@ -73,5 +73,30 @@ namespace MtgBinders.Domain.Services
             InitializeDone?.Invoke(this, EventArgs.Empty);
         }
 
+        public void LoadMissingCardData(IMtgSetRepository setRepository)
+        {
+            var knownCards = _cardRepository.CardData.GroupBy(c => c.SetCode).ToDictionary(c => c.Key);
+            foreach (var set in setRepository.SetData)
+            {
+                var cardCount = knownCards.ContainsKey(set.SetCode) ? knownCards[set.SetCode].Count() : 0;
+                if (set.NumberOfCards <= cardCount)
+                {
+                    _logger?.LogDebug($"Skipping update of cards for set {set.SetCode} ({set.SetName})");
+                    continue;
+                }
+
+                var cards = _scryfallService.LoadCardsOfSet(set.SetCode);
+                _logger?.LogDebug($"Replacing cards of set {set.SetCode} ({set.SetName})");
+                _cardRepository.ReplaceCardsForSet(cards, set.SetCode);
+                SaveSetCards(cards, set.SetCode);
+            }
+        }
+
+        private void SaveSetCards(MtgFullCard[] cards, string setCode)
+        {
+            var file = Path.Combine(_cardsCacheFolder, $"CardCache{setCode}.json");
+            _configurationSerializer.Serialize(file, cards);
+            _logger.LogDebug($"Saved {cards.Length} cards of set {cards.First().SetCode} as {file}");
+        }
     }
 }
