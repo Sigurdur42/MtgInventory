@@ -1,12 +1,14 @@
-﻿using System;
+﻿using MtgScryfall.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace MtgScryfall
 {
-    public class RequestResult
+    public class CardDataRequestResult
     {
-        public string JsonResult { get; set; }
+        public CardData[] CardData { get; set; }
+        public bool HasMoreData { get; set; }
         public int StatusCode { get; set; }
         public bool Success { get; set; }
     }

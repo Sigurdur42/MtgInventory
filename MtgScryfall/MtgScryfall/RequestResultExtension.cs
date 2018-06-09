@@ -7,6 +7,26 @@ namespace MtgScryfall
 {
     public static class RequestResultExtension
     {
+        public static CardDataRequestResult DeserializeCardData(this RequestResult requestResult)
+        {
+            var result = new CardDataRequestResult
+            {
+                StatusCode = requestResult.StatusCode,
+                Success = requestResult.Success,
+            };
+
+            var deserialized = JsonConvert.DeserializeObject<RootObject>(requestResult.JsonResult);
+            result.HasMoreData = deserialized.has_more;
+            result.CardData = deserialized.data.Select(c => new CardData
+            {
+                Name = c.name,
+                SetCode = c.set,
+                Rarity = c.rarity,
+            }).ToArray();
+
+            return result;
+        }
+
         public static SetData[] DeserializeSetData(this RequestResult result)
         {
             if (!result.Success)

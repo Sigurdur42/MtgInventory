@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using MtgScryfall.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -13,7 +15,7 @@ namespace MtgScryfall
 
         public ScryfallApi(ILoggerFactory factory)
         {
-            _logger = factory.CreateLogger<ScryfallApi>();
+            _logger = factory?.CreateLogger<ScryfallApi>();
         }
 
         public RequestResult GetAllSets()
@@ -35,6 +37,37 @@ namespace MtgScryfall
             var response = client.GetAsync($"cards?page={page}").Result;
 
             return response.CreateResult();
+        }
+
+        public RequestResult GetCardsBySet(string setCode, int page)
+        {
+            using (var client = CreateHttpClient())
+            {
+                _logger?.LogDebug($"Loading cards for set {setCode} (page {page}");
+                var response = client.GetAsync($"cards/search?page={page};order=cmc&q=++e:{setCode}").Result;
+
+                return response.CreateResult();
+            }
+        }
+
+        public CardDataRequestResult GetCardsBySet(string setCode)
+        {
+            var allCards = new List<CardData>();
+            var result = GetCardsBySet(setCode, 1).DeserializeCardData();
+            allCards.AddRange(result.CardData);
+
+            var page = 2;
+            while (result.HasMoreData)
+            {
+                result = GetCardsBySet(setCode, page).DeserializeCardData();
+                allCards.AddRange(result.CardData);
+                page++;
+            }
+
+            result.CardData = allCards.ToArray();
+
+            _logger?.LogInformation($"Loaded {result.CardData.Length} cards for set {setCode}");
+            return result;
         }
 
         private HttpClient CreateHttpClient()

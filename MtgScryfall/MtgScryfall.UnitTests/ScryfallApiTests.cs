@@ -25,5 +25,12 @@ namespace MtgScryfall.UnitTests
             var target = new ScryfallApi(null);
             var result = target.GetAllSets();
         }
+
+        [Test]
+        public void ScryfallApi_GetCardsBySet_Test()
+        {
+            var target = new ScryfallApi(null);
+            var result = target.GetCardsBySet("AER");
+        }
     }
 }
