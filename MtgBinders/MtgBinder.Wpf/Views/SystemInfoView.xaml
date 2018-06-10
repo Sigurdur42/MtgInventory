@@ -32,12 +32,12 @@
 
             <TextBlock Grid.ColumnSpan="2" FontWeight="Bold">Mtg Database Details</TextBlock>
             <TextBlock Grid.Row="1" Grid.Column="0">Last Updated:</TextBlock>
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SystemPageViewModel.SetLastUpdateDate}" />
-            <Button Grid.Row="1" Grid.Column="2" >Update Sets from Scryfall</Button>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SetLastUpdateDate}" />
+            <Button Grid.Row="1" Grid.Column="2" Click="OnUpdateDatabaseFromScryfall">Update Sets from Scryfall</Button>
             <TextBlock Grid.Row="2" Grid.Column="0">Number of Sets:</TextBlock>
-            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfSets}" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NumberOfSets}" />
             <TextBlock Grid.Row="3" Grid.Column="0">Number of Cards:</TextBlock>
-            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SystemPageViewModel.NumberOfCards}" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NumberOfCards}" />
         </Grid>
 
         <!-- Technical Details -->
@@ -53,7 +53,7 @@
 
             <TextBlock Grid.ColumnSpan="2" FontWeight="Bold">Technical Details</TextBlock>
             <TextBlock Grid.Row="1" Grid.Column="0">Cache and settings folder:</TextBlock>
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SystemPageViewModel.AppDataFolder}" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AppDataFolder}" />
         </Grid>
     </Grid>
 </UserControl>

@@ -14,6 +14,8 @@ namespace MtgScryfall
         private const string _baseAddress = "https://api.scryfall.com/";
         private readonly ILogger _logger;
 
+        private DateTime _lastRequest = DateTime.UtcNow;
+
         public ScryfallApi(ILoggerFactory factory)
         {
             _logger = factory?.CreateLogger(nameof(ScryfallApi));
@@ -29,7 +31,7 @@ namespace MtgScryfall
 
                 stopwatch.Stop();
                 _logger?.LogDebug($"{nameof(GetAllSets)}: Request took {stopwatch.Elapsed} and returned with status {response.StatusCode}");
-
+                _lastRequest = DateTime.UtcNow;
                 return response.CreateResult();
             }
         }
@@ -39,7 +41,7 @@ namespace MtgScryfall
             using (var client = CreateHttpClient())
             {
                 var response = client.GetAsync($"cards?page={page}").Result;
-
+                _lastRequest = DateTime.UtcNow;
                 return response.CreateResult();
             }
         }
@@ -48,9 +50,10 @@ namespace MtgScryfall
         {
             using (var client = CreateHttpClient())
             {
+                AutoDelay();
                 _logger?.LogDebug($"Loading cards for set {setCode} (page {page})");
                 var response = client.GetAsync($"cards/search?page={page};order=cmc&q=++e:{setCode}").Result;
-
+                _lastRequest = DateTime.UtcNow;
                 return response.CreateResult();
             }
         }
@@ -64,9 +67,6 @@ namespace MtgScryfall
             var page = 2;
             while (result.HasMoreData)
             {
-                // Scryfall wants to have a short delay between requests
-                Thread.Sleep(100);
-
                 result = GetCardsBySet(setCode, page).DeserializeCardData();
                 allCards.AddRange(result.CardData);
                 page++;
@@ -75,11 +75,26 @@ namespace MtgScryfall
             result.CardData = allCards.ToArray();
 
             _logger?.LogInformation($"Loaded {result.CardData.Length} cards for set {setCode}");
+
             return result;
+        }
+
+        private void AutoDelay()
+        {
+            const int waitTime = 120;
+            var now = DateTime.UtcNow;
+            if ((now - _lastRequest).TotalMilliseconds < waitTime)
+            {
+                _logger?.LogDebug($"Auto delaying request to avoid too heavy traffic.");
+                Thread.Sleep(waitTime);
+            }
+
+            _lastRequest = now;
         }
 
         private HttpClient CreateHttpClient()
         {
+            AutoDelay();
             HttpClient client = new HttpClient
             {
                 BaseAddress = new Uri(_baseAddress)

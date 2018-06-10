@@ -1,10 +1,11 @@
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Services;
 using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace MtgBinder.Wpf.ViewModels
 {
-    internal class SystemPageViewModel
+    internal class SystemPageViewModel : INotifyPropertyChanged
     {
         private readonly IBinderDomainConfigurationProvider _configurationProvider;
         private readonly IMtgSetService _setService;
@@ -26,6 +27,8 @@ namespace MtgBinder.Wpf.ViewModels
             _cardService.InitializeDone += (sender, e) => FireCardServiceChanges();
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public string AppDataFolder => _configurationProvider.AppDataFolder;
 
         public int NumberOfSets => _setService.SetRepository.NumberOfSets;
@@ -34,7 +37,7 @@ namespace MtgBinder.Wpf.ViewModels
 
         public string SetLastUpdateDate => _setService.LastUpdatedCacheAt?.ToString();
 
-        public void UpdateSetsFromScryfall()
+        public void UpdateDatabaseFromScryfall()
         {
             Task.Factory.StartNew(() =>
             {
@@ -45,13 +48,13 @@ namespace MtgBinder.Wpf.ViewModels
 
         private void FireSetServiceChanges()
         {
-            //this.RaisePropertyChanged(nameof(NumberOfSets));
-            //this.RaisePropertyChanged(nameof(SetLastUpdateDate));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfSets)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SetLastUpdateDate)));
         }
 
         private void FireCardServiceChanges()
         {
-            //this.RaisePropertyChanged(nameof(NumberOfCards));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfCards)));
         }
     }
 }

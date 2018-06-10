@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MtgBinder.Wpf.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,8 +24,13 @@ namespace MtgBinder.Wpf.Views
         public SystemInfoView()
         {
             InitializeComponent();
+        }
 
-            int debug = 0;
+        internal SystemPageViewModel ViewModel => DataContext as SystemPageViewModel;
+
+        private void OnUpdateDatabaseFromScryfall(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.UpdateDatabaseFromScryfall();
         }
     }
 }

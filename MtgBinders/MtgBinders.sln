@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgBinders", "MtgBinders\MtgBinders.csproj", "{271441C8-8C1F-44A5-ADCC-7A9B9FB5D7AD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgScryfall", "..\MtgScryfall\MtgScryfall\MtgScryfall.csproj", "{381B703A-62EE-42D7-BE11-9D89FEFF668B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgScryfall.UnitTests", "..\MtgScryfall\MtgScryfall.UnitTests\MtgScryfall.UnitTests.csproj", "{EA4F7046-8D53-4A95-94A1-D13B75A3981F}"
@@ -19,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{271441C8-8C1F-44A5-ADCC-7A9B9FB5D7AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{271441C8-8C1F-44A5-ADCC-7A9B9FB5D7AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{271441C8-8C1F-44A5-ADCC-7A9B9FB5D7AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{271441C8-8C1F-44A5-ADCC-7A9B9FB5D7AD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{381B703A-62EE-42D7-BE11-9D89FEFF668B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{381B703A-62EE-42D7-BE11-9D89FEFF668B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{381B703A-62EE-42D7-BE11-9D89FEFF668B}.Release|Any CPU.ActiveCfg = Release|Any CPU
