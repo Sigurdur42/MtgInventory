@@ -101,11 +101,19 @@
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Compile Include="Logging\UiLogger.cs" />
+    <Compile Include="Logging\UiLoggingControl.xaml.cs">
+      <DependentUpon>UiLoggingControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Logging\UiLoggingProvider.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\SystemPageViewModel.cs" />
     <Compile Include="Views\SystemInfoView.xaml.cs">
       <DependentUpon>SystemInfoView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Logging\UiLoggingControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MtgBinder.Wpf.Logging;
 using MtgBinder.Wpf.ViewModels;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.DependencyInjection;
@@ -41,6 +42,7 @@ namespace MtgBinder.Wpf
             ILoggerFactory loggerFactory = new LoggerFactory()
                 // .AddConsole(LogLevel.Debug)
                 .AddDebug(LogLevel.Debug);
+            loggerFactory.AddProvider(new UiLoggingProvider());
 
             var initLogger = loggerFactory.CreateLogger("Bootstrap");
 

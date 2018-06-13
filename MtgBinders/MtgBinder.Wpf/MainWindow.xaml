@@ -5,12 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MtgBinder.Wpf"
         xmlns:views="clr-namespace:MtgBinder.Wpf.Views"
+        xmlns:logging="clr-namespace:MtgBinder.Wpf.Logging"
         mc:Ignorable="d"
 
         Title="MainWindow" Height="450" Width="800">
     <TabControl>
         <TabItem Header="System / About">
             <views:SystemInfoView DataContext="{Binding SystemPageViewModel}" />
+        </TabItem>
+        <TabItem Header="Logs">
+            <logging:UiLoggingControl></logging:UiLoggingControl>
         </TabItem>
     </TabControl>
 </Window>
