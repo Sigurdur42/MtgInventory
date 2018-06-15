@@ -89,6 +89,8 @@ namespace MtgBinders.Domain.Services
                 _logger?.LogDebug($"Replacing cards of set {set.SetCode} ({set.SetName})");
                 _cardRepository.ReplaceCardsForSet(cards, set.SetCode);
                 SaveSetCards(cards, set.SetCode);
+
+                set.NumberOfCards = cards.Length;
             }
         }
 

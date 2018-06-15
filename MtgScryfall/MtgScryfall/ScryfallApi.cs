@@ -52,7 +52,7 @@ namespace MtgScryfall
             {
                 AutoDelay();
                 _logger?.LogDebug($"Loading cards for set {setCode} (page {page})");
-                var response = client.GetAsync($"cards/search?page={page};order=cmc&q=++e:{setCode}").Result;
+                var response = client.GetAsync($"cards/search?page={page};order=cmc&q=++e:{setCode}%20unique:prints").Result;
                 _lastRequest = DateTime.UtcNow;
                 return response.CreateResult();
             }

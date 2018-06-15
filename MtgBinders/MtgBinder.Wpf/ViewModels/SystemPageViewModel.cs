@@ -1,60 +1,56 @@
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Services;
-using System.Threading.Tasks;
+using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace MtgBinder.Wpf.ViewModels
 {
     internal class SystemPageViewModel : INotifyPropertyChanged
     {
         private readonly IBinderDomainConfigurationProvider _configurationProvider;
-        private readonly IMtgSetService _setService;
-        private readonly IMtgCardService _cardService;
         private readonly IMtgDatabaseService _mtgDatabase;
 
         public SystemPageViewModel(
-            IMtgSetService setService,
-            IMtgCardService cardService,
             IBinderDomainConfigurationProvider configurationProvider,
             IMtgDatabaseService mtgDatabase)
         {
-            _setService = setService;
-            _cardService = cardService;
             _configurationProvider = configurationProvider;
             _mtgDatabase = mtgDatabase;
 
-            _setService.InitializeDone += (sender, e) => FireSetServiceChanges();
-            _cardService.InitializeDone += (sender, e) => FireCardServiceChanges();
+            _mtgDatabase.DatabaseUpdated += (sender, e) =>
+            {
+                FireCardDatabaseeChanges();
+            };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string AppDataFolder => _configurationProvider.AppDataFolder;
 
-        public int NumberOfSets => _setService.SetRepository.NumberOfSets;
+        public int NumberOfSets => _mtgDatabase.NumberOfSets;
 
-        public int NumberOfCards => _cardService.NumberOfCards;
+        public int NumberOfCards => _mtgDatabase.NumberOfCards;
 
-        public string SetLastUpdateDate => _setService.LastUpdatedCacheAt?.ToString();
+        public string SetLastUpdateDate => _mtgDatabase.LastUpdated?.ToString();
+
+        public bool AreCardsMissing => _mtgDatabase.IsCardsMissing;
 
         public void UpdateDatabaseFromScryfall()
         {
             Task.Factory.StartNew(() =>
             {
                 _mtgDatabase.UpdateDatabase(false);
-                FireSetServiceChanges();
+                FireCardDatabaseeChanges();
             });
         }
 
-        private void FireSetServiceChanges()
+        private void FireCardDatabaseeChanges()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfSets)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SetLastUpdateDate)));
-        }
-
-        private void FireCardServiceChanges()
-        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfCards)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AreCardsMissing)));
         }
     }
 }

@@ -84,12 +84,17 @@ namespace MtgBinders.Domain.Services
             var newSets = _scryfallService.LoadAllSets();
             _setRepository.SetSetData(newSets);
 
-            _configurationSerializer.Serialize(_setCacheFileName, newSets);
+            WriteSetsToCache();
+        }
+
+        public void WriteSetsToCache()
+        {
+            _configurationSerializer.Serialize(_setCacheFileName, _setRepository.SetData);
 
             _configuration.LastUpdate = DateTime.UtcNow;
             _configurationSerializer.Serialize(_configurationFileName, _configuration);
 
-            _logger.LogInformation($"Updates set data at {_configuration?.LastUpdate}. Loaded {newSets.Length} sets.");
+            _logger.LogInformation($"Updates set data at {_configuration?.LastUpdate}. Loaded {_setRepository.SetData.Length} sets.");
         }
     }
 }

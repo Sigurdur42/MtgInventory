@@ -28,6 +28,8 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock Grid.ColumnSpan="2" FontWeight="Bold">Mtg Database Details</TextBlock>
@@ -38,6 +40,8 @@
             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NumberOfSets}" />
             <TextBlock Grid.Row="3" Grid.Column="0">Number of Cards:</TextBlock>
             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NumberOfCards}" />
+            <TextBlock Grid.Row="4" Grid.Column="0">Are cards missing:</TextBlock>
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding AreCardsMissing}" />
         </Grid>
 
         <!-- Technical Details -->

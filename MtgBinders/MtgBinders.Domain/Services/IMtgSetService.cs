@@ -13,5 +13,7 @@ namespace MtgBinders.Domain.Services
         void Initialize();
 
         void UpdateSetsFromScryfall(bool checkLastUpdateDate);
+
+        void WriteSetsToCache();
     }
 }
