@@ -6,6 +6,7 @@ using MtgBinders.Domain.Services.Sets;
 using MtgBinders.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -60,14 +61,19 @@ namespace MtgBinders.Domain.Services
             }
 
             // Look for cached cards
+            var stopwatch = Stopwatch.StartNew();
             var allCards = new List<MtgFullCard>();
             var cachedCardFiles = Directory.EnumerateFiles(_cardsCacheFolder, "CardCache*.json");
             foreach (var cachedCardFile in cachedCardFiles)
             {
                 var cards = _configurationSerializer.Deserialize<MtgFullCard[]>(cachedCardFile);
                 _logger.LogDebug($"Loaded {cards.Length} cards of set {cards.First().SetCode}");
+
                 allCards.AddRange(cards);
             }
+
+            stopwatch.Stop();
+            _logger.LogDebug($"Loading cards from cache took {stopwatch.Elapsed}");
 
             _cardRepository.SetCardData(allCards);
             InitializeDone?.Invoke(this, EventArgs.Empty);
