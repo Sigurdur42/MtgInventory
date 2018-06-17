@@ -26,6 +26,7 @@ namespace MtgBinders.Domain.DependencyInjection
             serviceCollection.AddSingleton<IMtgSetRepository, MtgSetRepository>();
             serviceCollection.AddSingleton<IMtgCardRepository, MtgCardRepository>();
             serviceCollection.AddSingleton<IJsonConfigurationSerializer, JsonConfigurationSerializer>();
+            serviceCollection.AddSingleton<ICardSearchService, CardSearchService>();
             serviceCollection.AddSingleton<IMtgCardService, MtgCardService>();
 
             //// serviceCollection.AddSingleton<IScryfallService>((serviceProvider) => new ScryfallService(serviceProvider.GetService<IScryfallApi>()));
