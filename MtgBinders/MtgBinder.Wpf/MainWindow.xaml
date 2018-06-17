@@ -10,6 +10,9 @@
 
         Title="MainWindow" Height="450" Width="800">
     <TabControl>
+        <TabItem Header="Cards">
+            <views:MainCardSearchView DataContext="{Binding MainCardSearchViewModel}" />
+        </TabItem>
         <TabItem Header="System / About">
             <views:SystemInfoView DataContext="{Binding SystemPageViewModel}" />
         </TabItem>

@@ -13,10 +13,12 @@ namespace MtgBinder.Wpf.ViewModels
 
         public MainViewModel(
             SystemPageViewModel systemPageViewModel,
+            MainCardSearchViewModel mainCardSearchViewModel,
             IMtgDatabaseService mtgDatabaseService)
         {
             _mtgDatabaseService = mtgDatabaseService;
             SystemPageViewModel = systemPageViewModel;
+            MainCardSearchViewModel = mainCardSearchViewModel;
 
             // Launch the initialization in a separate task:
             Task.Factory.StartNew(() =>
@@ -26,5 +28,7 @@ namespace MtgBinder.Wpf.ViewModels
         }
 
         public SystemPageViewModel SystemPageViewModel { get; }
+
+        public MainCardSearchViewModel MainCardSearchViewModel { get; }
     }
 }

@@ -50,6 +50,7 @@ namespace MtgBinder.Wpf
             serviceCollection
                 .AddSingleton((serviceProvider) => loggerFactory)
                 .AddSingleton<MainViewModel>()
+                .AddSingleton<MainCardSearchViewModel>()
                 .AddSingleton<SystemPageViewModel>();
 
             // Configure DI
