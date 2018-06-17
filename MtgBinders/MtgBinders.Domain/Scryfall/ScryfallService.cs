@@ -55,6 +55,14 @@ namespace MtgBinders.Domain.Scryfall
                 Name = c.Name,
                 SetCode = c.SetCode,
                 Rarity = c.Rarity.ToMtgRarity(_logger),
+
+                ManaCost = c.ManaCost,
+                ConvertedManaCost = c.ConvertedManaCost,
+                TypeLine = c.TypeLine,
+                OracleText = c.OracleText,
+                CollectorNumber = c.CollectorNumber,
+
+                ImageLarge = c.ImageLarge,
             }).ToArray();
 
             _logger?.LogInformation($"Loaded {result.Length} cards for set {setCode}.");

@@ -117,6 +117,9 @@
     <Compile Include="ViewModels\MainCardSearchViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\SystemPageViewModel.cs" />
+    <Compile Include="Views\CardDetailsControl.xaml.cs">
+      <DependentUpon>CardDetailsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainCardSearchView.xaml.cs">
       <DependentUpon>MainCardSearchView.xaml</DependentUpon>
     </Compile>
@@ -138,6 +141,9 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\CardDetailsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainCardSearchView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -11,9 +11,13 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
 
         <!-- The grid containing the search bar -->
-        <Grid>
+        <Grid Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -28,7 +32,7 @@
 
         <!-- The result grid -->
         <Grid Grid.Row="1">
-            <DataGrid ItemsSource="{Binding FoundCards}" AutoGenerateColumns="False">
+            <DataGrid ItemsSource="{Binding FoundCards}" AutoGenerateColumns="False" SelectedItem="{Binding SelectedCard}" SelectionMode="Single">
                 <DataGrid.Columns>
                     <!--<DataGridTemplateColumn Header="Image" Width="SizeToCells" IsReadOnly="True">
                         <DataGridTemplateColumn.CellTemplate>
@@ -43,5 +47,8 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
+
+        <!-- The card details -->
+        <local:CardDetailsControl Grid.Row="1" Grid.Column="1" SelectedCard="{Binding SelectedCard}" />
     </Grid>
 </UserControl>

@@ -17,8 +17,10 @@ namespace MtgBinder.Wpf.ViewModels
 
         private string _searchPattern;
 
+        private MtgFullCard _selectedCard;
+
         public MainCardSearchViewModel(
-               IMtgDatabaseService mtgDatabase,
+                       IMtgDatabaseService mtgDatabase,
                ICardSearchService cardSearchService,
                IJsonConfigurationSerializer configurationSerializer,
                IBinderDomainConfigurationProvider configurationProvider)
@@ -48,6 +50,23 @@ namespace MtgBinder.Wpf.ViewModels
                 {
                     _searchPattern = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SearchPattern)));
+                }
+            }
+        }
+
+        public MtgFullCard SelectedCard
+        {
+            get
+            {
+                return _selectedCard;
+            }
+
+            set
+            {
+                if (_selectedCard != value)
+                {
+                    _selectedCard = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCard)));
                 }
             }
         }
