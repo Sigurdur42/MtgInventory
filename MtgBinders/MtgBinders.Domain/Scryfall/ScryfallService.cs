@@ -15,7 +15,7 @@ namespace MtgBinders.Domain.Scryfall
             IScryfallApi api)
         {
             _scryfallApi = api;
-            _logger = loggerFactory?.CreateLogger<ScryfallService>();
+            _logger = loggerFactory?.CreateLogger(nameof(ScryfallService));
         }
 
         public MtgSetInfo[] LoadAllSets()
