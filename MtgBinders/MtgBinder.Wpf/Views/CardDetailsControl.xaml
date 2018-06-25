@@ -4,9 +4,57 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:MtgBinder.Wpf.Views"
+             xmlns:converter="clr-namespace:MtgBinder.Wpf.Converter"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800"
              MinWidth="300">
+    <UserControl.Resources>
+        <converter:UrlToImageSourceConverter x:Key="UrlToImageSourceConverter" />
+    </UserControl.Resources>
+
     <Grid x:Name="rootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Image Source="{Binding CardImage, Converter={StaticResource UrlToImageSourceConverter}}"
+               Width="300" />
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Name</Label>
+            <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedCard.Name}" />
+
+            <!-- TODO: Set info -->
+            <Label Grid.Row="2" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Set</Label>
+
+            <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding CardSetInfo.SetName}">
+                <TextBlock.ToolTip>
+                    <local:SetDetailsControl SelectedSet="{Binding CardSetInfo}" />
+                </TextBlock.ToolTip>
+            </TextBlock>
+
+            <!-- TODO: price info -->
+
+            <Label Grid.Row="6" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Oracle:</Label>
+            <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Text="{Binding SelectedCard.OracleText}" />
+        </Grid>
     </Grid>
 </UserControl>

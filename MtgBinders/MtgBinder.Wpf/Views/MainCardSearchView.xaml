@@ -44,6 +44,12 @@
 
                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
                     <DataGridTextColumn Header="Set" Binding="{Binding SetCode}" />
+                    <DataGridTextColumn Header="Collector" Binding="{Binding CollectorNumber}" />
+                    <DataGridTextColumn Header="Rarity" Binding="{Binding Rarity}" />
+                    <DataGridTextColumn Header="Mana" Binding="{Binding ManaCost}" />
+                    <DataGridTextColumn Header="Type" Binding="{Binding TypeLine}" />
+                    <DataGridTextColumn Header="Digital" Binding="{Binding IsDigitalOnly}" />
+                    <DataGridTextColumn Header="Layout" Binding="{Binding Layout}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>

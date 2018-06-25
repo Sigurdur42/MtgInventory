@@ -56,12 +56,12 @@ namespace MtgBinder.Wpf
             // Configure DI
             BindMicrosoftDi.BindProductiveEnvironment(initLogger, serviceCollection);
 
-            var provider = serviceCollection.BuildServiceProvider();
-            var domainConfiguration = provider.GetService<IBinderDomainConfigurationProvider>();
+            ApplicationSingeltons.ServiceProvider = serviceCollection.BuildServiceProvider();
+            var domainConfiguration = ApplicationSingeltons.ServiceProvider.GetService<IBinderDomainConfigurationProvider>();
             domainConfiguration.Initialize(
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MtgBinder"));
 
-            _mainViewModel = provider.GetService<MainViewModel>();
+            _mainViewModel = ApplicationSingeltons.ServiceProvider.GetService<MainViewModel>();
             DataContext = _mainViewModel;
         }
     }

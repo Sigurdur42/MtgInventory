@@ -4,6 +4,7 @@ using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Entities;
 using MtgBinders.Domain.Scryfall;
 using MtgBinders.Domain.Services;
+using MtgBinders.Domain.Services.Images;
 using MtgScryfall;
 
 namespace MtgBinders.Domain.DependencyInjection
@@ -28,6 +29,7 @@ namespace MtgBinders.Domain.DependencyInjection
             serviceCollection.AddSingleton<IJsonConfigurationSerializer, JsonConfigurationSerializer>();
             serviceCollection.AddSingleton<ICardSearchService, CardSearchService>();
             serviceCollection.AddSingleton<IMtgCardService, MtgCardService>();
+            serviceCollection.AddSingleton<IMtgImageCache, MtgImageCache>();
 
             //// serviceCollection.AddSingleton<IScryfallService>((serviceProvider) => new ScryfallService(serviceProvider.GetService<IScryfallApi>()));
         }

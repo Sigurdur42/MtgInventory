@@ -12,5 +12,7 @@ namespace MtgScryfall.Models
         public string SetName { get; set; }
         public string SetType { get; set; }
         public string SvgUrl { get; set; }
+        public bool IsFoilOnly { get; set; }
+        public string ReleaseDate { get; set; }
     }
 }

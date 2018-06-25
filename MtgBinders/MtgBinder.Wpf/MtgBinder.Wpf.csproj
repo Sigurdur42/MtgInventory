@@ -109,6 +109,8 @@
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Compile Include="ApplicationSingeltons.cs" />
+    <Compile Include="Converter\UrlToImageSourceConverter.cs" />
     <Compile Include="Logging\UiLogger.cs" />
     <Compile Include="Logging\UiLoggingControl.xaml.cs">
       <DependentUpon>UiLoggingControl.xaml</DependentUpon>
@@ -122,6 +124,9 @@
     </Compile>
     <Compile Include="Views\MainCardSearchView.xaml.cs">
       <DependentUpon>MainCardSearchView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SetDetailsControl.xaml.cs">
+      <DependentUpon>SetDetailsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SystemInfoView.xaml.cs">
       <DependentUpon>SystemInfoView.xaml</DependentUpon>
@@ -145,6 +150,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainCardSearchView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SetDetailsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SystemInfoView.xaml">

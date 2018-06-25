@@ -28,6 +28,8 @@ namespace MtgScryfall
                 TypeLine = c.type_line,
                 OracleText = c.oracle_text,
                 CollectorNumber = c.collector_number,
+                IsDigitalOnly = c.digital,
+                Layout = c.layout,
             }).ToArray();
 
             return result;
@@ -50,7 +52,9 @@ namespace MtgScryfall
                 SvgUrl = d.icon_svg_uri,
                 IsDigitalOnly = d.digital,
                 SetType = d.set_type,
-                NumberOfCards = d.card_count
+                NumberOfCards = d.card_count,
+                IsFoilOnly = d.foil_only,
+                ReleaseDate = d.released_at,
             }).ToArray();
         }
 

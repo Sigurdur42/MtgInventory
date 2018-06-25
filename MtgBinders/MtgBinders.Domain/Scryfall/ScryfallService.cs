@@ -34,9 +34,11 @@ namespace MtgBinders.Domain.Scryfall
             {
                 SetCode = s.SetCode,
                 IsDigitalOnly = s.IsDigitalOnly,
+                IsFoilOnly = s.IsFoilOnly,
                 SetName = s.SetName,
                 SvgUrl = s.SvgUrl,
                 NumberOfCards = s.NumberOfCards,
+                ReleasDate = s.ReleaseDate,
             }).ToArray();
         }
 
@@ -61,6 +63,8 @@ namespace MtgBinders.Domain.Scryfall
                 TypeLine = c.TypeLine,
                 OracleText = c.OracleText,
                 CollectorNumber = c.CollectorNumber,
+                IsDigitalOnly = c.IsDigitalOnly,
+                Layout = c.Layout,
 
                 ImageLarge = c.ImageLarge,
             }).ToArray();

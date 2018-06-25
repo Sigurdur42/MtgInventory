@@ -14,6 +14,8 @@ namespace MtgScryfall.Models
         public string TypeLine { get; set; }
         public string OracleText { get; set; }
         public string CollectorNumber { get; set; }
+        public string Layout { get; set; }
+        public bool IsDigitalOnly { get; set; }
 
         public string ImageLarge { get; set; }
     }

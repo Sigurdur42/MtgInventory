@@ -1,5 +1,6 @@
 ﻿using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Services;
+using MtgBinders.Domain.Services.Images;
 using MtgBinders.Domain.ValueObjects;
 using System;
 using System.ComponentModel;
@@ -20,7 +21,7 @@ namespace MtgBinder.Wpf.ViewModels
         private MtgFullCard _selectedCard;
 
         public MainCardSearchViewModel(
-                       IMtgDatabaseService mtgDatabase,
+               IMtgDatabaseService mtgDatabase,
                ICardSearchService cardSearchService,
                IJsonConfigurationSerializer configurationSerializer,
                IBinderDomainConfigurationProvider configurationProvider)
@@ -33,6 +34,7 @@ namespace MtgBinder.Wpf.ViewModels
 
             // TODO: Serialize
             CardSearchSettings = _configurationSerializer.Deserialize<CardSearchSettings>(_cardSearchSettingsCache) ?? new CardSearchSettings();
+            CardSearchSettings.ShowUniquePrints = true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

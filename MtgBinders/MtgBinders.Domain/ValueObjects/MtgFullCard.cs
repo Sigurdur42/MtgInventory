@@ -15,7 +15,9 @@ namespace MtgBinders.Domain.ValueObjects
         public string TypeLine { get; set; }
         public string OracleText { get; set; }
         public string CollectorNumber { get; set; }
+        public bool IsDigitalOnly { get; set; }
 
         public string ImageLarge { get; set; }
+        public string Layout { get; set; }
     }
 }
