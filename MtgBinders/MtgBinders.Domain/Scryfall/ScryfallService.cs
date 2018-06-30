@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.ValueObjects;
 using MtgScryfall;
+using MtgScryfall.Models;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MtgBinders.Domain.Scryfall
@@ -52,11 +54,47 @@ namespace MtgBinders.Domain.Scryfall
                 return new MtgFullCard[0];
             }
 
-            var result = loadResult.CardData.Select(c => new MtgFullCard
+            var result = loadResult.CardData.Select(c => CreateCardFromResult(c, _logger)).ToArray();
+
+            _logger?.LogInformation($"Loaded {result.Length} cards for set {setCode}.");
+
+            return result;
+        }
+
+        public MtgFullCard[] LoadAllCards()
+        {
+            var result = new List<MtgFullCard>();
+            CardDataRequestResult loadResult;
+
+            var page = 1;
+            do
+            {
+                _logger?.LogDebug($"Loading all cards (page {page})...");
+
+                loadResult = _scryfallApi.GetCardsByPage(page);
+                if (!loadResult.Success)
+                {
+                    _logger?.LogError($"Load all cards  failed with status code {loadResult.StatusCode}");
+                    return result.ToArray();
+                }
+
+                result.AddRange(loadResult.CardData.Select(c => CreateCardFromResult(c, _logger)).ToArray());
+
+                page += 1;
+            } while (loadResult.HasMoreData);
+
+            _logger?.LogInformation($"Loaded {result.Count} cards.");
+
+            return result.ToArray();
+        }
+
+        private static MtgFullCard CreateCardFromResult(CardData c, ILogger logger)
+        {
+            return new MtgFullCard
             {
                 Name = c.Name,
                 SetCode = c.SetCode,
-                Rarity = c.Rarity.ToMtgRarity(_logger),
+                Rarity = c.Rarity.ToMtgRarity(logger),
 
                 ManaCost = c.ManaCost,
                 ConvertedManaCost = c.ConvertedManaCost,
@@ -66,12 +104,15 @@ namespace MtgBinders.Domain.Scryfall
                 IsDigitalOnly = c.IsDigitalOnly,
                 Layout = c.Layout,
 
+                IsPauperLegal = c.IsPauperLegal,
+                IsCommanderLegal = c.IsCommanderLegal,
+                IsStandardLegal = c.IsStandardLegal,
+                IsModernLegal = c.IsModernLegal,
+                IsLegacyLegal = c.IsLegacyLegal,
+                IsVintageLegal = c.IsVintageLegal,
+
                 ImageLarge = c.ImageLarge,
-            }).ToArray();
-
-            _logger?.LogInformation($"Loaded {result.Length} cards for set {setCode}.");
-
-            return result;
+            };
         }
     }
 }

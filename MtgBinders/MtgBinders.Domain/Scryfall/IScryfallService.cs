@@ -6,6 +6,8 @@ namespace MtgBinders.Domain.Scryfall
     {
         MtgSetInfo[] LoadAllSets();
 
+        MtgFullCard[] LoadAllCards();
+
         MtgFullCard[] LoadCardsOfSet(string setCode);
     }
 }

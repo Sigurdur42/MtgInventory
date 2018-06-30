@@ -30,7 +30,12 @@ namespace MtgBinder.Wpf.Views
 
         private void OnUpdateDatabaseFromScryfall(object sender, RoutedEventArgs e)
         {
-            ViewModel?.UpdateDatabaseFromScryfall();
+            ViewModel?.UpdateDatabaseFromScryfall(false);
+        }
+
+        private void OnDownloadDatabaseFromScryfall(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.UpdateDatabaseFromScryfall(true);
         }
     }
 }

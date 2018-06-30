@@ -54,7 +54,15 @@ namespace MtgBinders.Domain.Services
         public void UpdateDatabase(bool forceUpdate)
         {
             _setService.UpdateSetsFromScryfall(!forceUpdate);
-            _cardService.LoadMissingCardData(_setRepository);
+
+            if (forceUpdate)
+            {
+                _cardService.LoadAllCardData();
+            }
+            else
+            {
+                _cardService.LoadMissingCardData(_setRepository);
+            }
 
             _setService.WriteSetsToCache();
 

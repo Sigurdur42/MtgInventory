@@ -30,6 +30,13 @@ namespace MtgScryfall
                 CollectorNumber = c.collector_number,
                 IsDigitalOnly = c.digital,
                 Layout = c.layout,
+
+                IsPauperLegal = IsLegal(c.legalities?.pauper),
+                IsCommanderLegal = IsLegal(c.legalities?.commander),
+                IsLegacyLegal = IsLegal(c.legalities?.legacy),
+                IsVintageLegal = IsLegal(c.legalities?.vintage),
+                IsStandardLegal = IsLegal(c.legalities?.standard),
+                IsModernLegal = IsLegal(c.legalities?.modern),
             }).ToArray();
 
             return result;
@@ -56,6 +63,18 @@ namespace MtgScryfall
                 IsFoilOnly = d.foil_only,
                 ReleaseDate = d.released_at,
             }).ToArray();
+        }
+
+        public static bool IsLegal(string legality)
+        {
+            switch (legality?.ToLowerInvariant())
+            {
+                case "legal":
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         internal static RequestResult CreateResult(this HttpResponseMessage response)

@@ -17,6 +17,13 @@ namespace MtgBinders.Domain.ValueObjects
         public string CollectorNumber { get; set; }
         public bool IsDigitalOnly { get; set; }
 
+        public bool IsPauperLegal { get; set; }
+        public bool IsCommanderLegal { get; set; }
+        public bool IsStandardLegal { get; set; }
+        public bool IsModernLegal { get; set; }
+        public bool IsLegacyLegal { get; set; }
+        public bool IsVintageLegal { get; set; }
+
         public string ImageLarge { get; set; }
         public string Layout { get; set; }
     }

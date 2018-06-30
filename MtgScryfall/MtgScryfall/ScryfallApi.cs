@@ -36,7 +36,7 @@ namespace MtgScryfall
             }
         }
 
-        public RequestResult GetCardsByPage(int page)
+        public RequestResult GetCardsByPageJson(int page)
         {
             using (var client = CreateHttpClient())
             {
@@ -75,6 +75,15 @@ namespace MtgScryfall
             result.CardData = allCards.ToArray();
 
             _logger?.LogInformation($"Loaded {result.CardData.Length} cards for set {setCode}");
+
+            return result;
+        }
+
+        public CardDataRequestResult GetCardsByPage(int page)
+        {
+            var result = GetCardsByPageJson(page).DeserializeCardData();
+
+            _logger?.LogInformation($"Loaded {result.CardData.Length} cards from page {page}");
 
             return result;
         }

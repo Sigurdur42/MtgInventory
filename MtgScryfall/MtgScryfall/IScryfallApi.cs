@@ -4,7 +4,9 @@
     {
         RequestResult GetAllSets();
 
-        RequestResult GetCardsByPage(int page);
+        RequestResult GetCardsByPageJson(int page);
+
+        CardDataRequestResult GetCardsByPage(int page);
 
         RequestResult GetCardsBySet(string setCode, int page);
 

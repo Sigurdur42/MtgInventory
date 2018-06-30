@@ -36,11 +36,11 @@ namespace MtgBinder.Wpf.ViewModels
 
         public bool AreCardsMissing => _mtgDatabase.IsCardsMissing;
 
-        public void UpdateDatabaseFromScryfall()
+        public void UpdateDatabaseFromScryfall(bool force)
         {
             Task.Factory.StartNew(() =>
             {
-                _mtgDatabase.UpdateDatabase(false);
+                _mtgDatabase.UpdateDatabase(force);
                 FireCardDatabaseeChanges();
             });
         }

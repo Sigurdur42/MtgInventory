@@ -100,6 +100,20 @@ namespace MtgBinders.Domain.Services
             }
         }
 
+        public void LoadAllCardData()
+        {
+            // TODO: Lösche alte Dateien
+            var data = _scryfallService
+                .LoadAllCards()
+                .GroupBy(c => c.SetCode);
+
+            foreach (var group in data)
+            {
+                _cardRepository.ReplaceCardsForSet(group, group.Key);
+                SaveSetCards(group.ToArray(), group.Key);
+            }
+        }
+
         private void SaveSetCards(MtgFullCard[] cards, string setCode)
         {
             var file = Path.Combine(_cardsCacheFolder, $"CardCache{setCode}.json");
