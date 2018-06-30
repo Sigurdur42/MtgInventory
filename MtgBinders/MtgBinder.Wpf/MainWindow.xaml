@@ -8,16 +8,27 @@
         xmlns:logging="clr-namespace:MtgBinder.Wpf.Logging"
         mc:Ignorable="d"
 
-        Title="MainWindow" Height="450" Width="800">
-    <TabControl>
-        <TabItem Header="Cards">
-            <views:MainCardSearchView DataContext="{Binding MainCardSearchViewModel}" />
-        </TabItem>
-        <TabItem Header="System / About">
-            <views:SystemInfoView DataContext="{Binding SystemPageViewModel}" />
-        </TabItem>
-        <TabItem Header="Logs">
-            <logging:UiLoggingControl></logging:UiLoggingControl>
-        </TabItem>
-    </TabControl>
+        Title="MainWindow" Height="450" Width="800" WindowState="Maximized">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Cards">
+                <views:MainCardSearchView DataContext="{Binding MainCardSearchViewModel}" />
+            </TabItem>
+            <TabItem Header="System / About">
+                <views:SystemInfoView DataContext="{Binding SystemPageViewModel}" />
+            </TabItem>
+            <TabItem Header="Logs">
+                <logging:UiLoggingControl></logging:UiLoggingControl>
+            </TabItem>
+        </TabControl>
+
+        <StatusBar Grid.Row="2" HorizontalAlignment="Left">
+            <StatusBarItem Content="{Binding LatestLogMessage}" />
+        </StatusBar>
+    </Grid>
 </Window>

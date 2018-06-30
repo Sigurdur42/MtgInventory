@@ -28,6 +28,8 @@ namespace MtgBinder.Wpf.Views
             _imageCache = ApplicationSingeltons.ServiceProvider.GetService<IMtgImageCache>();
             _setRepository = ApplicationSingeltons.ServiceProvider.GetService<IMtgSetRepository>();
 
+            // TODO: Add/remove wants handling
+
             rootGrid.DataContext = this;
         }
 

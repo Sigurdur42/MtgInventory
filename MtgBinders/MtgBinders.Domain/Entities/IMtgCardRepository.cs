@@ -7,6 +7,7 @@ namespace MtgBinders.Domain.Entities
     {
         MtgFullCard[] CardData { get; }
         int NumberOfCards { get; }
+        IReadOnlyDictionary<string, MtgFullCard> CardsByUniqueId { get; }
 
         void ReplaceCardsForSet(IEnumerable<MtgFullCard> cards, string setCode);
 

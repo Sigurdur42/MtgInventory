@@ -15,21 +15,17 @@ namespace MtgBinders.Domain.Entities
         public int NumberOfCards { get; private set; }
         public MtgFullCard[] CardData { get; private set; }
 
-        ////     public IReadOnlyDictionary<string, IEnumerable<MtgFullCard>> CardsByName { get; private set; }
+        public IReadOnlyDictionary<string, MtgFullCard> CardsByUniqueId { get; private set; }
 
         public void SetCardData(IEnumerable<MtgFullCard> cardData)
         {
             CardData = cardData.ToArray();
             NumberOfCards = CardData.Length;
 
-            ////// Create cache by name
-            ////var dict = new Dictionary<string, IEnumerable<MtgFullCard>>();
-            ////foreach (var t in CardData.GroupBy(g => g.Name))
-            ////{
-            ////    dict.Add(t.Key, t);
-            ////}
-
-            ////CardsByName = dict;
+            // Create cache by name
+            CardsByUniqueId = CardData
+                .Where(c => !string.IsNullOrWhiteSpace(c.UniqueId))
+                .ToDictionary(g => g.UniqueId);
         }
 
         public void ReplaceCardsForSet(IEnumerable<MtgFullCard> cards, string setCode)

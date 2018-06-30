@@ -1,12 +1,17 @@
-﻿using System;
+﻿using MtgBinders.Domain.ValueObjects;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace MtgBinders.Domain.Entities
 {
-    // TODO: Continue here
     public sealed class WantListCard
     {
         public string CardId { get; set; }
+        public int WantCount { get; set; }
+
+        [JsonIgnore]
+        public MtgFullCard FullCard { get; set; }
     }
 }

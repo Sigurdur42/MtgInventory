@@ -30,6 +30,7 @@ namespace MtgBinders.Domain.DependencyInjection
             serviceCollection.AddSingleton<ICardSearchService, CardSearchService>();
             serviceCollection.AddSingleton<IMtgCardService, MtgCardService>();
             serviceCollection.AddSingleton<IMtgImageCache, MtgImageCache>();
+            serviceCollection.AddSingleton<IMtgWantsListService, MtgWantsListService>();
 
             //// serviceCollection.AddSingleton<IScryfallService>((serviceProvider) => new ScryfallService(serviceProvider.GetService<IScryfallApi>()));
         }

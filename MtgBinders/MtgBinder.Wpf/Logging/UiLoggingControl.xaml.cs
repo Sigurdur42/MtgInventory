@@ -16,7 +16,7 @@ namespace MtgBinder.Wpf.Logging
             InitializeComponent();
 
             LogItems = new ObservableCollection<string>();
-            UiLogger.UiCallback = AddLogItem;
+            UiLogger.UiCallbacks.Add(AddLogItem);
             rootGrid.DataContext = this;
         }
 

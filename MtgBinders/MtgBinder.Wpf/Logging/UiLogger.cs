@@ -12,12 +12,17 @@ namespace MtgBinder.Wpf.Logging
     {
         private readonly string _category;
 
+        static UiLogger()
+        {
+            UiCallbacks = new List<Action<DateTime, LogLevel, string, string, Exception>>();
+        }
+
         public UiLogger(string categoryName)
         {
             _category = categoryName;
         }
 
-        public static Action<DateTime, LogLevel, string, string, Exception> UiCallback { get; set; }
+        public static List<Action<DateTime, LogLevel, string, string, Exception>> UiCallbacks { get; private set; }
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -34,7 +39,11 @@ namespace MtgBinder.Wpf.Logging
             // TODO: Log into UI
             var timeStamp = DateTime.Now;
 
-            UiCallback?.Invoke(timeStamp, logLevel, _category, formatter(state, exception), exception);
+            var formatted = formatter(state, exception);
+            foreach (var callback in UiCallbacks)
+            {
+                callback?.Invoke(timeStamp, logLevel, _category, formatted, exception);
+            }
         }
     }
 }
