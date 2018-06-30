@@ -118,6 +118,7 @@
     <Compile Include="Logging\UiLoggingProvider.cs" />
     <Compile Include="ViewModels\MainCardSearchViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\MtgFullCardViewModel.cs" />
     <Compile Include="ViewModels\SystemPageViewModel.cs" />
     <Compile Include="Views\CardDetailsControl.xaml.cs">
       <DependentUpon>CardDetailsControl.xaml</DependentUpon>

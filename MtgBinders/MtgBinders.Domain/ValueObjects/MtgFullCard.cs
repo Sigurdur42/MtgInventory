@@ -6,6 +6,8 @@ namespace MtgBinders.Domain.ValueObjects
 {
     public sealed class MtgFullCard
     {
+        public string UniqueId { get; set; }
+
         public string Name { get; set; }
         public string SetCode { get; set; }
         public MtgRarity Rarity { get; set; }
@@ -26,5 +28,10 @@ namespace MtgBinders.Domain.ValueObjects
 
         public string ImageLarge { get; set; }
         public string Layout { get; set; }
+
+        public string MkmLink { get; set; }
+        public decimal? PriceUsd { get; set; }
+        public decimal? PriceTix { get; set; }
+        public decimal? PriceEur { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MtgBinders.Domain.ValueObjects;
+﻿using MtgBinder.Wpf.ViewModels;
+using MtgBinders.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,11 +24,11 @@ namespace MtgBinder.Wpf.Views
     public partial class CardListControl : UserControl, INotifyPropertyChanged
     {
         public static readonly DependencyProperty SelectedCardProperty =
-            DependencyProperty.Register("SelectedCard", typeof(MtgFullCard),
+            DependencyProperty.Register("SelectedCard", typeof(MtgFullCardViewModel),
             typeof(CardListControl), new FrameworkPropertyMetadata(null, OnSelectedCardPropertyChanged));
 
         public static readonly DependencyProperty CardsProperty =
-            DependencyProperty.Register("Cards", typeof(IEnumerable<MtgFullCard>),
+            DependencyProperty.Register("Cards", typeof(IEnumerable<MtgFullCardViewModel>),
             typeof(CardListControl), new FrameworkPropertyMetadata(null, OnCardsPropertyChanged));
 
         public CardListControl()
@@ -39,9 +40,9 @@ namespace MtgBinder.Wpf.Views
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public MtgFullCard SelectedCard
+        public MtgFullCardViewModel SelectedCard
         {
-            get { return (MtgFullCard)GetValue(SelectedCardProperty); }
+            get { return (MtgFullCardViewModel)GetValue(SelectedCardProperty); }
             set
             {
                 SetValue(SelectedCardProperty, value);
@@ -49,9 +50,9 @@ namespace MtgBinder.Wpf.Views
             }
         }
 
-        public IEnumerable<MtgFullCard> Cards
+        public IEnumerable<MtgFullCardViewModel> Cards
         {
-            get { return (IEnumerable<MtgFullCard>)GetValue(CardsProperty); }
+            get { return (IEnumerable<MtgFullCardViewModel>)GetValue(CardsProperty); }
             set
             {
                 SetValue(CardsProperty, value);
@@ -84,7 +85,7 @@ namespace MtgBinder.Wpf.Views
 
             if (control.SelectedCard != null)
             {
-                var newValue = (IEnumerable<MtgFullCard>)e.NewValue;
+                var newValue = (IEnumerable<MtgFullCardViewModel>)e.NewValue;
                 if (newValue != null)
                 {
                     if (!newValue.Contains(control.SelectedCard))

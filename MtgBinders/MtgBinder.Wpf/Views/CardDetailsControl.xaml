@@ -40,7 +40,7 @@
             </Grid.ColumnDefinitions>
 
             <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Name</Label>
-            <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedCard.Name}" />
+            <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedCard.FullCard.Name}" />
 
             <!-- TODO: Set info -->
             <Label Grid.Row="2" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Set</Label>
@@ -54,7 +54,7 @@
             <!-- TODO: price info -->
 
             <Label Grid.Row="6" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Oracle:</Label>
-            <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Text="{Binding SelectedCard.OracleText}" />
+            <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Text="{Binding SelectedCard.FullCard.OracleText}" />
         </Grid>
     </Grid>
 </UserControl>

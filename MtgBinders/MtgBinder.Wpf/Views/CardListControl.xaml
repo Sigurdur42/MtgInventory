@@ -7,7 +7,8 @@
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid x:Name="rootGrid">
-        <DataGrid ItemsSource="{Binding Cards}" AutoGenerateColumns="False" SelectedItem="{Binding SelectedCard}" SelectionMode="Single">
+        <DataGrid ItemsSource="{Binding Cards}" AutoGenerateColumns="False" SelectedItem="{Binding SelectedCard}" SelectionMode="Single"
+                  IsReadOnly="True">
             <DataGrid.Columns>
                 <!--<DataGridTemplateColumn Header="Image" Width="SizeToCells" IsReadOnly="True">
                         <DataGridTemplateColumn.CellTemplate>
@@ -17,14 +18,21 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>-->
 
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Set" Binding="{Binding SetCode}" />
-                <DataGridTextColumn Header="Collector" Binding="{Binding CollectorNumber}" />
-                <DataGridTextColumn Header="Rarity" Binding="{Binding Rarity}" />
-                <DataGridTextColumn Header="Mana" Binding="{Binding ManaCost}" />
-                <DataGridTextColumn Header="Type" Binding="{Binding TypeLine}" />
-                <DataGridTextColumn Header="Digital" Binding="{Binding IsDigitalOnly}" />
-                <DataGridTextColumn Header="Layout" Binding="{Binding Layout}" />
+                <DataGridTextColumn Header="Name" Binding="{Binding FullCard.Name}" />
+                <DataGridTextColumn Header="Set" Binding="{Binding FullCard.SetCode}" />
+                <DataGridTextColumn Header="Collector" Binding="{Binding FullCard.CollectorNumber}" />
+                <DataGridTextColumn Header="Rarity" Binding="{Binding FullCard.Rarity}" />
+                <DataGridTextColumn Header="Mana" Binding="{Binding FullCard.ManaCost}" />
+                <DataGridTextColumn Header="Type" Binding="{Binding FullCard.TypeLine}" />
+                <DataGridTextColumn Header="Digital" Binding="{Binding FullCard.IsDigitalOnly}" />
+                <DataGridTextColumn Header="Layout" Binding="{Binding FullCard.Layout}" />
+
+                <DataGridTextColumn Header="EUR" Binding="{Binding FullCard.PriceEur}" />
+                <DataGridTextColumn Header="Tix" Binding="{Binding FullCard.PriceTix}" />
+
+                <DataGridCheckBoxColumn Header="Std" Binding="{Binding FullCard.IsStandardLegal}" IsReadOnly="True" />
+                <DataGridCheckBoxColumn Header="Pauper" Binding="{Binding FullCard.IsPauperLegal}" IsReadOnly="True" />
+                <DataGridCheckBoxColumn Header="Commander" Binding="{Binding FullCard.IsCommanderLegal}" IsReadOnly="True" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

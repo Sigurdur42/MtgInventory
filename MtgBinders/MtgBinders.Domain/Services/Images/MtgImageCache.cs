@@ -27,6 +27,11 @@ namespace MtgBinders.Domain.Services.Images
 
         public string GetImageFile(MtgFullCard card)
         {
+            if (card == null)
+            {
+                return null;
+            }
+
             var fileNamePart = string.IsNullOrWhiteSpace(card.CollectorNumber) ? card.Name : card.CollectorNumber;
             var localFileName = Path.Combine(_cardFolder, card.SetCode, $"{fileNamePart}.png");
 

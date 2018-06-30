@@ -19,6 +19,7 @@ namespace MtgScryfall
             result.HasMoreData = deserialized.has_more;
             result.CardData = deserialized.data.Select(c => new CardData
             {
+                UniqueId = c.id,
                 Name = c.name,
                 SetCode = c.set,
                 Rarity = c.rarity,
@@ -37,6 +38,10 @@ namespace MtgScryfall
                 IsVintageLegal = IsLegal(c.legalities?.vintage),
                 IsStandardLegal = IsLegal(c.legalities?.standard),
                 IsModernLegal = IsLegal(c.legalities?.modern),
+                MkmLink = c.purchase_uris?.magiccardmarket,
+                PriceUsd = c.usd,
+                PriceTix = c.tix,
+                PriceEur = c.eur,
             }).ToArray();
 
             return result;

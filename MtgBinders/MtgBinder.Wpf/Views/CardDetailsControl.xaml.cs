@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MtgBinder.Wpf.ViewModels;
 using MtgBinders.Domain.Entities;
 using MtgBinders.Domain.Services.Images;
 using MtgBinders.Domain.ValueObjects;
@@ -15,7 +16,7 @@ namespace MtgBinder.Wpf.Views
     public partial class CardDetailsControl : UserControl, INotifyPropertyChanged
     {
         public static readonly DependencyProperty SelectedCardProperty =
-             DependencyProperty.Register("SelectedCard", typeof(MtgFullCard),
+             DependencyProperty.Register("SelectedCard", typeof(MtgFullCardViewModel),
              typeof(CardDetailsControl), new FrameworkPropertyMetadata(null, OnSelectedCardPropertyChanged));
 
         private readonly IMtgImageCache _imageCache;
@@ -34,9 +35,9 @@ namespace MtgBinder.Wpf.Views
 
         public string CardImage { get; private set; }
 
-        public MtgFullCard SelectedCard
+        public MtgFullCardViewModel SelectedCard
         {
-            get { return (MtgFullCard)GetValue(SelectedCardProperty); }
+            get { return (MtgFullCardViewModel)GetValue(SelectedCardProperty); }
             set
             {
                 SetValue(SelectedCardProperty, value);
@@ -62,13 +63,13 @@ namespace MtgBinder.Wpf.Views
             control.SetCard(control.SelectedCard);
         }
 
-        private void SetCard(MtgFullCard card)
+        private void SetCard(MtgFullCardViewModel card)
         {
-            CardImage = _imageCache.GetImageFile(card);
+            CardImage = _imageCache.GetImageFile(card?.FullCard);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CardImage)));
 
-            CardSetInfo = card != null
-                ? _setRepository.SetData.FirstOrDefault(s => s.SetCode.Equals(card.SetCode, System.StringComparison.InvariantCultureIgnoreCase))
+            CardSetInfo = card != null && card.FullCard != null
+                ? _setRepository.SetData.FirstOrDefault(s => s.SetCode.Equals(card.FullCard.SetCode, System.StringComparison.InvariantCultureIgnoreCase))
                 : null;
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CardSetInfo)));

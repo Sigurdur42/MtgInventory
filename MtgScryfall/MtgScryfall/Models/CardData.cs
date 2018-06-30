@@ -6,6 +6,7 @@ namespace MtgScryfall.Models
 {
     public class CardData
     {
+        public string UniqueId { get; set; }
         public string Name { get; set; }
         public string Rarity { get; set; }
         public string SetCode { get; set; }
@@ -25,5 +26,10 @@ namespace MtgScryfall.Models
         public bool IsVintageLegal { get; set; }
 
         public string ImageLarge { get; set; }
+
+        public string MkmLink { get; set; }
+        public string PriceUsd { get; set; }
+        public string PriceTix { get; set; }
+        public string PriceEur { get; set; }
     }
 }

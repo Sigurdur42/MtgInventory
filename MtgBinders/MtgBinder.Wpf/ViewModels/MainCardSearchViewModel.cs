@@ -18,7 +18,7 @@ namespace MtgBinder.Wpf.ViewModels
 
         private string _searchPattern;
 
-        private MtgFullCard _selectedCard;
+        private MtgFullCardViewModel _selectedCard;
 
         public MainCardSearchViewModel(
                IMtgDatabaseService mtgDatabase,
@@ -56,7 +56,7 @@ namespace MtgBinder.Wpf.ViewModels
             }
         }
 
-        public MtgFullCard SelectedCard
+        public MtgFullCardViewModel SelectedCard
         {
             get
             {
@@ -75,7 +75,7 @@ namespace MtgBinder.Wpf.ViewModels
 
         public CardSearchSettings CardSearchSettings { get; private set; }
 
-        public MtgFullCard[] FoundCards { get; private set; }
+        public MtgFullCardViewModel[] FoundCards { get; private set; }
 
         public void StartCardSearch()
         {
@@ -83,11 +83,14 @@ namespace MtgBinder.Wpf.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(_searchPattern))
                 {
-                    FoundCards = new MtgFullCard[0];
+                    FoundCards = new MtgFullCardViewModel[0];
                     return;
                 }
 
-                FoundCards = _cardSearchService.Search(_searchPattern, CardSearchSettings);
+                FoundCards = _cardSearchService
+                    .Search(_searchPattern, CardSearchSettings)
+                    .Select(c => new MtgFullCardViewModel(c))
+                    .ToArray();
             }
             finally
             {

@@ -3,6 +3,7 @@ using MtgBinders.Domain.ValueObjects;
 using MtgScryfall;
 using MtgScryfall.Models;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace MtgBinders.Domain.Scryfall
@@ -88,10 +89,26 @@ namespace MtgBinders.Domain.Scryfall
             return result.ToArray();
         }
 
+        internal static decimal? ConvertToDecimal(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return null;
+            }
+
+            if (decimal.TryParse(input, NumberStyles.None, CultureInfo.InvariantCulture, out decimal result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
         private static MtgFullCard CreateCardFromResult(CardData c, ILogger logger)
         {
             return new MtgFullCard
             {
+                UniqueId = c.UniqueId,
                 Name = c.Name,
                 SetCode = c.SetCode,
                 Rarity = c.Rarity.ToMtgRarity(logger),
@@ -112,6 +129,10 @@ namespace MtgBinders.Domain.Scryfall
                 IsVintageLegal = c.IsVintageLegal,
 
                 ImageLarge = c.ImageLarge,
+                MkmLink = c.MkmLink,
+                PriceUsd = ConvertToDecimal(c.PriceUsd),
+                PriceTix = ConvertToDecimal(c.PriceTix),
+                PriceEur = ConvertToDecimal(c.PriceEur),
             };
         }
     }
