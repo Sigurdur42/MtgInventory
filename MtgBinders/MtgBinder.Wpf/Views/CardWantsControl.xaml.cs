@@ -57,9 +57,9 @@ namespace MtgBinder.Wpf.Views
 
         public int WantCount => _want?.WantCount ?? 0;
 
-        public bool CanIncrease => true;
+        public bool CanIncrease => SelectedCard != null;
 
-        public bool CanDecrease => _want != null && _want.WantCount > 0;
+        public bool CanDecrease => SelectedCard != null && _want != null && _want.WantCount > 0;
 
         private static void OnSelectedCardPropertyChanged(
           DependencyObject source,

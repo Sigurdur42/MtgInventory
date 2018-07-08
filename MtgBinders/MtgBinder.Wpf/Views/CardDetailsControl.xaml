@@ -57,6 +57,8 @@
             <!-- TODO Inventory -->
 
             <!-- TODO: price info -->
+            <local:CardPriceControl Grid.Row="4"
+                SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch" />
 
             <Label Grid.Row="6" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Oracle:</Label>
             <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Text="{Binding SelectedCard.FullCard.OracleText}" />

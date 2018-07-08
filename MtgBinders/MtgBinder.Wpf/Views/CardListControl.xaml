@@ -27,8 +27,17 @@
                 <DataGridTextColumn Header="Digital" Binding="{Binding FullCard.IsDigitalOnly}" />
                 <DataGridTextColumn Header="Layout" Binding="{Binding FullCard.Layout}" />
 
-                <DataGridTextColumn Header="EUR" Binding="{Binding FullCard.PriceEur}" />
-                <DataGridTextColumn Header="Tix" Binding="{Binding FullCard.PriceTix}" />
+                <DataGridTemplateColumn Header="Price" Width="SizeToCells" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <local:CardPriceControl SelectedCard="{Binding SelectedCard.FullCard}"
+                                                    DisplayTix="False" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!--<DataGridTextColumn Header="Price" Binding="{Binding FullCard.PriceEur}" />
+                <DataGridTextColumn Header="Tix" Binding="{Binding FullCard.PriceTix}" />-->
 
                 <DataGridCheckBoxColumn Header="Std" Binding="{Binding FullCard.IsStandardLegal}" IsReadOnly="True" />
                 <DataGridCheckBoxColumn Header="Pauper" Binding="{Binding FullCard.IsPauperLegal}" IsReadOnly="True" />

@@ -4,6 +4,7 @@ using MtgBinders.Domain.Entities;
 using MtgBinders.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -37,12 +38,15 @@ namespace MtgBinders.Domain.Services
         public void Initialize()
         {
             _logger.LogDebug("Starting initialize...");
+            var stopwatch = Stopwatch.StartNew();
 
             var existingWants = _configurationSerializer.Deserialize<IEnumerable<MtgWantListCard>>(_configurationFileName);
             if (existingWants != null)
             {
-                _wants.AddRange(existingWants.Select(UpdateFullCard));
+                _wants.AddRange(existingWants.Select(UpdateFullCard).Where(c => c != null));
             }
+            stopwatch.Stop();
+            _logger.LogDebug($"Initialize took {stopwatch.Elapsed}");
         }
 
         public MtgWantListCard AddWant(MtgFullCard card, int count)
@@ -56,6 +60,11 @@ namespace MtgBinders.Domain.Services
 
         private MtgWantListCard UpdateFullCard(MtgWantListCard card)
         {
+            if (card.CardId == null)
+            {
+                return null;
+            }
+
             if (_cardRepository.CardsByUniqueId.TryGetValue(card.CardId, out var fullCard))
             {
                 card.FullCard = fullCard;
