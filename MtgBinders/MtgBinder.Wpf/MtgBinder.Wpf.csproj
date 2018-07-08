@@ -126,6 +126,9 @@
     <Compile Include="Views\CardListControl.xaml.cs">
       <DependentUpon>CardListControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CardWantsControl.xaml.cs">
+      <DependentUpon>CardWantsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainCardSearchView.xaml.cs">
       <DependentUpon>MainCardSearchView.xaml</DependentUpon>
     </Compile>
@@ -154,6 +157,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CardListControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CardWantsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainCardSearchView.xaml">

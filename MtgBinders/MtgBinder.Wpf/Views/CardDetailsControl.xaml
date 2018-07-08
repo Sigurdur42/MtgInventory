@@ -51,6 +51,11 @@
                 </TextBlock.ToolTip>
             </TextBlock>
 
+            <!-- wants data -->
+            <local:CardWantsControl Grid.Row="3" SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch" />
+
+            <!-- TODO Inventory -->
+
             <!-- TODO: price info -->
 
             <Label Grid.Row="6" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Oracle:</Label>

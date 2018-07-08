@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MtgBinders.Domain.Entities
 {
-    public sealed class WantListCard
+    public sealed class MtgWantListCard
     {
         public string CardId { get; set; }
         public int WantCount { get; set; }

@@ -12,7 +12,7 @@ namespace MtgBinders.Domain.Services
         private readonly IMtgSetService _setService;
         private readonly IMtgSetRepository _setRepository;
         private readonly IMtgCardRepository _cardRepository;
-
+        private readonly IMtgWantsListService _wantsService;
         private readonly ILogger _logger;
         // TODO: Domain events
 
@@ -21,13 +21,15 @@ namespace MtgBinders.Domain.Services
             IMtgCardService cardService,
             IMtgSetService setService,
             IMtgSetRepository setRepository,
-            IMtgCardRepository cardRepository)
+            IMtgCardRepository cardRepository,
+            IMtgWantsListService wantsService)
         {
             _logger = loggerFactory.CreateLogger(nameof(MtgDatabaseService));
             _cardService = cardService;
             _setService = setService;
             _setRepository = setRepository;
             _cardRepository = cardRepository;
+            _wantsService = wantsService;
         }
 
         public event EventHandler DatabaseUpdated;
@@ -45,6 +47,7 @@ namespace MtgBinders.Domain.Services
         {
             _setService.Initialize();
             _cardService.Initialize();
+            _wantsService.Initialize();
 
             AnalyseMissingCards();
 

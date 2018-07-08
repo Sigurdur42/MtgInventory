@@ -9,8 +9,6 @@ using System.Linq;
 
 namespace MtgBinders.Domain.Services
 {
-    // TODO: Wants view + Option to add card
-
     internal class MtgWantsListService : IMtgWantsListService
     {
         private readonly string _configurationFileName;
@@ -18,7 +16,7 @@ namespace MtgBinders.Domain.Services
         private readonly ILogger _logger;
         private readonly IMtgCardRepository _cardRepository;
 
-        private List<WantListCard> _wants = new List<WantListCard>();
+        private List<MtgWantListCard> _wants = new List<MtgWantListCard>();
 
         public MtgWantsListService(
             IJsonConfigurationSerializer configurationSerializer,
@@ -34,27 +32,29 @@ namespace MtgBinders.Domain.Services
             _logger.LogDebug($"Configuarion details: {Environment.NewLine}- Configuration: {_configurationFileName}");
         }
 
-        public IEnumerable<WantListCard> Wants => _wants;
+        public IEnumerable<MtgWantListCard> Wants => _wants;
 
         public void Initialize()
         {
             _logger.LogDebug("Starting initialize...");
 
-            var existingWants = _configurationSerializer.Deserialize<IEnumerable<WantListCard>>(_configurationFileName);
+            var existingWants = _configurationSerializer.Deserialize<IEnumerable<MtgWantListCard>>(_configurationFileName);
             if (existingWants != null)
             {
                 _wants.AddRange(existingWants.Select(UpdateFullCard));
             }
         }
 
-        public void AddWant(MtgFullCard card, int count)
+        public MtgWantListCard AddWant(MtgFullCard card, int count)
         {
-            InternalAdd(card, count);
+            var result = InternalAdd(card, count);
 
             SaveWants();
+            _logger.LogDebug($"Added want by {count} for {card.Name} ({card.SetCode})");
+            return result;
         }
 
-        private WantListCard UpdateFullCard(WantListCard card)
+        private MtgWantListCard UpdateFullCard(MtgWantListCard card)
         {
             if (_cardRepository.CardsByUniqueId.TryGetValue(card.CardId, out var fullCard))
             {
@@ -64,12 +64,12 @@ namespace MtgBinders.Domain.Services
             return card;
         }
 
-        private void InternalAdd(MtgFullCard card, int count)
+        private MtgWantListCard InternalAdd(MtgFullCard card, int count)
         {
             var existing = _wants.FirstOrDefault(c => c.CardId.Equals(card.UniqueId));
             if (existing == null)
             {
-                existing = new WantListCard
+                existing = new MtgWantListCard
                 {
                     CardId = card.UniqueId,
                     WantCount = count,
@@ -81,11 +81,13 @@ namespace MtgBinders.Domain.Services
             {
                 existing.WantCount += count;
             }
+
+            return existing;
         }
 
         private void SaveWants()
         {
-            _configurationSerializer.Serialize<IEnumerable<WantListCard>>(_configurationFileName, _wants);
+            _configurationSerializer.Serialize<IEnumerable<MtgWantListCard>>(_configurationFileName, _wants);
         }
     }
 }
