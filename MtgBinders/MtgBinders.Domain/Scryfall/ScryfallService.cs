@@ -67,10 +67,12 @@ namespace MtgBinders.Domain.Scryfall
             var result = new List<MtgFullCard>();
             CardDataRequestResult loadResult;
 
+            var remainingPages = 0;
             var page = 1;
             do
             {
-                _logger?.LogDebug($"Loading all cards (page {page})...");
+                var totalDump = remainingPages <= 0 ? "---" : remainingPages.ToString();
+                _logger?.LogDebug($"Loading all cards (page {page}, remaining {totalDump})...");
 
                 loadResult = _scryfallApi.GetCardsByPage(page);
                 if (!loadResult.Success)
@@ -79,7 +81,12 @@ namespace MtgBinders.Domain.Scryfall
                     return result.ToArray();
                 }
 
-                result.AddRange(loadResult.CardData.Select(c => CreateCardFromResult(c, _logger)).ToArray());
+                var thisPage = loadResult.CardData.Select(c => CreateCardFromResult(c, _logger)).ToArray();
+
+                var remainingCards = loadResult.TotalCards - result.Count;
+                remainingPages = remainingCards <= 0 ? 0 : (remainingCards / thisPage.Length) + 1;
+
+                result.AddRange(thisPage);
 
                 page += 1;
             } while (loadResult.HasMoreData);

@@ -15,8 +15,15 @@ namespace MtgScryfall
                 Success = requestResult.Success,
             };
 
+            if (!result.Success)
+            {
+                return result;
+            }
+
             var deserialized = JsonConvert.DeserializeObject<RootObject>(requestResult.JsonResult);
             result.HasMoreData = deserialized.has_more;
+            result.TotalCards = deserialized.total_cards;
+
             result.CardData = deserialized.data.Select(c => new CardData
             {
                 UniqueId = c.id,

@@ -11,5 +11,6 @@ namespace MtgScryfall
         public bool HasMoreData { get; set; }
         public int StatusCode { get; set; }
         public bool Success { get; set; }
+        public int TotalCards { get; set; }
     }
 }

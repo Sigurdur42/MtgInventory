@@ -90,12 +90,15 @@ namespace MtgScryfall
 
         private void AutoDelay()
         {
-            const int waitTime = 120;
+            const int waitTime = 60;
             var now = DateTime.UtcNow;
-            if ((now - _lastRequest).TotalMilliseconds < waitTime)
+
+            var timeToLastRequest = (int)((now - _lastRequest).TotalMilliseconds) + 1;
+
+            if (timeToLastRequest < waitTime)
             {
-                _logger?.LogDebug($"Auto delaying request to avoid too heavy traffic.");
-                Thread.Sleep(waitTime);
+                // _logger?.LogDebug($"Auto delaying request to avoid too heavy traffic.");
+                Thread.Sleep(waitTime - timeToLastRequest);
             }
 
             _lastRequest = now;
