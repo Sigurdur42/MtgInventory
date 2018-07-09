@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MtgBinder.Wpf.Logging;
 using MtgBinders.Domain.Services;
 using System;
@@ -18,12 +18,13 @@ namespace MtgBinder.Wpf.ViewModels
         public MainViewModel(
             SystemPageViewModel systemPageViewModel,
             MainCardSearchViewModel mainCardSearchViewModel,
-            IMtgDatabaseService mtgDatabaseService)
+            IMtgDatabaseService mtgDatabaseService,
+            SetListViewModel setListViewModel)
         {
             _mtgDatabaseService = mtgDatabaseService;
             SystemPageViewModel = systemPageViewModel;
             MainCardSearchViewModel = mainCardSearchViewModel;
-
+            SetListViewModel = setListViewModel;
             UiLogger.UiCallbacks.Add(SetLatestLog);
 
             // Launch the initialization in a separate task:
@@ -35,6 +36,7 @@ namespace MtgBinder.Wpf.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public SetListViewModel SetListViewModel { get; }
         public string LatestLogMessage { get; private set; }
 
         public SystemPageViewModel SystemPageViewModel { get; }

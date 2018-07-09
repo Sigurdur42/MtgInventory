@@ -1,4 +1,4 @@
-﻿using MtgBinder.Wpf.ViewModels;
+using MtgBinder.Wpf.ViewModels;
 using MtgBinders.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace MtgBinder.Wpf.Views
 
         public MtgFullCardViewModel SelectedCard
         {
-            get { return (MtgFullCardViewModel)GetValue(SelectedCardProperty); }
+            get => (MtgFullCardViewModel)GetValue(SelectedCardProperty);
             set
             {
                 SetValue(SelectedCardProperty, value);
@@ -52,11 +52,11 @@ namespace MtgBinder.Wpf.Views
 
         public IEnumerable<MtgFullCardViewModel> Cards
         {
-            get { return (IEnumerable<MtgFullCardViewModel>)GetValue(CardsProperty); }
+            get => (IEnumerable<MtgFullCardViewModel>)GetValue(CardsProperty);
             set
             {
                 SetValue(CardsProperty, value);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCard)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Cards)));
             }
         }
 

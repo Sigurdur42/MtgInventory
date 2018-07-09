@@ -123,6 +123,7 @@
     <Compile Include="ViewModels\MainCardSearchViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\MtgFullCardViewModel.cs" />
+    <Compile Include="ViewModels\SetListViewModel.cs" />
     <Compile Include="ViewModels\SystemPageViewModel.cs" />
     <Compile Include="Views\CardDetailsControl.xaml.cs">
       <DependentUpon>CardDetailsControl.xaml</DependentUpon>
@@ -141,6 +142,9 @@
     </Compile>
     <Compile Include="Views\SetDetailsControl.xaml.cs">
       <DependentUpon>SetDetailsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SetListView.xaml.cs">
+      <DependentUpon>SetListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SystemInfoView.xaml.cs">
       <DependentUpon>SystemInfoView.xaml</DependentUpon>
@@ -176,6 +180,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SetDetailsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SetListView.xaml">
+      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SystemInfoView.xaml">

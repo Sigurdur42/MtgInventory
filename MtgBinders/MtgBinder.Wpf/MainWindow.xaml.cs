@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MtgBinder.Wpf.Dropbox;
 using MtgBinder.Wpf.Logging;
@@ -52,6 +52,7 @@ namespace MtgBinder.Wpf
                 .AddSingleton((serviceProvider) => loggerFactory)
                 .AddSingleton<MainViewModel>()
                 .AddSingleton<MainCardSearchViewModel>()
+                .AddSingleton<SetListViewModel>()
                 .AddSingleton<SystemPageViewModel>();
 
             // Configure DI
