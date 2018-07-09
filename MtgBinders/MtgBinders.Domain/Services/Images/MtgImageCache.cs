@@ -1,17 +1,19 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 
 namespace MtgBinders.Domain.Services.Images
 {
     internal class MtgImageCache : IMtgImageCache
     {
-        private readonly string _cacheBaseFolder;
         private readonly string _cardFolder;
         private readonly ILogger _logger;
 
@@ -19,8 +21,8 @@ namespace MtgBinders.Domain.Services.Images
             IBinderDomainConfigurationProvider configuration,
             ILoggerFactory loggerFactory)
         {
-            _cacheBaseFolder = Path.Combine(configuration.AppDataFolder, "ImageCache");
-            _cardFolder = Path.Combine(_cacheBaseFolder, "Cards");
+            var cacheBaseFolder = Path.Combine(configuration.AppDataFolder, "ImageCache");
+            _cardFolder = Path.Combine(cacheBaseFolder, "Cards");
 
             _logger = loggerFactory.CreateLogger(nameof(MtgImageCache));
         }
@@ -33,6 +35,7 @@ namespace MtgBinders.Domain.Services.Images
             }
 
             var fileNamePart = string.IsNullOrWhiteSpace(card.CollectorNumber) ? card.Name : card.CollectorNumber;
+            fileNamePart = fileNamePart.Replace("*", "_");
             var localFileName = Path.Combine(_cardFolder, card.SetCode, $"{fileNamePart}.png");
 
             if (File.Exists(localFileName))
@@ -41,7 +44,7 @@ namespace MtgBinders.Domain.Services.Images
             }
 
             var folder = new FileInfo(localFileName).Directory;
-            if (!folder.Exists)
+            if (folder != null && !folder.Exists)
             {
                 folder.Create();
             }
@@ -57,10 +60,23 @@ namespace MtgBinders.Domain.Services.Images
             return result.IsSuccessStatusCode ? localFileName : null;
         }
 
+        public int DownloadMissingImages(IEnumerable<MtgFullCard> cards)
+        {
+            var local = cards.ToArray();
+            return local.Select(i=>
+            {
+                Thread.Sleep(80);
+                return GetImageFile(i);
+            }).Count(i => i != null); 
+        }
+
         private HttpResponseMessage DownloadImage(string imageUrl, string localFile)
         {
             using (var client = new HttpClient())
             {
+                var stopwatch = Stopwatch.StartNew();
+                _logger.LogDebug($"Start downloading image {imageUrl}...");
+
                 var result = client.GetAsync(imageUrl).Result;
                 if (result.IsSuccessStatusCode)
                 {
@@ -75,6 +91,8 @@ namespace MtgBinders.Domain.Services.Images
                     _logger.LogError($"Error downloading image from '{imageUrl}' to '{localFile}': {result.ReasonPhrase}");
                 }
 
+                stopwatch.Stop();
+                _logger.LogDebug($"Finished downloading image {imageUrl} with code {result.StatusCode} in {stopwatch.Elapsed}.");
                 return result;
             }
         }

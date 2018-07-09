@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="MtgBinder.Wpf.Views.SystemInfoView"
+<UserControl x:Class="MtgBinder.Wpf.Views.SystemInfoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -38,6 +38,7 @@
             <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal">
                 <Button  Click="OnUpdateDatabaseFromScryfall">Update Sets from Scryfall</Button>
                 <Button  Click="OnDownloadDatabaseFromScryfall" Margin="5,0,0,0">Download Card Database from Scryfall</Button>
+                <Button  Click="OnDownloadMissingImages" Margin="5,0,0,0">Download Missing Images</Button>
             </StackPanel>
             <TextBlock Grid.Row="2" Grid.Column="0">Number of Sets:</TextBlock>
             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NumberOfSets}" />

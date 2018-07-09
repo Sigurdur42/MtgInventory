@@ -3,6 +3,7 @@ using MtgBinders.Domain.Services;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using MtgBinders.Domain.Services.Images;
 
 namespace MtgBinder.Wpf.ViewModels
 {
@@ -10,13 +11,16 @@ namespace MtgBinder.Wpf.ViewModels
     {
         private readonly IBinderDomainConfigurationProvider _configurationProvider;
         private readonly IMtgDatabaseService _mtgDatabase;
+        private readonly IMtgImageCache _imageCache;
 
         public SystemPageViewModel(
             IBinderDomainConfigurationProvider configurationProvider,
-            IMtgDatabaseService mtgDatabase)
+            IMtgDatabaseService mtgDatabase,
+            IMtgImageCache imageCache)
         {
             _configurationProvider = configurationProvider;
             _mtgDatabase = mtgDatabase;
+            _imageCache = imageCache;
 
             _mtgDatabase.DatabaseUpdated += (sender, e) =>
             {
@@ -51,6 +55,15 @@ namespace MtgBinder.Wpf.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SetLastUpdateDate)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfCards)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AreCardsMissing)));
+        }
+
+        public void DownloadMissingImages(bool b)
+        {
+             Task.Factory.StartNew(() =>
+             {
+                 _imageCache.DownloadMissingImages(_mtgDatabase.CardData);
+             });
+           
         }
     }
 }
