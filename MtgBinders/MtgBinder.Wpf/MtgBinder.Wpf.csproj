@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Configuration, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -111,6 +113,8 @@
     </ApplicationDefinition>
     <Compile Include="ApplicationSingeltons.cs" />
     <Compile Include="Converter\UrlToImageSourceConverter.cs" />
+    <Compile Include="Dropbox\DropboxJsonClasses.cs" />
+    <Compile Include="Dropbox\LocalDropbox.cs" />
     <Compile Include="Logging\UiLogger.cs" />
     <Compile Include="Logging\UiLoggingControl.xaml.cs">
       <DependentUpon>UiLoggingControl.xaml</DependentUpon>

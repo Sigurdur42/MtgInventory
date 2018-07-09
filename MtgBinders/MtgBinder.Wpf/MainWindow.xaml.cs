@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MtgBinder.Wpf.Dropbox;
 using MtgBinder.Wpf.Logging;
 using MtgBinder.Wpf.ViewModels;
 using MtgBinders.Domain.Configuration;
@@ -58,8 +59,15 @@ namespace MtgBinder.Wpf
 
             ApplicationSingeltons.ServiceProvider = serviceCollection.BuildServiceProvider();
             var domainConfiguration = ApplicationSingeltons.ServiceProvider.GetService<IBinderDomainConfigurationProvider>();
+            var serializer = ApplicationSingeltons.ServiceProvider.GetService<IJsonConfigurationSerializer>();
+
+            var dropbox = new LocalDropbox();
+            var path = dropbox.FindDropboxFolder(serializer);
+
+            path = path ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
             domainConfiguration.Initialize(
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MtgBinder"));
+                Path.Combine(path, "MtgBinder", "Data"));
 
             _mainViewModel = ApplicationSingeltons.ServiceProvider.GetService<MainViewModel>();
             DataContext = _mainViewModel;
