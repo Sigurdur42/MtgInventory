@@ -35,7 +35,7 @@ namespace MtgBinders.Domain.Scryfall
 
             return deserialzed.Select(s => new MtgSetInfo
             {
-                SetCode = s.SetCode,
+                SetCode = s.SetCode.ToUpperInvariant(),
                 IsDigitalOnly = s.IsDigitalOnly,
                 IsFoilOnly = s.IsFoilOnly,
                 SetName = s.SetName,
@@ -117,7 +117,7 @@ namespace MtgBinders.Domain.Scryfall
             {
                 UniqueId = c.UniqueId,
                 Name = c.Name,
-                SetCode = c.SetCode,
+                SetCode = c.SetCode.ToUpperInvariant(),
                 Rarity = c.Rarity.ToMtgRarity(logger),
 
                 ManaCost = c.ManaCost,

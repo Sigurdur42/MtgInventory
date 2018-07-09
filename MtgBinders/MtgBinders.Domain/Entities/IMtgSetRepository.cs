@@ -1,4 +1,5 @@
-﻿using MtgBinders.Domain.ValueObjects;
+using System.Collections.ObjectModel;
+using MtgBinders.Domain.ValueObjects;
 
 namespace MtgBinders.Domain.Entities
 {
@@ -7,6 +8,7 @@ namespace MtgBinders.Domain.Entities
         int NumberOfSets { get; }
 
         MtgSetInfo[] SetData { get; }
+        ReadOnlyDictionary<string, MtgSetInfo> SetDataByCode { get; }
 
         void SetSetData(MtgSetInfo[] setData);
     }

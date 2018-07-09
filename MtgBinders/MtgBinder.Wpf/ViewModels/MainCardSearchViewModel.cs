@@ -1,11 +1,11 @@
-﻿using MtgBinders.Domain.Configuration;
-using MtgBinders.Domain.Services;
-using MtgBinders.Domain.Services.Images;
-using MtgBinders.Domain.ValueObjects;
-using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using MtgBinders.Domain.Configuration;
+using MtgBinders.Domain.Services;
+using MtgBinders.Domain.Services.Images;
+using MtgBinders.Domain.ValueObjects;
 
 namespace MtgBinder.Wpf.ViewModels
 {
@@ -15,17 +15,20 @@ namespace MtgBinder.Wpf.ViewModels
         private readonly ICardSearchService _cardSearchService;
         private readonly IJsonConfigurationSerializer _configurationSerializer;
         private readonly string _cardSearchSettingsCache;
+        private readonly IMtgImageCache _imageCache;
 
         private string _searchPattern;
 
         private MtgFullCardViewModel _selectedCard;
 
         public MainCardSearchViewModel(
-               IMtgDatabaseService mtgDatabase,
-               ICardSearchService cardSearchService,
-               IJsonConfigurationSerializer configurationSerializer,
-               IBinderDomainConfigurationProvider configurationProvider)
+           IMtgDatabaseService mtgDatabase,
+           ICardSearchService cardSearchService,
+           IJsonConfigurationSerializer configurationSerializer,
+           IBinderDomainConfigurationProvider configurationProvider,
+            IMtgImageCache imageCache)
         {
+            _imageCache = imageCache;
             _mtgDatabase = mtgDatabase;
             _cardSearchService = cardSearchService;
 
@@ -41,10 +44,7 @@ namespace MtgBinder.Wpf.ViewModels
 
         public string SearchPattern
         {
-            get
-            {
-                return _searchPattern;
-            }
+            get => _searchPattern;
 
             set
             {
@@ -58,10 +58,7 @@ namespace MtgBinder.Wpf.ViewModels
 
         public MtgFullCardViewModel SelectedCard
         {
-            get
-            {
-                return _selectedCard;
-            }
+            get => _selectedCard;
 
             set
             {
@@ -91,6 +88,15 @@ namespace MtgBinder.Wpf.ViewModels
                     .Search(_searchPattern, CardSearchSettings)
                     .Select(c => new MtgFullCardViewModel(c))
                     .ToArray();
+
+                if (FoundCards.Any())
+                {
+                    var lookup = FoundCards.Select(c => c.FullCard).ToArray();
+                    Task.Factory.StartNew(() =>
+                    {
+                        _imageCache?.DownloadMissingImages(lookup);
+                    });
+                }
             }
             finally
             {
