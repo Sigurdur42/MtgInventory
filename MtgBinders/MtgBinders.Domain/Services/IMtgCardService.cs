@@ -11,7 +11,7 @@ namespace MtgBinders.Domain.Services
 
         void Initialize();
 
-        void LoadMissingCardData(IMtgSetRepository setRepository);
+        void LoadMissingCardData(IMtgSetRepository setRepository, bool forceUpdate);
 
         void LoadAllCardData();
     }

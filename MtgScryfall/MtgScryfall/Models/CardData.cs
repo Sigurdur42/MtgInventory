@@ -28,6 +28,8 @@ namespace MtgScryfall.Models
         public string ImageLarge { get; set; }
 
         public string MkmLink { get; set; }
+        public string ScryfallLink { get; set; }
+        public string GathererLink { get; set; }
         public string PriceUsd { get; set; }
         public string PriceTix { get; set; }
         public string PriceEur { get; set; }

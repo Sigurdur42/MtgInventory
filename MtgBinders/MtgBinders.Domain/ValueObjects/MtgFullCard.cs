@@ -30,8 +30,13 @@ namespace MtgBinders.Domain.ValueObjects
         public string Layout { get; set; }
 
         public string MkmLink { get; set; }
+        public string ScryfallLink { get; set; }
+        public string GathererLink { get; set; }
+
         public decimal? PriceUsd { get; set; }
         public decimal? PriceTix { get; set; }
         public decimal? PriceEur { get; set; }
+
+        public DateTime? LastUpdate { get; set; }
     }
 }

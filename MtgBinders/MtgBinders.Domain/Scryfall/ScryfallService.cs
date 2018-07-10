@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.ValueObjects;
 using MtgScryfall;
 using MtgScryfall.Models;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -41,7 +42,8 @@ namespace MtgBinders.Domain.Scryfall
                 SetName = s.SetName,
                 SvgUrl = s.SvgUrl,
                 NumberOfCards = s.NumberOfCards,
-                ReleasDate = s.ReleaseDate,
+                ReleaseDate = s.ReleaseDate,
+                ParentSetCode = s.ParentSetData,
             }).ToArray();
         }
 
@@ -137,9 +139,13 @@ namespace MtgBinders.Domain.Scryfall
 
                 ImageLarge = c.ImageLarge,
                 MkmLink = c.MkmLink,
+                ScryfallLink = c.ScryfallLink,
+                GathererLink = c.GathererLink,
                 PriceUsd = ConvertToDecimal(c.PriceUsd),
                 PriceTix = ConvertToDecimal(c.PriceTix),
                 PriceEur = ConvertToDecimal(c.PriceEur),
+
+                LastUpdate = DateTime.UtcNow,
             };
         }
     }

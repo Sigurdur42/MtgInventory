@@ -79,13 +79,13 @@ namespace MtgBinders.Domain.Services
             InitializeDone?.Invoke(this, EventArgs.Empty);
         }
 
-        public void LoadMissingCardData(IMtgSetRepository setRepository)
+        public void LoadMissingCardData(IMtgSetRepository setRepository, bool forceUpdate)
         {
             var knownCards = _cardRepository.CardData.GroupBy(c => c.SetCode).ToDictionary(c => c.Key);
             foreach (var set in setRepository.SetData)
             {
                 var cardCount = knownCards.ContainsKey(set.SetCode) ? knownCards[set.SetCode].Count() : 0;
-                if (set.NumberOfCards <= cardCount)
+                if (!forceUpdate && set.NumberOfCards <= cardCount)
                 {
                     _logger?.LogDebug($"Skipping update of cards for set {set.SetCode} ({set.SetName})");
                     continue;

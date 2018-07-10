@@ -46,6 +46,8 @@ namespace MtgScryfall
                 IsStandardLegal = IsLegal(c.legalities?.standard),
                 IsModernLegal = IsLegal(c.legalities?.modern),
                 MkmLink = c.purchase_uris?.magiccardmarket,
+                ScryfallLink = c.scryfall_uri,
+                GathererLink = c.related_uris?.gatherer,
                 PriceUsd = c.usd,
                 PriceTix = c.tix,
                 PriceEur = c.eur,
@@ -74,6 +76,7 @@ namespace MtgScryfall
                 NumberOfCards = d.card_count,
                 IsFoilOnly = d.foil_only,
                 ReleaseDate = d.released_at,
+                ParentSetData = d.parent_set_code,
             }).ToArray();
         }
 
