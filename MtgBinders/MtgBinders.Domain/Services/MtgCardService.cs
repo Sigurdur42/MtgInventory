@@ -100,6 +100,16 @@ namespace MtgBinders.Domain.Services
             }
         }
 
+        public void UpdateCardDetails(MtgFullCard card)
+        {
+            if (card?.UniqueId == null)
+            {
+                return;
+            }
+
+            var updated = _scryfallService.LoadCardByScryfallId(card.UniqueId);
+        }
+
         public void LoadAllCardData()
         {
             // TODO: Lösche alte Dateien

@@ -67,6 +67,11 @@ namespace MtgBinders.Domain.Services
             DatabaseUpdated?.Invoke(this, EventArgs.Empty);
         }
 
+        public void UpdateCardDetails(MtgFullCard card)
+        {
+            _cardService.UpdateCardDetails(card);
+        }
+
         private void AnalyseMissingCards()
         {
             IsCardsMissing = false;

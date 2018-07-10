@@ -64,6 +64,20 @@ namespace MtgBinders.Domain.Scryfall
             return result;
         }
 
+        public MtgFullCard LoadCardByScryfallId(string scryfallId)
+        {
+            var loadResult = _scryfallApi.GetCardByScryfallId(scryfallId);
+            if (!loadResult.Success)
+            {
+                _logger?.LogError($"Load cards for id {scryfallId} failed with status code {loadResult.StatusCode}");
+                return null;
+            }
+
+            var result = loadResult.CardData.Select(c => CreateCardFromResult(c, _logger)).First();
+
+            return result;
+        }
+
         public MtgFullCard[] LoadAllCards()
         {
             var result = new List<MtgFullCard>();

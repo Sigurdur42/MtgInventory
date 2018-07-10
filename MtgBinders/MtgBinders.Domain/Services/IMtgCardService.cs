@@ -1,4 +1,5 @@
 using MtgBinders.Domain.Entities;
+using MtgBinders.Domain.ValueObjects;
 using System;
 
 namespace MtgBinders.Domain.Services
@@ -14,5 +15,7 @@ namespace MtgBinders.Domain.Services
         void LoadMissingCardData(IMtgSetRepository setRepository, bool forceUpdate);
 
         void LoadAllCardData();
+
+        void UpdateCardDetails(MtgFullCard card);
     }
 }
