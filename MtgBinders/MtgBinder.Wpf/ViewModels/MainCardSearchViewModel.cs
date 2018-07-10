@@ -66,6 +66,8 @@ namespace MtgBinder.Wpf.ViewModels
                 {
                     _selectedCard = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCard)));
+
+                    // TODO: Reactivate later? Task.Factory.StartNew(() => _selectedCard?.UpdateCardFromScryfall(_mtgDatabase));
                 }
             }
         }

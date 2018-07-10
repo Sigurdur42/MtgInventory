@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MtgBinders.Domain.ValueObjects
 {
@@ -38,5 +36,15 @@ namespace MtgBinders.Domain.ValueObjects
         public decimal? PriceEur { get; set; }
 
         public DateTime? LastUpdate { get; set; }
+
+        public bool IsOutdated()
+        {
+            if (!LastUpdate.HasValue)
+            {
+                return true;
+            }
+
+            return LastUpdate.Value.AddDays(1).Date < DateTime.UtcNow.Date;
+        }
     }
 }

@@ -22,5 +22,7 @@ namespace MtgBinders.Domain.Services
         void Initialize();
 
         void UpdateDatabase(bool forceUpdate);
+
+        void UpdateCardDetails(MtgFullCard card);
     }
 }

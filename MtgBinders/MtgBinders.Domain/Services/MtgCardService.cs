@@ -1,3 +1,4 @@
+using Mapster;
 using Microsoft.Extensions.Logging;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Entities;
@@ -102,12 +103,25 @@ namespace MtgBinders.Domain.Services
 
         public void UpdateCardDetails(MtgFullCard card)
         {
-            if (card?.UniqueId == null)
+            if (card?.UniqueId == null || !card.IsOutdated())
             {
                 return;
             }
 
             var updated = _scryfallService.LoadCardByScryfallId(card.UniqueId);
+            if (updated == null)
+            {
+                return;
+            }
+
+            // Now update the card
+            updated.Adapt(card);
+            card.LastUpdate = DateTime.UtcNow;
+
+            var setCards = _cardRepository.CardData
+                .Where(c => c.SetCode.Equals(card.SetCode, StringComparison.InvariantCultureIgnoreCase))
+                .ToArray();
+            SaveSetCards(setCards, card.SetCode);
         }
 
         public void LoadAllCardData()

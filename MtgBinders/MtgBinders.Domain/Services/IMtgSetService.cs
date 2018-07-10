@@ -1,5 +1,5 @@
-﻿using System;
-using MtgBinders.Domain.Entities;
+﻿using MtgBinders.Domain.Entities;
+using System;
 
 namespace MtgBinders.Domain.Services
 {

@@ -70,7 +70,8 @@ namespace MtgBinder.Wpf.Views
             ////    return;
             ////}
 
-            ////control.SelectedCard = (MtgFullCard)e.NewValue;
+            //var card = (MtgFullCardViewModel)e.NewValue;
+            //card?.UpdateCardFromScryfall();
         }
 
         private static void OnCardsPropertyChanged(

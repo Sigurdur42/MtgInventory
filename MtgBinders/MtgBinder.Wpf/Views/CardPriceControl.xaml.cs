@@ -20,6 +20,7 @@ namespace MtgBinder.Wpf.Views
         {
             DisplayTix = true;
             InitializeComponent();
+            rootGrid.DataContext = this;
             SetCard(null);
         }
 
@@ -80,6 +81,7 @@ namespace MtgBinder.Wpf.Views
         {
             PriceEur = card?.PriceEur?.ToString("F2") ?? "---";
             PriceTix = card?.PriceTix?.ToString("F2") ?? "---";
+            FireCanChanged();
         }
     }
 }
