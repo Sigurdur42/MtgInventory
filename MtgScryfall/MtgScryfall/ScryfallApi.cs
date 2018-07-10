@@ -58,6 +58,18 @@ namespace MtgScryfall
             }
         }
 
+        public CardDataRequestResult GetCardByScryfallId(string cardId)
+        {
+            using (var client = CreateHttpClient())
+            {
+                AutoDelay();
+                _logger?.LogDebug($"Loading card for id {cardId}");
+                var response = client.GetAsync($"cards/{cardId}").Result;
+                _lastRequest = DateTime.UtcNow;
+                return response.CreateResult().DeserializeSingleResultCardData();
+            }
+        }
+
         public CardDataRequestResult GetCardsBySet(string setCode)
         {
             var allCards = new List<CardData>();

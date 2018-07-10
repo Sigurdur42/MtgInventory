@@ -11,5 +11,7 @@
         RequestResult GetCardsBySet(string setCode, int page);
 
         CardDataRequestResult GetCardsBySet(string setCode);
+
+        CardDataRequestResult GetCardByScryfallId(string cardId);
     }
 }

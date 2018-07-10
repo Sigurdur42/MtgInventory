@@ -24,34 +24,29 @@ namespace MtgScryfall
             result.HasMoreData = deserialized.has_more;
             result.TotalCards = deserialized.total_cards;
 
-            result.CardData = deserialized.data.Select(c => new CardData
-            {
-                UniqueId = c.id,
-                Name = c.name,
-                SetCode = c.set,
-                Rarity = c.rarity,
-                ManaCost = c.mana_cost,
-                ConvertedManaCost = c.cmc,
-                ImageLarge = c.image_uris?.large,
-                TypeLine = c.type_line,
-                OracleText = c.oracle_text,
-                CollectorNumber = c.collector_number,
-                IsDigitalOnly = c.digital,
-                Layout = c.layout,
+            result.CardData = deserialized.data.Select(MapFromJson).ToArray();
 
-                IsPauperLegal = IsLegal(c.legalities?.pauper),
-                IsCommanderLegal = IsLegal(c.legalities?.commander),
-                IsLegacyLegal = IsLegal(c.legalities?.legacy),
-                IsVintageLegal = IsLegal(c.legalities?.vintage),
-                IsStandardLegal = IsLegal(c.legalities?.standard),
-                IsModernLegal = IsLegal(c.legalities?.modern),
-                MkmLink = c.purchase_uris?.magiccardmarket,
-                ScryfallLink = c.scryfall_uri,
-                GathererLink = c.related_uris?.gatherer,
-                PriceUsd = c.usd,
-                PriceTix = c.tix,
-                PriceEur = c.eur,
-            }).ToArray();
+            return result;
+        }
+
+        public static CardDataRequestResult DeserializeSingleResultCardData(this RequestResult requestResult)
+        {
+            var result = new CardDataRequestResult
+            {
+                StatusCode = requestResult.StatusCode,
+                Success = requestResult.Success,
+            };
+
+            if (!result.Success)
+            {
+                return result;
+            }
+
+            var deserialized = JsonConvert.DeserializeObject<Datum>(requestResult.JsonResult);
+            result.HasMoreData = false;
+            result.TotalCards = 1;
+
+            result.CardData = new[] { MapFromJson(deserialized) };
 
             return result;
         }
@@ -106,6 +101,38 @@ namespace MtgScryfall
             }
 
             return result;
+        }
+
+        private static CardData MapFromJson(Datum c)
+        {
+            return new CardData
+            {
+                UniqueId = c.id,
+                Name = c.name,
+                SetCode = c.set,
+                Rarity = c.rarity,
+                ManaCost = c.mana_cost,
+                ConvertedManaCost = c.cmc,
+                ImageLarge = c.image_uris?.large,
+                TypeLine = c.type_line,
+                OracleText = c.oracle_text,
+                CollectorNumber = c.collector_number,
+                IsDigitalOnly = c.digital,
+                Layout = c.layout,
+
+                IsPauperLegal = IsLegal(c.legalities?.pauper),
+                IsCommanderLegal = IsLegal(c.legalities?.commander),
+                IsLegacyLegal = IsLegal(c.legalities?.legacy),
+                IsVintageLegal = IsLegal(c.legalities?.vintage),
+                IsStandardLegal = IsLegal(c.legalities?.standard),
+                IsModernLegal = IsLegal(c.legalities?.modern),
+                MkmLink = c.purchase_uris?.magiccardmarket,
+                ScryfallLink = c.scryfall_uri,
+                GathererLink = c.related_uris?.gatherer,
+                PriceUsd = c.usd,
+                PriceTix = c.tix,
+                PriceEur = c.eur,
+            };
         }
     }
 }
