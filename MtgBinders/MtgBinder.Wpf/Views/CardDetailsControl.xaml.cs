@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using MtgBinder.Wpf.ViewModels;
 using MtgBinders.Domain.Entities;
 using MtgBinders.Domain.Services.Images;
 using MtgBinders.Domain.ValueObjects;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -70,11 +71,21 @@ namespace MtgBinder.Wpf.Views
             CardImage = _imageCache.GetImageFile(card?.FullCard);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CardImage)));
 
-            CardSetInfo = card != null && card.FullCard != null
+            CardSetInfo = card?.FullCard != null
                 ? _setRepository.SetData.FirstOrDefault(s => s.SetCode.Equals(card.FullCard.SetCode, System.StringComparison.InvariantCultureIgnoreCase))
                 : null;
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CardSetInfo)));
+        }
+
+        private void OnOpenInMkm(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(SelectedCard?.FullCard?.MkmLink))
+            {
+                return;
+            }
+
+            Process.Start(SelectedCard?.FullCard?.MkmLink);
         }
     }
 }

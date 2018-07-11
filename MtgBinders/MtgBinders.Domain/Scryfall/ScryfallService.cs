@@ -119,7 +119,7 @@ namespace MtgBinders.Domain.Scryfall
                 return null;
             }
 
-            if (decimal.TryParse(input, NumberStyles.None, CultureInfo.InvariantCulture, out decimal result))
+            if (decimal.TryParse(input, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
             {
                 return result;
             }

@@ -1,4 +1,4 @@
-﻿using MtgBinders.Domain.ValueObjects;
+using MtgBinders.Domain.ValueObjects;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,6 +37,7 @@ namespace MtgBinder.Wpf.Views
         }
 
         public string PriceEur { get; private set; }
+        public string PriceUsd { get; private set; }
 
         public string PriceTix { get; private set; }
 
@@ -63,24 +64,22 @@ namespace MtgBinder.Wpf.Views
  DependencyPropertyChangedEventArgs e)
         {
             var control = source as CardPriceControl;
-            if (control == null)
-            {
-                return;
-            }
 
-            control.SetCard(control.SelectedCard);
+            control?.SetCard(control.SelectedCard);
         }
 
         private void FireCanChanged()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PriceEur)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PriceUsd)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PriceTix)));
         }
 
         private void SetCard(MtgFullCard card)
         {
-            PriceEur = card?.PriceEur?.ToString("F2") ?? "---";
-            PriceTix = card?.PriceTix?.ToString("F2") ?? "---";
+            PriceEur = (card?.PriceEur?.ToString("F2") ?? "---") + "€";
+            PriceUsd = (card?.PriceUsd?.ToString("F2") ?? "---") + "$";
+            PriceTix = (card?.PriceTix?.ToString("F2") ?? "---") + "Tix";
             FireCanChanged();
         }
     }

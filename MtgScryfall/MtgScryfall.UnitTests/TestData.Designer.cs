@@ -61,6 +61,30 @@ namespace MtgScryfall.UnitTests {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {
+        ///    &quot;object&quot;: &quot;list&quot;,
+        ///    &quot;total_cards&quot;: 26,
+        ///    &quot;has_more&quot;: false,
+        ///    &quot;data&quot;: [
+        ///        {
+        ///            &quot;object&quot;: &quot;card&quot;,
+        ///            &quot;id&quot;: &quot;7241b143-82c9-4f92-b143-b71107f97c60&quot;,
+        ///            &quot;oracle_id&quot;: &quot;bb2cc0f4-6abd-48d6-b442-76eafbfd2309&quot;,
+        ///            &quot;multiverse_ids&quot;: [
+        ///                394069
+        ///            ],
+        ///            &quot;name&quot;: &quot;Briber&apos;s Purse&quot;,
+        ///            &quot;lang&quot;: &quot;en&quot;,
+        ///            &quot;uri&quot;: &quot;https://api.scryfall.com/cards/ugin/217&quot;,
+        ///            &quot;scryfall_uri&quot;: &quot;https://scryfall.com/card [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string MoneyTestDeserializeData {
+            get {
+                return ResourceManager.GetString("MoneyTestDeserializeData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {&quot;object&quot;:&quot;list&quot;,&quot;has_more&quot;:false,&quot;data&quot;:[{&quot;object&quot;:&quot;set&quot;,&quot;code&quot;:&quot;m19&quot;,&quot;mtgo_code&quot;:&quot;m19&quot;,&quot;name&quot;:&quot;Core Set 2019&quot;,&quot;uri&quot;:&quot;https://api.scryfall.com/sets/m19&quot;,&quot;scryfall_uri&quot;:&quot;https://scryfall.com/sets/m19&quot;,&quot;search_uri&quot;:&quot;https://api.scryfall.com/cards/search?order=set\u0026q=e%3Am19\u0026unique=prints&quot;,&quot;released_at&quot;:&quot;2018-07-13&quot;,&quot;set_type&quot;:&quot;core&quot;,&quot;card_count&quot;:37,&quot;digital&quot;:false,&quot;foil_only&quot;:false,&quot;icon_svg_uri&quot;:&quot;https://assets.scryfall.com/assets/sets/m19.svg&quot;},{&quot;object&quot;:&quot;set&quot;,&quot;code&quot;:&quot;gs1&quot;,&quot;name&quot;:&quot;Global Series Ji [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SetDataJson {
