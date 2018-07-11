@@ -1,5 +1,6 @@
 ﻿using MtgScryfall.Models;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 
@@ -7,6 +8,11 @@ namespace MtgScryfall
 {
     public static class RequestResultExtension
     {
+        private static JsonSerializerSettings _settings = new JsonSerializerSettings()
+        {
+            Culture = CultureInfo.InvariantCulture,
+        };
+
         public static CardDataRequestResult DeserializeCardData(this RequestResult requestResult)
         {
             var result = new CardDataRequestResult
@@ -20,7 +26,7 @@ namespace MtgScryfall
                 return result;
             }
 
-            var deserialized = JsonConvert.DeserializeObject<RootObject>(requestResult.JsonResult);
+            var deserialized = JsonConvert.DeserializeObject<RootObject>(requestResult.JsonResult, _settings);
             result.HasMoreData = deserialized.has_more;
             result.TotalCards = deserialized.total_cards;
 
@@ -42,7 +48,7 @@ namespace MtgScryfall
                 return result;
             }
 
-            var deserialized = JsonConvert.DeserializeObject<Datum>(requestResult.JsonResult);
+            var deserialized = JsonConvert.DeserializeObject<Datum>(requestResult.JsonResult, _settings);
             result.HasMoreData = false;
             result.TotalCards = 1;
 
@@ -60,7 +66,7 @@ namespace MtgScryfall
 
             var definition = new { Name = "" };
 
-            var deserialized = JsonConvert.DeserializeObject<JsonSetDataRootObject>(result.JsonResult);
+            var deserialized = JsonConvert.DeserializeObject<JsonSetDataRootObject>(result.JsonResult, _settings);
             return deserialized.data.Select(d => new SetData
             {
                 SetCode = d.code,
