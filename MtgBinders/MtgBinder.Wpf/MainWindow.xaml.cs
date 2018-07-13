@@ -7,6 +7,7 @@ using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,8 @@ namespace MtgBinder.Wpf
     public partial class MainWindow : Window
     {
         private MainViewModel _mainViewModel;
+
+        private InventoryViewModel _inventoryViewModel;
 
         public MainWindow()
         {
@@ -53,10 +56,13 @@ namespace MtgBinder.Wpf
                 .AddSingleton<MainViewModel>()
                 .AddSingleton<MainCardSearchViewModel>()
                 .AddSingleton<SetListViewModel>()
+                .AddSingleton<InventoryViewModel>()
                 .AddSingleton<SystemPageViewModel>();
 
             // Configure DI
             BindMicrosoftDi.BindProductiveEnvironment(initLogger, serviceCollection);
+
+            _inventoryViewModel = ApplicationSingeltons.ServiceProvider.GetService<InventoryViewModel>();
 
             ApplicationSingeltons.ServiceProvider = serviceCollection.BuildServiceProvider();
             var domainConfiguration = ApplicationSingeltons.ServiceProvider.GetService<IBinderDomainConfigurationProvider>();
@@ -72,6 +78,11 @@ namespace MtgBinder.Wpf
 
             _mainViewModel = ApplicationSingeltons.ServiceProvider.GetService<MainViewModel>();
             DataContext = _mainViewModel;
+        }
+
+        private void OnClosing(object sender, CancelEventArgs e)
+        {
+            _inventoryViewModel?.SaveInventory();
         }
     }
 }

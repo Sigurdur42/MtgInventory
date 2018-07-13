@@ -12,11 +12,11 @@ namespace MtgBinders.Domain.Configuration
             Culture = CultureInfo.InvariantCulture,
         };
 
-        public T Deserialize<T>(string targetFileName) where T : class
+        public T Deserialize<T>(string targetFileName, T defaultValue) where T : class
         {
             if (!File.Exists(targetFileName))
             {
-                return null;
+                return defaultValue;
             }
 
             var content = File.ReadAllText(targetFileName);

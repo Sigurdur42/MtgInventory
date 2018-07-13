@@ -14,28 +14,39 @@ namespace MtgBinder.Wpf.ViewModels
     internal class MainViewModel : INotifyPropertyChanged
     {
         private readonly IMtgDatabaseService _mtgDatabaseService;
+        private readonly IMtgInventoryService _inventoryService;
 
         public MainViewModel(
             SystemPageViewModel systemPageViewModel,
             MainCardSearchViewModel mainCardSearchViewModel,
             IMtgDatabaseService mtgDatabaseService,
-            SetListViewModel setListViewModel)
+            SetListViewModel setListViewModel,
+            IMtgInventoryService inventoryService)
         {
             _mtgDatabaseService = mtgDatabaseService;
+            _inventoryService = inventoryService;
             SystemPageViewModel = systemPageViewModel;
             MainCardSearchViewModel = mainCardSearchViewModel;
             SetListViewModel = setListViewModel;
             UiLogger.UiCallbacks.Add(SetLatestLog);
 
+            _mtgDatabaseService.Initialized += (sender, e) =>
+            {
+                IsInitialized = true;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInitialized)));
+            };
+
             // Launch the initialization in a separate task:
             Task.Factory.StartNew(() =>
             {
                 _mtgDatabaseService.Initialize();
+                _inventoryService.Initialize();
             });
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public bool IsInitialized { get; private set; }
         public SetListViewModel SetListViewModel { get; }
         public string LatestLogMessage { get; private set; }
 

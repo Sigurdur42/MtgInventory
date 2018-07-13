@@ -34,6 +34,9 @@ namespace MtgBinders.Domain.Services
 
         public event EventHandler DatabaseUpdated;
 
+        public event EventHandler Initialized;
+
+        public bool IsInitialized { get; private set; }
         public MtgFullCard[] CardData => _cardRepository.CardData;
         public MtgSetInfo[] SetData => _setRepository.SetData;
         public DateTime? LastUpdated => _setService.LastUpdatedCacheAt;
@@ -51,6 +54,8 @@ namespace MtgBinders.Domain.Services
 
             AnalyseMissingCards();
 
+            IsInitialized = true;
+            Initialized?.Invoke(this, EventArgs.Empty);
             DatabaseUpdated?.Invoke(this, EventArgs.Empty);
         }
 

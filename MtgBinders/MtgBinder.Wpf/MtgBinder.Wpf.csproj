@@ -114,6 +114,7 @@
     <Compile Include="Converter\UrlToImageSourceConverter.cs" />
     <Compile Include="Dropbox\DropboxJsonClasses.cs" />
     <Compile Include="Dropbox\LocalDropbox.cs" />
+    <Compile Include="InventoryViewModel.cs" />
     <Compile Include="Logging\UiLogger.cs" />
     <Compile Include="Logging\UiLoggingControl.xaml.cs">
       <DependentUpon>UiLoggingControl.xaml</DependentUpon>
@@ -122,10 +123,17 @@
     <Compile Include="ViewModels\MainCardSearchViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\MtgFullCardViewModel.cs" />
+    <Compile Include="ViewModels\MtgInventoryCardViewModel.cs" />
     <Compile Include="ViewModels\SetListViewModel.cs" />
     <Compile Include="ViewModels\SystemPageViewModel.cs" />
     <Compile Include="Views\CardDetailsControl.xaml.cs">
       <DependentUpon>CardDetailsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CardInventorySingleControl.xaml.cs">
+      <DependentUpon>CardInventorySingleControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CardInventoryCollectionControl.xaml.cs">
+      <DependentUpon>CardInventoryCollectionControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CardListControl.xaml.cs">
       <DependentUpon>CardListControl.xaml</DependentUpon>
@@ -164,6 +172,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\CardDetailsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CardInventorySingleControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CardInventoryCollectionControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CardListControl.xaml">

@@ -40,7 +40,7 @@ namespace MtgBinders.Domain.Services
             _logger.LogDebug("Starting initialize...");
             var stopwatch = Stopwatch.StartNew();
 
-            var existingWants = _configurationSerializer.Deserialize<IEnumerable<MtgWantListCard>>(_configurationFileName);
+            var existingWants = _configurationSerializer.Deserialize<IEnumerable<MtgWantListCard>>(_configurationFileName, null);
             if (existingWants != null)
             {
                 _wants.AddRange(existingWants.Select(UpdateFullCard).Where(c => c != null));

@@ -23,7 +23,7 @@ namespace MtgBinder.Wpf.Dropbox
             {
                 var dropboxFile = Path.Combine(folder, "Dropbox", "info.json");
 
-                var found = serializer.Deserialize<RootObject>(dropboxFile);
+                var found = serializer.Deserialize<RootObject>(dropboxFile, null);
                 if (found != null)
                 {
                     return found.personal.path;

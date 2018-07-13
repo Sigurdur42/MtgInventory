@@ -36,7 +36,7 @@ namespace MtgBinder.Wpf.ViewModels
             _cardSearchSettingsCache = Path.Combine(configurationProvider.AppDataFolder, "MainCardSearchSettings.json");
 
             // TODO: Serialize
-            CardSearchSettings = _configurationSerializer.Deserialize<CardSearchSettings>(_cardSearchSettingsCache) ?? new CardSearchSettings();
+            CardSearchSettings = _configurationSerializer.Deserialize<CardSearchSettings>(_cardSearchSettingsCache, null) ?? new CardSearchSettings();
             CardSearchSettings.ShowUniquePrints = true;
         }
 

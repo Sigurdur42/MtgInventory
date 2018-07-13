@@ -7,6 +7,8 @@ namespace MtgBinders.Domain.Services
 {
     public interface IMtgDatabaseService
     {
+        event EventHandler Initialized;
+
         event EventHandler DatabaseUpdated;
 
         MtgSetInfo[] SetData { get; }
@@ -14,6 +16,8 @@ namespace MtgBinders.Domain.Services
 
         int NumberOfCards { get; }
         int NumberOfSets { get; }
+
+        bool IsInitialized { get; }
 
         DateTime? LastUpdated { get; }
 

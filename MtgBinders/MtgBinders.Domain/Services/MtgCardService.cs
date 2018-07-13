@@ -50,7 +50,7 @@ namespace MtgBinders.Domain.Services
         {
             _logger.LogDebug("Starting initialize...");
 
-            _configuration = _configurationSerializer.Deserialize<CardServiceConfiguration>(_configurationFileName);
+            _configuration = _configurationSerializer.Deserialize<CardServiceConfiguration>(_configurationFileName, null);
             if (_configuration == null)
             {
                 _configuration = new CardServiceConfiguration
@@ -67,7 +67,7 @@ namespace MtgBinders.Domain.Services
             var cachedCardFiles = Directory.EnumerateFiles(_cardsCacheFolder, "CardCache*.json");
             foreach (var cachedCardFile in cachedCardFiles)
             {
-                var cards = _configurationSerializer.Deserialize<MtgFullCard[]>(cachedCardFile);
+                var cards = _configurationSerializer.Deserialize<MtgFullCard[]>(cachedCardFile, new MtgFullCard[0]);
                 _logger.LogDebug($"Loaded {cards.Length} cards of set {cards.First().SetCode}");
 
                 allCards.AddRange(cards);

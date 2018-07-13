@@ -6,10 +6,11 @@
         xmlns:local="clr-namespace:MtgBinder.Wpf"
         xmlns:views="clr-namespace:MtgBinder.Wpf.Views"
         xmlns:logging="clr-namespace:MtgBinder.Wpf.Logging"
+        Closing="OnClosing"
         mc:Ignorable="d"
 
         Title="MainWindow" Height="450" Width="800" WindowState="Maximized">
-    <Grid>
+    <Grid IsEnabled="{Binding IsInitialized}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -20,7 +21,7 @@
                 <views:MainCardSearchView DataContext="{Binding MainCardSearchViewModel}" />
             </TabItem>
             <TabItem Header="Sets">
-                <views:SetListView DataContext="{Binding SetListViewModel}"/>
+                <views:SetListView DataContext="{Binding SetListViewModel}" />
             </TabItem>
             <TabItem Header="System / About">
                 <views:SystemInfoView DataContext="{Binding SystemPageViewModel}" />

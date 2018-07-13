@@ -46,7 +46,7 @@ namespace MtgBinders.Domain.Services
         {
             _logger.LogDebug("Starting initialize...");
 
-            _configuration = _configurationSerializer.Deserialize<SetServiceConfiguration>(_configurationFileName);
+            _configuration = _configurationSerializer.Deserialize<SetServiceConfiguration>(_configurationFileName, null);
             if (_configuration == null)
             {
                 _configuration = new SetServiceConfiguration
@@ -57,7 +57,7 @@ namespace MtgBinders.Domain.Services
                 _logger.LogInformation($"Created initial configuration {_configurationFileName}");
             }
 
-            var setCache = _configurationSerializer.Deserialize<MtgSetInfo[]>(_setCacheFileName);
+            var setCache = _configurationSerializer.Deserialize<MtgSetInfo[]>(_setCacheFileName, null);
             if (setCache == null)
             {
                 _logger.LogInformation("Cannot find cached sets data. No sets are loaded.");

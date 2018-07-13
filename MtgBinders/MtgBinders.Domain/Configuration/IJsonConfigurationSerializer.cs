@@ -2,7 +2,7 @@
 {
     public interface IJsonConfigurationSerializer
     {
-        T Deserialize<T>(string targetFileName) where T : class;
+        T Deserialize<T>(string targetFileName, T defaultValue) where T : class;
 
         void Serialize<T>(string targetFileName, T objectToSerialize);
     }
