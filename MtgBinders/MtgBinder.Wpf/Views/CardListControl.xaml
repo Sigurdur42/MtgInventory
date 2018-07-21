@@ -30,7 +30,7 @@
                 <DataGridTemplateColumn Header="Price" Width="SizeToCells" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:CardPriceControl SelectedCard="{Binding FullCard}"
+                            <local:CardPriceControl SelectedCard="{Binding}"
                                                     DisplayTix="False" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
