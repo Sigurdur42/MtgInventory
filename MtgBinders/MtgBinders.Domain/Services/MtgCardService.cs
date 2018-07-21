@@ -101,7 +101,7 @@ namespace MtgBinders.Domain.Services
             }
         }
 
-        public void UpdateCardDetails(MtgFullCard card)
+        public void UpdateCardDetails(MtgFullCard card, bool saveSetCards)
         {
             if (card?.UniqueId == null || !card.IsOutdated())
             {
@@ -118,10 +118,45 @@ namespace MtgBinders.Domain.Services
             updated.Adapt(card);
             card.LastUpdate = DateTime.UtcNow;
 
-            var setCards = _cardRepository.CardData
-                .Where(c => c.SetCode.Equals(card.SetCode, StringComparison.InvariantCultureIgnoreCase))
-                .ToArray();
-            SaveSetCards(setCards, card.SetCode);
+            if (saveSetCards)
+            {
+                SaveSetCards(card.SetCode);
+            }
+        }
+
+        public void UpdateCardsOfSet(string setCode)
+        {
+            var updated = _scryfallService.LoadCardsOfSet(setCode);
+            if (updated == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var existingSetCards = _cardRepository.CardData.Where(c => c.SetCode == setCode).ToArray();
+                if (!existingSetCards.Any())
+                {
+                    _cardRepository.ReplaceCardsForSet(updated, setCode);
+                    return;
+                }
+
+                foreach (var updatedCard in updated)
+                {
+                    var existing = existingSetCards.FirstOrDefault(l => l.UniqueId == updatedCard.UniqueId);
+                    if (existing == null)
+                    {
+                        continue;
+                    }
+
+                    updatedCard.LastUpdate = DateTime.UtcNow;
+                    updatedCard.Adapt(existing);
+                }
+            }
+            finally
+            {
+                SaveSetCards(setCode);
+            }
         }
 
         public void LoadAllCardData()
@@ -136,6 +171,15 @@ namespace MtgBinders.Domain.Services
                 _cardRepository.ReplaceCardsForSet(group, group.Key);
                 SaveSetCards(group.ToArray(), group.Key);
             }
+        }
+
+        public void SaveSetCards(string setCode)
+        {
+            var setCards = _cardRepository.CardData
+                .Where(c => c.SetCode.Equals(setCode, StringComparison.InvariantCultureIgnoreCase))
+                .ToArray();
+
+            SaveSetCards(setCards, setCode);
         }
 
         private void SaveSetCards(MtgFullCard[] cards, string setCode)

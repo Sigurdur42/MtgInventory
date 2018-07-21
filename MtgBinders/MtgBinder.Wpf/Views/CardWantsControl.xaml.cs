@@ -66,12 +66,8 @@ namespace MtgBinder.Wpf.Views
           DependencyPropertyChangedEventArgs e)
         {
             var control = source as CardWantsControl;
-            if (control == null)
-            {
-                return;
-            }
 
-            control.SetCard(control.SelectedCard);
+            control?.SetCard(control.SelectedCard);
         }
 
         private void FireCanChanged()
@@ -90,6 +86,7 @@ namespace MtgBinder.Wpf.Views
             }
 
             WantCard = _wantsService.Wants.FirstOrDefault(w => w.CardId.Equals(card.UniqueId));
+            FireCanChanged();
         }
 
         private void OnAddWant(object sender, RoutedEventArgs e)

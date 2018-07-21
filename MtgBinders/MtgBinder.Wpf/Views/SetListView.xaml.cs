@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using MtgBinder.Wpf.ViewModels;
 
@@ -7,7 +8,7 @@ namespace MtgBinder.Wpf.Views
     /// <summary>
     /// Interaction logic for SetListView.xaml
     /// </summary>
-    public partial class SetListView : UserControl
+    public partial class SetListView : UserControl, INotifyPropertyChanged
     {
         public SetListView()
         {
@@ -19,5 +20,16 @@ namespace MtgBinder.Wpf.Views
         public event PropertyChangedEventHandler PropertyChanged;
 
         public SetListViewModel SetListViewModel => DataContext as SetListViewModel;
+
+        private void OnClickShowSetCards(object sender, RoutedEventArgs e)
+        {
+            var setCode = ((Button)sender).CommandParameter?.ToString();
+            if (string.IsNullOrWhiteSpace(setCode))
+            {
+                return;
+            }
+
+            SetListViewModel?.DisplayAllCardsFromSet(setCode);
+        }
     }
 }

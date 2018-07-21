@@ -51,8 +51,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <local:CardPriceControl Grid.Column="0"
-
-                                        SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch" />
+                                        SelectedCard="{Binding SelectedCard}" HorizontalAlignment="Stretch" />
 
                 <Button Grid.Column="2" Click="OnOpenInMkm">MKM</Button>
             </Grid>
@@ -67,10 +66,13 @@
             </TextBlock>
 
             <!-- wants data -->
-            <local:CardWantsControl Grid.Row="3" SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch" />
+            <local:CardWantsControl Grid.Row="3" SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch"
+                                    Grid.ColumnSpan="2" />
 
             <!-- Inventory -->
-            <local:CardInventoryCollectionControl Grid.Row="4" SelectedCard="{Binding SelectedCard}" HorizontalAlignment="Stretch" />
+            <local:CardInventoryCollectionControl Grid.Row="4" SelectedCard="{Binding SelectedCard}"
+                                                  Grid.ColumnSpan="2"
+                                                  HorizontalAlignment="Stretch" />
 
             <Label Grid.Row="6" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Oracle:</Label>
             <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Text="{Binding SelectedCard.FullCard.OracleText}" />

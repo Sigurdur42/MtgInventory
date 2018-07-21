@@ -22,7 +22,12 @@ namespace MtgBinder.Wpf.ViewModels
 
         public void UpdateCardFromScryfall(IMtgDatabaseService databaseService)
         {
-            databaseService.UpdateCardDetails(FullCard);
+            databaseService.UpdateCardDetails(FullCard, true);
+            TriggerRefreshUpdates();
+        }
+
+        public void TriggerRefreshUpdates()
+        {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullCard)));
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PriceUsd)));

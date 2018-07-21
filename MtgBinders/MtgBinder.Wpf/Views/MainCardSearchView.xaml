@@ -27,7 +27,11 @@
             <Label>Search pattern:</Label>
             <TextBox HorizontalAlignment="Stretch" Text="{Binding SearchPattern, Mode=TwoWay, Delay=500, UpdateSourceTrigger=PropertyChanged}"
                      Grid.Column="1" />
-            <Button Click="OnSearchButtonClick" Grid.Column="2">Search!</Button>
+            <StackPanel Orientation="Horizontal" Grid.Column="2">
+                <Button Click="OnSearchButtonClick" >Search!</Button>
+                <Button Click="OnLoadMissingImages" Margin="15,0,0,0">Load missing Images</Button>
+                <Button Click="OnUpdateCards" Margin="5,0,0,0">Update Cards</Button>
+            </StackPanel>
         </Grid>
 
         <!-- The result grid -->

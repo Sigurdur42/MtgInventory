@@ -14,8 +14,10 @@ namespace MtgBinder.Wpf.ViewModels
     public class SetListViewModel : INotifyPropertyChanged
     {
         private readonly IMtgSetRepository _databaseService;
+        private MtgSetInfo _selectedSet;
+
         public SetListViewModel(
-            IMtgSetRepository databaseService)
+                    IMtgSetRepository databaseService)
         {
             _databaseService = databaseService;
             _databaseService.SetDataUpdated += (sender, args) => UpdateSetData();
@@ -23,9 +25,9 @@ namespace MtgBinder.Wpf.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public MtgSetInfo[] Sets { get; private set; }
+        public event EventHandler<SetListViewModelShowCardsEventArgs> RequestShowSetCards;
 
-        private MtgSetInfo _selectedSet;
+        public MtgSetInfo[] Sets { get; private set; }
 
         public MtgSetInfo SelectedSet
         {
@@ -38,6 +40,11 @@ namespace MtgBinder.Wpf.ViewModels
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedSet)));
                 }
             }
+        }
+
+        public void DisplayAllCardsFromSet(string setCode)
+        {
+            RequestShowSetCards?.Invoke(this, new SetListViewModelShowCardsEventArgs() { SetCode = setCode });
         }
 
         private void UpdateSetData()

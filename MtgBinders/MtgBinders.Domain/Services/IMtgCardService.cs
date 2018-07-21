@@ -16,6 +16,10 @@ namespace MtgBinders.Domain.Services
 
         void LoadAllCardData();
 
-        void UpdateCardDetails(MtgFullCard card);
+        void SaveSetCards(string setCode);
+
+        void UpdateCardDetails(MtgFullCard card, bool saveSetCards);
+
+        void UpdateCardsOfSet(string setCode);
     }
 }

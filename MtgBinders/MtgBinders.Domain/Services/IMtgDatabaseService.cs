@@ -27,6 +27,8 @@ namespace MtgBinders.Domain.Services
 
         void UpdateDatabase(bool forceUpdate);
 
-        void UpdateCardDetails(MtgFullCard card);
+        void UpdateCardDetails(MtgFullCard card, bool saveCardData);
+
+        void UpdateCardDetails(IEnumerable<MtgFullCard> cards);
     }
 }

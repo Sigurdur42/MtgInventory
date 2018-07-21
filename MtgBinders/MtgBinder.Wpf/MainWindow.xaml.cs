@@ -43,7 +43,7 @@ namespace MtgBinder.Wpf
             var serviceCollection = new ServiceCollection();
 
             // Bootstrap logger
-            ILoggerFactory loggerFactory = new LoggerFactory()
+            var loggerFactory = new LoggerFactory()
                 // .AddConsole(LogLevel.Debug)
                 .AddDebug(LogLevel.Debug);
             loggerFactory.AddProvider(new UiLoggingProvider());
@@ -82,6 +82,7 @@ namespace MtgBinder.Wpf
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
+            _mainViewModel.OnShutdown();
             _inventoryViewModel?.SaveInventory();
         }
     }

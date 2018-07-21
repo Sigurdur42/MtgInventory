@@ -153,6 +153,7 @@
     <Compile Include="Views\SetListView.xaml.cs">
       <DependentUpon>SetListView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\SetListViewModelShowCardsEventArgs.cs" />
     <Compile Include="Views\SystemInfoView.xaml.cs">
       <DependentUpon>SystemInfoView.xaml</DependentUpon>
     </Compile>

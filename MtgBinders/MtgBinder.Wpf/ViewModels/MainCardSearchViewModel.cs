@@ -1,11 +1,12 @@
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using MtgBinders.Domain.Configuration;
 using MtgBinders.Domain.Services;
 using MtgBinders.Domain.Services.Images;
 using MtgBinders.Domain.ValueObjects;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MtgBinder.Wpf.ViewModels
 {
@@ -80,40 +81,62 @@ namespace MtgBinder.Wpf.ViewModels
 
         public void StartCardSearch()
         {
+            if (string.IsNullOrWhiteSpace(_searchPattern))
+            {
+                FoundCards = new MtgFullCardViewModel[0];
+                return;
+            }
+
+            InternalSetCards(_cardSearchService.Search(_searchPattern, CardSearchSettings));
+        }
+
+        public void SetCardsToDisplay(IEnumerable<MtgFullCard> cards)
+        {
+            InternalSetCards(cards);
+        }
+
+        public void WriteCardSearchSettings()
+        {
+            _configurationSerializer.Serialize(_cardSearchSettingsCache, CardSearchSettings);
+        }
+
+        public void LoadMissingCardImages()
+        {
+            var lookup = FoundCards.Select(c => c.FullCard).ToArray();
+            Task.Factory.StartNew(() => { _imageCache?.DownloadMissingImages(lookup); });
+        }
+
+        public void UpdateCardInfo()
+        {
+            var viewModels = FoundCards.ToArray();
+            var lookup = viewModels.Select(c => c.FullCard).ToArray();
+            Task.Factory.StartNew(() =>
+            {
+                _mtgDatabase?.UpdateCardDetails(lookup);
+                foreach (var mtgFullCardViewModel in viewModels)
+                {
+                    mtgFullCardViewModel.TriggerRefreshUpdates();
+                }
+            });
+        }
+
+        private void InternalSetCards(IEnumerable<MtgFullCard> cards)
+        {
             try
             {
-                if (string.IsNullOrWhiteSpace(_searchPattern))
-                {
-                    FoundCards = new MtgFullCardViewModel[0];
-                    return;
-                }
-
-                FoundCards = _cardSearchService
-                    .Search(_searchPattern, CardSearchSettings)
+                FoundCards = cards
                     .Select(c => new MtgFullCardViewModel(c))
                     .ToArray();
 
-                if (FoundCards.Any())
+                if (!FoundCards.Any())
                 {
-                    var lookup = FoundCards.Select(c => c.FullCard).ToArray();
-                    Task.Factory.StartNew(() =>
-                    {
-                        _imageCache?.DownloadMissingImages(lookup);
-                    });
+                    return;
                 }
             }
             finally
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FoundCards)));
-
-                // TODO: Write only when changed
-                WriteCardSearchSettings();
             }
-        }
-
-        private void WriteCardSearchSettings()
-        {
-            _configurationSerializer.Serialize(_cardSearchSettingsCache, CardSearchSettings);
         }
     }
 }

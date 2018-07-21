@@ -42,6 +42,12 @@ namespace MtgBinder.Wpf.ViewModels
                 _mtgDatabaseService.Initialize();
                 _inventoryService.Initialize();
             });
+
+            SetListViewModel.RequestShowSetCards += (sender, e) =>
+            {
+                var cards = _mtgDatabaseService.CardData.Where(c => c.SetCode == e.SetCode);
+                MainCardSearchViewModel.SetCardsToDisplay(cards);
+            };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -53,6 +59,11 @@ namespace MtgBinder.Wpf.ViewModels
         public SystemPageViewModel SystemPageViewModel { get; }
 
         public MainCardSearchViewModel MainCardSearchViewModel { get; }
+
+        public void OnShutdown()
+        {
+            MainCardSearchViewModel.WriteCardSearchSettings();
+        }
 
         private void SetLatestLog(DateTime timestamp, LogLevel logLevel, string category, string message, Exception error)
         {

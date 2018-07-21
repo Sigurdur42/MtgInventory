@@ -2,6 +2,7 @@
 using MtgBinders.Domain.Entities;
 using MtgBinders.Domain.ValueObjects;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MtgBinders.Domain.Services
@@ -72,9 +73,27 @@ namespace MtgBinders.Domain.Services
             DatabaseUpdated?.Invoke(this, EventArgs.Empty);
         }
 
-        public void UpdateCardDetails(MtgFullCard card)
+        public void UpdateCardDetails(MtgFullCard card, bool saveCardData)
         {
-            _cardService.UpdateCardDetails(card);
+            _cardService.UpdateCardDetails(card, saveCardData);
+        }
+
+        public void UpdateCardDetails(IEnumerable<MtgFullCard> cards)
+        {
+            var grouped = cards.Where(c => c.IsOutdated()).GroupBy(c => c.SetCode);
+            foreach (var group in grouped)
+            {
+                if (group.Count() > 1)
+                {
+                    // Load the whole set
+                    _cardService.UpdateCardsOfSet(group.Key);
+                }
+                else
+                {
+                    // Its easier to just download the single card
+                    UpdateCardDetails(group.First(), true);
+                }
+            }
         }
 
         private void AnalyseMissingCards()

@@ -27,7 +27,7 @@
                 <DataGridTextColumn Header="Digital" Binding="{Binding FullCard.IsDigitalOnly}" />
                 <DataGridTextColumn Header="Layout" Binding="{Binding FullCard.Layout}" />
 
-                <DataGridTemplateColumn Header="Price" Width="SizeToCells" IsReadOnly="True">
+                <DataGridTemplateColumn Header="Price" Width="SizeToCells"  SortMemberPath="PriceEur">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:CardPriceControl SelectedCard="{Binding}"
