@@ -62,8 +62,6 @@ namespace MtgBinder.Wpf
             // Configure DI
             BindMicrosoftDi.BindProductiveEnvironment(initLogger, serviceCollection);
 
-            _inventoryViewModel = ApplicationSingeltons.ServiceProvider.GetService<InventoryViewModel>();
-
             ApplicationSingeltons.ServiceProvider = serviceCollection.BuildServiceProvider();
             var domainConfiguration = ApplicationSingeltons.ServiceProvider.GetService<IBinderDomainConfigurationProvider>();
             var serializer = ApplicationSingeltons.ServiceProvider.GetService<IJsonConfigurationSerializer>();
@@ -75,6 +73,8 @@ namespace MtgBinder.Wpf
 
             domainConfiguration.Initialize(
                 Path.Combine(path, "MtgBinder", "Data"));
+
+            _inventoryViewModel = ApplicationSingeltons.ServiceProvider.GetService<InventoryViewModel>();
 
             _mainViewModel = ApplicationSingeltons.ServiceProvider.GetService<MainViewModel>();
             DataContext = _mainViewModel;

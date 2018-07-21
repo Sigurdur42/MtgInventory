@@ -11,5 +11,19 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Click="OnAddInventory">Add</Button>
+        </StackPanel>
+
+        <ListView Grid.Row="1" ItemsSource="{Binding InventoryCards}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <WrapPanel>
+                        <local:CardInventorySingleControl InventoryCard="{Binding}" />
+                    </WrapPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </UserControl>

@@ -43,6 +43,20 @@
             <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Name</Label>
             <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedCard.FullCard.Name}" />
 
+            <!-- price info -->
+            <Grid Grid.Row="1" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <local:CardPriceControl Grid.Column="0"
+
+                                        SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch" />
+
+                <Button Grid.Column="2" Click="OnOpenInMkm">MKM</Button>
+            </Grid>
+
             <!-- TODO: Set info -->
             <Label Grid.Row="2" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Set</Label>
 
@@ -55,21 +69,8 @@
             <!-- wants data -->
             <local:CardWantsControl Grid.Row="3" SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch" />
 
-            <!-- TODO Inventory -->
-
-            <!-- TODO: price info -->
-            <Grid Grid.Row="4" Grid.ColumnSpan="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <local:CardPriceControl Grid.Column="0"
-                                        
-                                        SelectedCard="{Binding SelectedCard.FullCard}" HorizontalAlignment="Stretch" />
-                
-                <Button Grid.Column="2" Click="OnOpenInMkm">MKM</Button>
-            </Grid>
+            <!-- Inventory -->
+            <local:CardInventoryCollectionControl Grid.Row="4" SelectedCard="{Binding SelectedCard}" HorizontalAlignment="Stretch" />
 
             <Label Grid.Row="6" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Oracle:</Label>
             <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" Text="{Binding SelectedCard.FullCard.OracleText}" />

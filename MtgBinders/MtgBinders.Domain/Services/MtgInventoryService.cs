@@ -41,8 +41,9 @@ namespace MtgBinders.Domain.Services
             var stopwatch = Stopwatch.StartNew();
             var inventoryCards = _configurationSerializer
                 .Deserialize<MtgInventoryCard[]>(_inventoryFileName, new MtgInventoryCard[0])
-                .AsParallel()
+                // .AsParallel()
                 .Select(FindFullCard)
+                .Where(c => c != null)
                 .ToList();
 
             Cards = inventoryCards;
@@ -65,6 +66,11 @@ namespace MtgBinders.Domain.Services
 
         internal MtgInventoryCard FindFullCard(MtgInventoryCard card)
         {
+            if (card.CardId == null)
+            {
+                return null;
+            }
+
             if (_cardRepository.CardsByUniqueId.TryGetValue(card.CardId, out var found))
             {
                 card.FullCard = found;

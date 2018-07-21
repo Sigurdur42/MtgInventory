@@ -9,7 +9,7 @@ using MtgBinders.Domain.ValueObjects;
 
 namespace MtgBinder.Wpf.ViewModels
 {
-    internal class MtgInventoryCardViewModel : INotifyPropertyChanged
+    public class MtgInventoryCardViewModel : INotifyPropertyChanged
     {
         public MtgInventoryCardViewModel(
             MtgInventoryCard card)
