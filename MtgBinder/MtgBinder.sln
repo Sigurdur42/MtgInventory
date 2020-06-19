@@ -14,12 +14,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{78890B66-6793-4A1F-A37B-1AEA67CD453D}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
-		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgBinder.Domain.Tests", "MtgBinder.Domain.Tests\MtgBinder.Domain.Tests.csproj", "{71902F2B-A3A6-48B8-AE8B-EF033F833C4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgBinder.Blazr", "MtgBinder.Blazr\MtgBinder.Blazr.csproj", "{761822E4-8065-4D15-9633-8807AC2F9E46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgBinder.Blazr", "MtgBinder.Blazr\MtgBinder.Blazr.csproj", "{761822E4-8065-4D15-9633-8807AC2F9E46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
