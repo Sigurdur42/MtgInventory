@@ -3,6 +3,7 @@
 @using MtgBinder.Blazr.Data
 @using MtgBinder.Blazr.Data.CardLookup
 @using MtgBinder.Domain.Database
+@using MatBlazor
 
 @inject CardLookupService LookupService
 
@@ -13,9 +14,9 @@
     <DataAnnotationsValidator />
     <p>
         <label>Card:</label>
-        <InputText id="lookup" @bind-Value="_cardLookupData.Lookup" />
+        <MatTextField id="lookup" @bind-Value="_cardLookupData.Lookup" Label="Card" />
     </p>
-    <p><button type="submit" class="btn btn-primary">Search!</button></p>
+    <p><MatButton>Search!</MatButton></p>
 </EditForm>
 
 <p>This component demonstrates fetching data from a service.</p>
@@ -26,27 +27,18 @@
 }
 else
 {
-    <table class="table">
-        <thead>
-        <tr>
+    <MatTable Items="@_lookupResult.Cards" >
+        <MatTableHeader>
+
             <th>Name</th>
             <th>Set</th>
-            @*<th>Temp. (F)</th>
-            <th>Summary</th>*@
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var card in _lookupResult.Cards)
-        {
-            <tr>
-                <td>@card.Name</td>
-                <td>@card.SetCode</td>
-                @*<td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>*@
-            </tr>
-        }
-        </tbody>
-    </table>
+          
+        </MatTableHeader>
+        <MatTableRow>
+            <td>@context.Name</td>
+            <td>@context.SetCode</td>
+        </MatTableRow>
+    </MatTable>
 }
 
 @code {
@@ -57,7 +49,6 @@ else
     {
         _lookupResult = await LookupService.Lookup(_cardLookupData);
     }
-
 
     //protected override async Task OnInitializedAsync()
     //{
