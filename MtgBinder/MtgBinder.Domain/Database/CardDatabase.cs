@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using LiteDB;
+using MtgBinder.Domain.Configuration;
 using MtgBinder.Domain.Inventory;
 using MtgBinder.Domain.Scryfall;
 using MtgBinder.Domain.Tools;
@@ -30,11 +32,14 @@ namespace MtgBinder.Domain.Database
 
         public CardDatabase(
             IScryfallService scryfallService,
-            IAsyncProgressNotifier progressNotifier)
+            IAsyncProgressNotifier progressNotifier,
+            IUserDataFolderProvider userDataFolderProvider) 
         {
             _scryfallService = scryfallService;
             _progressNotifier = progressNotifier;
             SetCount = 42;
+
+            Task.Factory.StartNew(() => Initialize(userDataFolderProvider.ConfigurationFolder));
         }
 
         public event EventHandler DatabaseInitialized;

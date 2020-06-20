@@ -1,7 +1,66 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@using MtgBinder.Blazr.Data
+@using MtgBinder.Blazr.Data.CardLookup
+@using MtgBinder.Domain.Database
 
-Welcome to your new app.
+@inject CardLookupService LookupService
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<h1>Lookup stuff</h1>
+
+<p>Lookup cards</p>
+<EditForm Model="@_cardLookupData" OnValidSubmit="OnSubmitLookup">
+    <DataAnnotationsValidator />
+    <p>
+        <label>Card:</label>
+        <InputText id="lookup" @bind-Value="_cardLookupData.Lookup" />
+    </p>
+    <p><button type="submit" class="btn btn-primary">Search!</button></p>
+</EditForm>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (!_lookupResult.Cards.Any())
+{
+    <p><em>No cards yet</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Set</th>
+            @*<th>Temp. (F)</th>
+            <th>Summary</th>*@
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var card in _lookupResult.Cards)
+        {
+            <tr>
+                <td>@card.Name</td>
+                <td>@card.SetCode</td>
+                @*<td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>*@
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private readonly CardLookupData _cardLookupData = new CardLookupData();
+    private LookupResult _lookupResult = new LookupResult();
+
+    async void OnSubmitLookup()
+    {
+        _lookupResult = await LookupService.Lookup(_cardLookupData);
+    }
+
+
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    //}
+}

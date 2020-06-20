@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using MtgBinder.Domain.Configuration;
 
 namespace MtgBinder.Configuration
 {

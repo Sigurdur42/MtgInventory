@@ -1,28 +1,20 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MtgBinder.Blazr.Data;
-using MtgBinder.Configuration;
-using MtgBinder.Database;
-using MtgBinder.Decks;
+using MtgBinder.Blazr.Data.CardLookup;
+using MtgBinder.Domain.Configuration;
 using MtgBinder.Domain.Database;
 using MtgBinder.Domain.Scryfall;
 using MtgBinder.Domain.Service;
 using MtgBinder.Domain.Tools;
-using MtgBinder.Inventory;
-using MtgBinder.LogProgress;
-using MtgBinder.Lookup;
 using ScryfallApi.Client;
 using Serilog;
 using Serilog.Events;
@@ -46,9 +38,7 @@ namespace MtgBinder.Blazr
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
-            var configurationFolderProvider = new UserDataFolderProvider();
-            var logProgressViewModel = new LogProgressViewModel();
-            
+
             var progressNotifier = new AsyncProgressNotifier();
             services.AddSingleton<IAsyncProgressNotifier>(progressNotifier);
             services.AddSingleton<IAsyncProgress>(progressNotifier);
@@ -60,16 +50,13 @@ namespace MtgBinder.Blazr
 
             services.AddSingleton<IScryfallService, ScryfallService>();
 
-            services.AddSingleton(configurationFolderProvider);
-            services.AddSingleton<IBinderConfigurationRepository, BinderConfigurationRepository>();
+            var configurationFolderProvider = new UserDataFolderProvider();
+            services.AddSingleton<IUserDataFolderProvider>(configurationFolderProvider);
             services.AddSingleton<ICardDatabase, CardDatabase>();
             services.AddSingleton<ICardService, CardService>();
-            services.AddSingleton<MainViewModel>();
-            services.AddSingleton<InventoryViewModel>();
-            services.AddSingleton<CardDatabaseViewModel>();
-            services.AddSingleton<LookupViewModel>();
-            services.AddSingleton(logProgressViewModel);
-            services.AddSingleton<LoadDeckViewModel>();
+
+            // Blazr services
+            services.AddSingleton<CardLookupService>();
 
             services.AddLogging((logBuilder) =>
             {
@@ -95,7 +82,6 @@ namespace MtgBinder.Blazr
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
-                .WriteTo.Sink(logProgressViewModel)
                 .WriteTo.File(targetFileName);
 
             if (Debugger.IsAttached)
@@ -106,7 +92,6 @@ namespace MtgBinder.Blazr
             Log.Logger = logConfig.CreateLogger();
 
             Log.Information($"Initialising MtgBinder.Blazr...");
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

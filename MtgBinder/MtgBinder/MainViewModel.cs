@@ -1,6 +1,7 @@
 ﻿using MtgBinder.Configuration;
 using MtgBinder.Database;
 using MtgBinder.Decks;
+using MtgBinder.Domain.Configuration;
 using MtgBinder.Domain.Database;
 using MtgBinder.Inventory;
 using MtgBinder.LogProgress;

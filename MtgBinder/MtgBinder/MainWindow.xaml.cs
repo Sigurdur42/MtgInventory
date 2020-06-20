@@ -8,6 +8,7 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using MtgBinder.Configuration;
 using MtgBinder.Database;
+using MtgBinder.Domain.Configuration;
 using MtgBinder.Domain.Database;
 using MtgBinder.Domain.Tools;
 

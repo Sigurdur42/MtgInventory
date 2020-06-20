@@ -1,23 +1,24 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using MtgBinder.Configuration;
-using MtgBinder.Domain.Scryfall;
-using ScryfallApi.Client;
-using Serilog;
-using Serilog.Events;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using MtgBinder.Configuration;
 using MtgBinder.Database;
 using MtgBinder.Decks;
+
 using MtgBinder.Domain.Database;
+using MtgBinder.Domain.Scryfall;
 using MtgBinder.Domain.Service;
 using MtgBinder.Domain.Tools;
 using MtgBinder.Inventory;
 using MtgBinder.LogProgress;
 using MtgBinder.Lookup;
+using ScryfallApi.Client;
+using Serilog;
+using Serilog.Events;
 
 namespace MtgBinder
 {
@@ -41,9 +42,8 @@ namespace MtgBinder
 
         private void ConfigureServices(IServiceCollection services)
         {
-            var configurationFolderProvider = new UserDataFolderProvider();
             var logProgressViewModel = new LogProgressViewModel();
-            
+
             var progressNotifier = new AsyncProgressNotifier();
             services.AddSingleton<IAsyncProgressNotifier>(progressNotifier);
             services.AddSingleton<IAsyncProgress>(progressNotifier);
@@ -55,7 +55,7 @@ namespace MtgBinder
 
             services.AddSingleton<IScryfallService, ScryfallService>();
 
-            services.AddSingleton(configurationFolderProvider);
+            services.AddSingleton<IUserDataFolderProvider, UserDataFolderProvider>();
             services.AddSingleton<IBinderConfigurationRepository, BinderConfigurationRepository>();
             services.AddSingleton<ICardDatabase, CardDatabase>();
             services.AddSingleton<ICardService, CardService>();
@@ -78,33 +78,33 @@ namespace MtgBinder
                 }
             });
 
-            var now = DateTime.Now;
-            var targetFileName = Path.Combine(
-                configurationFolderProvider.ConfigurationFolder.FullName,
-                "Logs",
-                $"MtgBinder_{now.ToString("yyyy_MM_dd__HH_mm_ss_ffff", CultureInfo.InvariantCulture)}.log");
+            ////var now = DateTime.Now;
+            ////var targetFileName = Path.Combine(
+            ////    configurationFolderProvider.ConfigurationFolder.FullName,
+            ////    "Logs",
+            ////    $"MtgBinder_{now.ToString("yyyy_MM_dd__HH_mm_ss_ffff", CultureInfo.InvariantCulture)}.log");
 
-            var targetFileInfo = new FileInfo(targetFileName);
-            if (!targetFileInfo.Directory.Exists)
-            {
-                targetFileInfo.Directory.Create();
-            }
+            ////var targetFileInfo = new FileInfo(targetFileName);
+            ////if (!targetFileInfo.Directory.Exists)
+            ////{
+            ////    targetFileInfo.Directory.Create();
+            ////}
 
-            var logConfig = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Sink(logProgressViewModel)
-                .WriteTo.File(targetFileName);
+            ////var logConfig = new LoggerConfiguration()
+            ////    .MinimumLevel.Debug()
+            ////    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            ////    .Enrich.FromLogContext()
+            ////    .WriteTo.Sink(logProgressViewModel)
+            ////    .WriteTo.File(targetFileName);
 
-            if (Debugger.IsAttached)
-            {
-                logConfig = logConfig.WriteTo.Debug();
-            }
+            ////if (Debugger.IsAttached)
+            ////{
+            ////    logConfig = logConfig.WriteTo.Debug();
+            ////}
 
-            Log.Logger = logConfig.CreateLogger();
+            ////Log.Logger = logConfig.CreateLogger();
 
-            Log.Information($"Initialising MtgBinder...");
+            ////Log.Information($"Initialising MtgBinder...");
         }
 
         private void OnStartup(object sender, StartupEventArgs e)
@@ -115,7 +115,6 @@ namespace MtgBinder
 
         private void OnExit(object sender, ExitEventArgs e)
         {
-            
         }
     }
 }

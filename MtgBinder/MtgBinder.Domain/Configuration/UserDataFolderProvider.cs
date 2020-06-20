@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
-namespace MtgBinder.Configuration
+namespace MtgBinder.Domain.Configuration
 {
-    public class UserDataFolderProvider
+    public class UserDataFolderProvider : IUserDataFolderProvider
     {
         public UserDataFolderProvider()
         {

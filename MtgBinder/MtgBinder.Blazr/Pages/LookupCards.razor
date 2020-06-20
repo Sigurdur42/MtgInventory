@@ -1,26 +1,28 @@
 ﻿@page "/lookupCards"
 
 @using MtgBinder.Blazr.Data
+@using MtgBinder.Blazr.Data.CardLookup
 @using MtgBinder.Domain.Database
 
-@inject WeatherForecastService ForecastService
+@inject CardLookupService LookupService
 
 <h1>Lookup stuff</h1>
 
 <p>Lookup cards</p>
-<EditForm Model="@cardLookupData">
+<EditForm Model="@cardLookupData" OnValidSubmit="OnSubmitLookup">
+    <DataAnnotationsValidator />
     <p>
         <label>Card:</label>
-        <InputText id="lookup" @bind-Value="cardLookupData.Lookup"/>
+        <InputText id="lookup" @bind-Value="cardLookupData.Lookup" />
     </p>
-    <p><button type="submit">Search!</button></p>
+    <p><button type="submit" class="btn btn-primary">Search!</button></p>
 </EditForm>
 
 <p>This component demonstrates fetching data from a service.</p>
 
-@if (forecasts == null)
+@if (!lookupResult.Cards.Any())
 {
-    <p><em>Loading...</em></p>
+    <p><em>No cards yet</em></p>
 }
 else
 {
@@ -34,13 +36,13 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var card in lookupResult.Cards)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@card.Name</td>
+                    <td>@card.SetCode</td>
+                    @*<td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>*@
                 </tr>
             }
         </tbody>
@@ -48,13 +50,17 @@ else
 }
 
 @code {
-    private CardLookupData cardLookupData = new CardLookupData();
+    private readonly CardLookupData cardLookupData = new CardLookupData();
+    private LookupResult lookupResult = new LookupResult();
 
-
-    private WeatherForecast[] forecasts;
-
-    protected override async Task OnInitializedAsync()
+    async void OnSubmitLookup()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        lookupResult = await LookupService.Lookup(cardLookupData);
     }
+
+
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    //}
 }
