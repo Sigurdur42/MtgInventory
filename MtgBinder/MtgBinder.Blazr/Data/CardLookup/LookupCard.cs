@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MtgDomain;
 
 namespace MtgBinder.Blazr.Data.CardLookup
@@ -12,9 +9,13 @@ namespace MtgBinder.Blazr.Data.CardLookup
         {
             Name = card.Name;
             SetCode = card.SetCode;
+            Image = card.GetNormalImage();
         }
 
         public string Name { get; set; }
+        
         public string SetCode { get; set; }
+
+        public Uri Image { get; set; }
     }
 }

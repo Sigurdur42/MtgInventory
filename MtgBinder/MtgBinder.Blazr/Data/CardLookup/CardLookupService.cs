@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using MtgBinder.Domain.Database;
 using ScryfallApi.Client.Models;
@@ -16,14 +14,14 @@ namespace MtgBinder.Blazr.Data.CardLookup
             _database = database;
         }
 
-        public async Task<LookupResult> Lookup(CardLookupData data)
+        public Task<LookupResult> Lookup(CardLookupData data)
         {
             var cards = _database.LookupCards(data.Lookup, SearchOptions.RollupMode.Prints);
 
-            return new LookupResult()
+            return Task.FromResult(new LookupResult()
             {
-                Cards = cards.Select(c=>new LookupCard(c)).ToArray()
-            };
+                Cards = cards.Select(c => new LookupCard(c)).ToArray()
+            });
         }
     }
 }
