@@ -4,6 +4,7 @@
 @using MtgBinder.Blazr.Data.CardLookup
 @using MtgBinder.Domain.Database
 @using MatBlazor
+@using ScryfallApi.Client.Models
 
 @inject CardLookupService LookupService
 
@@ -15,6 +16,7 @@
     <p>
         <label>Card:</label>
         <MatTextField id="lookup" @bind-Value="_cardLookupData.Lookup" Label="Card" />
+        @*<MatSelectItem @bind-value="@_cardLookupData.Mode" Items="@AvailableModes"  Label="Retrieval mode"/>*@
     </p>
     <p><MatButton>Search!</MatButton></p>
 </EditForm>
@@ -27,10 +29,10 @@
 }
 else
 {
-    <MatTable Items="@_lookupResult.Cards" >
+    <MatTable Items="@_lookupResult.Cards" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
         <MatTableHeader>
 
-            <th>Name</th>
+            <th><span style="width:300px">Name</span></th>
             <th>Set</th>
           
         </MatTableHeader>
@@ -45,13 +47,25 @@ else
     private readonly CardLookupData _cardLookupData = new CardLookupData();
     private LookupResult _lookupResult = new LookupResult();
 
+    private SearchOptions.RollupMode[] AvailableModes = new[]
+    {
+        SearchOptions.RollupMode.Prints,
+        SearchOptions.RollupMode.Cards
+    };
+
     async void OnSubmitLookup()
     {
         _lookupResult = await LookupService.Lookup(_cardLookupData);
     }
 
-    //protected override async Task OnInitializedAsync()
-    //{
-    //    forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
-    //}
+    private void SelectionChangedEvent(object row)
+    {
+        var selectedRow = row as LookupCard;
+        int debug = 0;
+    }
+
+        //protected override async Task OnInitializedAsync()
+        //{
+        //    forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        //}
 }
