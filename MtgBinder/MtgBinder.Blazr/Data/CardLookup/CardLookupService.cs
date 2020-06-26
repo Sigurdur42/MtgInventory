@@ -16,7 +16,7 @@ namespace MtgBinder.Blazr.Data.CardLookup
 
         public Task<LookupResult> Lookup(CardLookupData data)
         {
-            var cards = _database.LookupCards(data.Lookup, SearchOptions.RollupMode.Prints);
+            var cards = _database.LookupCards(data.Lookup, data.Mode);
 
             return Task.FromResult(new LookupResult()
             {

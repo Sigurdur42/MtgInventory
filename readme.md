@@ -4,9 +4,10 @@ Write something fancy here
 
 
 
-# Open Tasks
-- item 1
-- item 2
+# Open Tasks - Card Lookup
+- Display card image either on click or on hover
+- Add option to select print option (per card, per printing)
+- Add option to add card to inventory
 
 # Required packages / infrastructure
 - .net core 3.1

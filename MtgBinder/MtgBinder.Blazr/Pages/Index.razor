@@ -16,56 +16,74 @@
     <p>
         <label>Card:</label>
         <MatTextField id="lookup" @bind-Value="_cardLookupData.Lookup" Label="Card" />
-        @*<MatSelectItem @bind-value="@_cardLookupData.Mode" Items="@AvailableModes"  Label="Retrieval mode"/>*@
+        <MatSlideToggle @bind-Value="@_modeBindValue">by Prints</MatSlideToggle>
+        
     </p>
     <p><MatButton>Search!</MatButton></p>
 </EditForm>
 
 <p>This component demonstrates fetching data from a service.</p>
 
-@if (!_lookupResult.Cards.Any())
-{
-    <p><em>No cards yet</em></p>
-}
-else
-{
-    <MatTable Items="@_lookupResult.Cards" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
-        <MatTableHeader>
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell">
+            @if (!_lookupResult.Cards.Any())
+            {
+                <p><em>No cards yet</em></p>
+            }
+            else
+            {
+                <MatTable Items="@_lookupResult.Cards" AllowSelection="true" SelectionChanged="SelectionChangedEvent">
+                    <MatTableHeader>
 
-            <th><span style="width:300px">Name</span></th>
-            <th>Set</th>
-          
-        </MatTableHeader>
-        <MatTableRow>
-            <td>@context.Name</td>
-            <td>@context.SetCode</td>
-        </MatTableRow>
-    </MatTable>
-}
+                        <th><span style="width:300px">Name</span></th>
+                        <th>Set</th>
+                        <th>Image</th>
+
+                    </MatTableHeader>
+                    <MatTableRow>
+                        <td>@context.Name</td>
+                        <td>@context.SetCode</td>
+
+                        <td>
+                            <img style="height: 16px" src="@context.Image?.AbsoluteUri" />
+                        </td>
+                    </MatTableRow>
+                </MatTable>
+            }
+            
+        </div>
+        <div class="mat-layout-grid-cell">
+            <img style="width:300px"  src="@selectedImage" />
+            @*<img style="width:300px" src="https://img.scryfall.com/cards/normal/front/5/4/5410254f-cf9d-46c2-acea-07298ae65924.jpg?1592754343" />*@
+
+        </div>
+    </div>
+</div>
 
 @code {
     private readonly CardLookupData _cardLookupData = new CardLookupData();
     private LookupResult _lookupResult = new LookupResult();
 
-    private SearchOptions.RollupMode[] AvailableModes = new[]
-    {
-        SearchOptions.RollupMode.Prints,
-        SearchOptions.RollupMode.Cards
-    };
+    LookupCard _selectedCard = null;
+    string selectedImage = null;
+
+    private bool _modeBindValue = true;
 
     async void OnSubmitLookup()
     {
+        _cardLookupData.Mode = _modeBindValue?SearchOptions.RollupMode.Prints : SearchOptions.RollupMode.Cards;
         _lookupResult = await LookupService.Lookup(_cardLookupData);
     }
 
-    private void SelectionChangedEvent(object row)
+    void SelectionChangedEvent(object row)
     {
-        var selectedRow = row as LookupCard;
-        int debug = 0;
+        _selectedCard = row as LookupCard;
+        selectedImage = _selectedCard?.Image?.AbsoluteUri;
     }
 
-        //protected override async Task OnInitializedAsync()
-        //{
-        //    forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
-        //}
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    //}
 }
