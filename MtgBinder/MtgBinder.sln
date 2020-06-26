@@ -14,6 +14,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{78890B66-6793-4A1F-A37B-1AEA67CD453D}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
+		..\readme.md = ..\readme.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgBinder.Domain.Tests", "MtgBinder.Domain.Tests\MtgBinder.Domain.Tests.csproj", "{71902F2B-A3A6-48B8-AE8B-EF033F833C4E}"
