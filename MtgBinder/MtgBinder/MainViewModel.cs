@@ -17,7 +17,7 @@ namespace MtgBinder
 
         public MainViewModel(
             IBinderConfigurationRepository binderConfigurationRepository,
-            UserDataFolderProvider userDataFolderProvider,
+            IUserDataFolderProvider userDataFolderProvider,
             CardDatabaseViewModel cardDatabaseViewModel,
             LookupViewModel lookupViewModel,
             LoadDeckViewModel loadDeckViewModel,
@@ -34,7 +34,7 @@ namespace MtgBinder
             Configuration = _binderConfigurationRepository.ReadConfiguration();
         }
 
-        public UserDataFolderProvider UserDataFolderProvider { get; }
+        public IUserDataFolderProvider UserDataFolderProvider { get; }
         public CardDatabaseViewModel CardDatabaseViewModel { get; }
         public LookupViewModel LookupViewModel { get; }
         public LoadDeckViewModel LoadDeckViewModel { get; }

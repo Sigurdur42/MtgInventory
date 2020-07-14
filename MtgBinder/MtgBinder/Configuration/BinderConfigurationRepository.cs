@@ -13,9 +13,9 @@ namespace MtgBinder.Configuration
 
     public class BinderConfigurationRepository : IBinderConfigurationRepository
     {
-        private readonly UserDataFolderProvider _folderProvider;
+        private readonly IUserDataFolderProvider _folderProvider;
 
-        public BinderConfigurationRepository(UserDataFolderProvider folderProvider)
+        public BinderConfigurationRepository(IUserDataFolderProvider folderProvider)
         {
             _folderProvider = folderProvider;
         }

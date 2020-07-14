@@ -21,12 +21,12 @@ namespace MtgBinder
     {
         private readonly MainViewModel _viewModel;
         private readonly ICardDatabase _cardDatabase;
-        private readonly UserDataFolderProvider _userDataFolderProvider;
+        private readonly IUserDataFolderProvider _userDataFolderProvider;
 
         public MainWindow(
             MainViewModel viewModel,
             ICardDatabase cardDatabase,
-            UserDataFolderProvider userDataFolderProvider,
+            IUserDataFolderProvider userDataFolderProvider,
             IAsyncProgress asyncProgress)
         {
             _viewModel = viewModel;

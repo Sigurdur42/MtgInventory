@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using MtgBinder.Configuration;
 using MtgBinder.Database;
 using MtgBinder.Decks;
-
+using MtgBinder.Domain.Configuration;
 using MtgBinder.Domain.Database;
 using MtgBinder.Domain.Scryfall;
 using MtgBinder.Domain.Service;
@@ -55,8 +55,8 @@ namespace MtgBinder
 
             services.AddSingleton<IScryfallService, ScryfallService>();
 
-            services.AddSingleton<IUserDataFolderProvider, UserDataFolderProvider>();
             services.AddSingleton<IBinderConfigurationRepository, BinderConfigurationRepository>();
+            services.AddSingleton<IUserDataFolderProvider, UserDataFolderProvider>();
             services.AddSingleton<ICardDatabase, CardDatabase>();
             services.AddSingleton<ICardService, CardService>();
             services.AddSingleton<MainViewModel>();
