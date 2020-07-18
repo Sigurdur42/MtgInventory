@@ -17,7 +17,7 @@
 
   <TabControl>
     <TabItem Header="Card Lookup">
-      <view:CardLookupView x:Name="cardLookupView" />
+      <view:CardLookupView x:Name="cardLookupView" DataContext="{Binding CardLookupViewModel}" />
     </TabItem>
     <TabItem Header="Others"></TabItem>
     

@@ -7,9 +7,9 @@ namespace MtgBinder.Avalonia.ViewModels
         public MainWindowViewModel(
             CardLookupViewModel cardLookupViewModel)
         {
-            CardLookup = cardLookupViewModel;
+            CardLookupViewModel = cardLookupViewModel;
         }
 
-        public CardLookupViewModel CardLookup { get; }
+        public CardLookupViewModel CardLookupViewModel { get; }
     }
 }

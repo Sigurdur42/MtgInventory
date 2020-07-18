@@ -42,7 +42,6 @@ namespace MtgBinder.Avalonia.ViewModels.Lookup
             }
 
             SelectedCard = null;
-
             LookupResult = _database.LookupCards(SearchPattern, CardRollupMode).Select(c => new CardViewModel(c, _database)).ToArray();
         }
     }
