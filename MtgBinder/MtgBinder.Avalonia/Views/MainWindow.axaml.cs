@@ -24,6 +24,9 @@ namespace MtgBinder.Avalonia.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+
+            // Wire up view models until we know better
+            this.FindControl<CardLookupView>("cardLookupView")?.SetViewModel(viewModel.CardLookup);
         }
 
         private void InitializeComponent()

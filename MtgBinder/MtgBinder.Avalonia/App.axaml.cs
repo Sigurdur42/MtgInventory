@@ -81,6 +81,7 @@ namespace MtgBinder.Avalonia
 
 
             services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<CardLookupView>();
             services.AddSingleton<MainWindow>();
 
             // Configure Logging

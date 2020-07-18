@@ -14,7 +14,11 @@ namespace MtgBinder.Avalonia.ViewModels.Lookup
         public CardLookupViewModel(ICardDatabase database)
         {
             _database = database;
+            LookupCards = ReactiveCommand.Create(RunLookupCards);
+
         }
+        public ReactiveCommand<Unit, Unit> LookupCards { get; }
+
 
         public string SearchPattern { get; set; }
 

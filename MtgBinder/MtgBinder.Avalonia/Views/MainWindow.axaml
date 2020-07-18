@@ -1,6 +1,7 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:MtgBinder.Avalonia.ViewModels;assembly=MtgBinder.Avalonia"
+        xmlns:view="clr-namespace:MtgBinder.Avalonia.Views;assembly=MtgBinder.Avalonia"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -16,24 +17,7 @@
 
   <TabControl>
     <TabItem Header="Card Lookup">
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto"/>
-          <ColumnDefinition Width="Auto"/>
-          <ColumnDefinition Width="Auto"/>
-          <ColumnDefinition Width="*"/>
-          <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <TextBlock Text="Lookup:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-        <TextBox Grid.Column="1" Width="300" VerticalAlignment="Center" Text="{Binding CardLookup.SearchPattern}" />
-        <Button Grid.Column="2" Command="{Binding LookupCards}">Search!</Button>
-        
-      </Grid>
+      <view:CardLookupView x:Name="cardLookupView" />
     </TabItem>
     <TabItem Header="Others"></TabItem>
     

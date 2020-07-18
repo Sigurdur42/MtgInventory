@@ -1,6 +1,4 @@
-﻿using System.Reactive;
-using MtgBinder.Avalonia.ViewModels.Lookup;
-using ReactiveUI;
+﻿using MtgBinder.Avalonia.ViewModels.Lookup;
 
 namespace MtgBinder.Avalonia.ViewModels
 {
@@ -10,14 +8,8 @@ namespace MtgBinder.Avalonia.ViewModels
             CardLookupViewModel cardLookupViewModel)
         {
             CardLookup = cardLookupViewModel;
-            LookupCards = ReactiveCommand.Create(RunLookupCards);
-
         }
-        public ReactiveCommand<Unit, Unit> LookupCards { get; }
-
 
         public CardLookupViewModel CardLookup { get; }
-
-        public void RunLookupCards() => CardLookup.RunLookupCards();
     }
 }
