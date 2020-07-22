@@ -24,7 +24,6 @@ namespace MtgBinder.Domain.Mkm
             var stockNode = doc.Root.Element("stock");
 
             var bytes = Convert.FromBase64String(stockNode.Value);
-            // var contents = new StreamContent(new MemoryStream(bytes));
 
             using (var decompressionStream = new GZipStream(new MemoryStream(bytes), CompressionMode.Decompress))
             {
@@ -40,12 +39,35 @@ namespace MtgBinder.Domain.Mkm
                         };
                         return csv.GetRecords<MkmStockItem>().ToList();
                     }
-
-                    // Do something with the value
                 }
-
-                // Console.WriteLine($"Decompressed: {fileToDecompress.Name}");
             }
+        }
+
+        public MkmProduct GetProductData(MkmAuthentication authentication, string productId)
+        {
+            var response = MakeRequest(
+                authentication,
+                $"products/{productId}");
+
+            var doc = XDocument.Parse(response);
+            var product = doc.Root.Element("product");
+
+            var priceGuide = product.Element("priceGuide");
+
+            return new MkmProduct()
+            {
+                ProductId = product?.Element("idProduct")?.Value,
+                Name = product?.Element("enName")?.Value,
+                WebSite = product?.Element("website")?.Value,
+
+                PriceSell = priceGuide?.Element("SELL")?.Value,
+                PriceLow = priceGuide?.Element("LOW")?.Value,
+                PriceLowEx = priceGuide?.Element("LOWEX")?.Value,
+                PriceLowFoil = priceGuide?.Element("LOWFOIL")?.Value,
+                PriceAverage = priceGuide?.Element("AVG")?.Value,
+                PriceTrend = priceGuide?.Element("TREND")?.Value,
+                PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
+            };
         }
 
         internal string MakeRequest(
