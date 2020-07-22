@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
+using CsvHelper;
 
 namespace MtgBinder.Domain.Mkm
 {
     public class MkmRequest
     {
-        public string GetStockAsCsv(MkmAuthentication authentication)
+        public IEnumerable<MkmStockItem> GetStockAsCsv(MkmAuthentication authentication)
         {
             var response = MakeRequest(
                 authentication,
@@ -27,14 +30,22 @@ namespace MtgBinder.Domain.Mkm
             {
                 using (var decompressedStreamReader = new StreamReader(decompressionStream, Encoding.UTF8))
                 {
-                    response = decompressedStreamReader.ReadToEnd();
+                    using (var csv = new CsvReader(decompressedStreamReader, CultureInfo.InvariantCulture))
+                    {
+                        csv.Configuration.HasHeaderRecord = true;
+                        csv.Configuration.Delimiter = ";";
+                        csv.Configuration.BadDataFound = (context) =>
+                        {
+                            var debug = 0;
+                        };
+                        return csv.GetRecords<MkmStockItem>().ToList();
+                    }
+
                     // Do something with the value
                 }
 
                 // Console.WriteLine($"Decompressed: {fileToDecompress.Name}");
             }
-
-            return response;
         }
 
         internal string MakeRequest(

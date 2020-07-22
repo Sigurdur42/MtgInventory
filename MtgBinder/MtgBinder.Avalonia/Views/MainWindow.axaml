@@ -9,18 +9,21 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="MtgBinder.Avalonia">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
 
-    <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
+  <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
 
   <TabControl>
     <TabItem Header="Card Lookup">
       <view:CardLookupView x:Name="cardLookupView" DataContext="{Binding CardLookupViewModel}" />
     </TabItem>
+    <TabItem Header="Stock">
+      <view:StockView x:Name="stockView" DataContext="{Binding StockViewModel}" />
+    </TabItem>
     <TabItem Header="Others"></TabItem>
-    
+
   </TabControl>
 
 </Window>

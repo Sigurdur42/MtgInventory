@@ -42,10 +42,7 @@ namespace MtgBinder.Avalonia
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-
-
                 desktop.MainWindow = _serviceProvider.GetService<MainWindow>();
-               
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -74,14 +71,16 @@ namespace MtgBinder.Avalonia
             ////services.AddSingleton<InventoryViewModel>();
             ////services.AddSingleton<CardDatabaseViewModel>();
             services.AddSingleton<CardLookupViewModel>();
+            services.AddSingleton<StockViewModel>();
+
             ////services.AddSingleton(logProgressViewModel);
             ////services.AddSingleton<LoadDeckViewModel>();
 
             //     services.AddSingleton<ILogBase>(new LogBase(new FileInfo($@"C:\temp\log.txt")));
 
-
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<CardLookupView>();
+            services.AddSingleton<StockView>();
             services.AddSingleton<MainWindow>();
 
             // Configure Logging
