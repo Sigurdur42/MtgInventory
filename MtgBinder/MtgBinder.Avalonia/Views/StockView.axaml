@@ -18,7 +18,9 @@
     </Grid.RowDefinitions>
 
 
-    <Button Grid.Column="2" Command="{Binding LoadStock}">Load Stock</Button>
+    <Button Grid.Column="1" Command="{Binding LoadStock}">Load Stock</Button>
+
+    <TextBlock Grid.Column="2" Text="{Binding StockSummary}" />
 
     <DataGrid Items="{Binding StockItems}" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="4">
 

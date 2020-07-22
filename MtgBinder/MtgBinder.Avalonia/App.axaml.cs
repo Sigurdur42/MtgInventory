@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using MtgBinder.Avalonia.Configuration;
 using MtgBinder.Avalonia.ViewModels;
 using MtgBinder.Avalonia.ViewModels.Lookup;
+using MtgBinder.Avalonia.ViewModels.Stock;
 using MtgBinder.Avalonia.Views;
 using MtgBinder.Domain.Configuration;
 using MtgBinder.Domain.Database;

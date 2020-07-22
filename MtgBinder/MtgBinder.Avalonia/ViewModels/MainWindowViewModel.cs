@@ -1,4 +1,5 @@
 ﻿using MtgBinder.Avalonia.ViewModels.Lookup;
+using MtgBinder.Avalonia.ViewModels.Stock;
 
 namespace MtgBinder.Avalonia.ViewModels
 {
