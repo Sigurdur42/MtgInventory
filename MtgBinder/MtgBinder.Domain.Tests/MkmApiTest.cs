@@ -13,8 +13,8 @@ namespace MtgBinder.Domain.Tests
         [Explicit]
         public void TestMkmApi()
         {
-            var target = new RequestHelper();
-            var result = target.MakeRequest(new MkmAuthentication());
+            var target = new MkmRequest();
+            var result = target.GetStockAsCsv(new MkmAuthentication());
 
             Assert.IsNotNull(result);
         }

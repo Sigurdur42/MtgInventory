@@ -1,20 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using MtgBinder.Domain.Mkm;
+using System.Xml.Linq;
 
-namespace MtgBinder.Domain
+namespace MtgBinder.Domain.Mkm
 {
-    public class RequestHelper
+    public class MkmRequest
     {
-        public string MakeRequest(MkmAuthentication authentication)
+        public string GetStockAsCsv(MkmAuthentication authentication)
+        {
+            var response = MakeRequest(
+                authentication,
+                "stock/file");
+
+            var doc = XDocument.Parse(response);
+            var stockNode = doc.Root.Element("stock");
+
+            var bytes = Convert.FromBase64String(stockNode.Value);
+            // var contents = new StreamContent(new MemoryStream(bytes));
+
+            using (var decompressionStream = new GZipStream(new MemoryStream(bytes), CompressionMode.Decompress))
+            {
+                using (var decompressedStreamReader = new StreamReader(decompressionStream, Encoding.UTF8))
+                {
+                    response = decompressedStreamReader.ReadToEnd();
+                    // Do something with the value
+                }
+
+                // Console.WriteLine($"Decompressed: {fileToDecompress.Name}");
+            }
+
+            return response;
+        }
+
+        internal string MakeRequest(
+            MkmAuthentication authentication,
+            string urlCommand)
         {
             var method = "GET";
             // var url = "https://api.cardmarket.com/ws/v2.0/account";
-            var url = "https://api.cardmarket.com/ws/v2.0/stock/file";
+            var url = $"https://api.cardmarket.com/ws/v2.0/{urlCommand}";
 
             var request = WebRequest.CreateHttp(url) as HttpWebRequest;
             var header = new OAuthHeader(authentication);
@@ -26,16 +55,11 @@ namespace MtgBinder.Domain
                 ? Encoding.UTF8
                 : Encoding.GetEncoding(response.CharacterSet);
 
-            var responseString = "";
             using (var stream = response.GetResponseStream())
             {
                 var reader = new StreamReader(stream, encoding);
-                responseString = reader.ReadToEnd();
+                return reader.ReadToEnd();
             }
-
-            // proceed further
-
-            return responseString;
         }
     }
 
@@ -44,9 +68,6 @@ namespace MtgBinder.Domain
     /// </summary>
     internal class OAuthHeader
     {
-        private readonly MkmAuthentication _authentication;
-
-
         /// <summary>OAuth Signature Method</summary>
         protected string signatureMethod = "HMAC-SHA1";
 
@@ -55,6 +76,8 @@ namespace MtgBinder.Domain
 
         /// <summary>All Header params compiled into a Dictionary</summary>
         protected IDictionary<string, string> headerParams;
+
+        private readonly MkmAuthentication _authentication;
 
         /// <summary>
         /// Constructor
