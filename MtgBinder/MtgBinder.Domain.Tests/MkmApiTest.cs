@@ -14,7 +14,7 @@ namespace MtgBinder.Domain.Tests
         public void TestMkmApi()
         {
             var target = new MkmRequest();
-            var result = target.GetProductData(new MkmAuthentication(), "290136");
+            var result = target.GetArticles(new MkmAuthentication(), "290136", true);
 
             Assert.IsNotNull(result);
         }

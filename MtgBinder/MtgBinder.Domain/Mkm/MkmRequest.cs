@@ -18,7 +18,8 @@ namespace MtgBinder.Domain.Mkm
         {
             var response = MakeRequest(
                 authentication,
-                "stock/file");
+                "stock/file",
+                "");
 
             var doc = XDocument.Parse(response);
             var stockNode = doc.Root.Element("stock");
@@ -47,7 +48,51 @@ namespace MtgBinder.Domain.Mkm
         {
             var response = MakeRequest(
                 authentication,
-                $"products/{productId}");
+                $"products/{productId}",
+                "");
+
+            var doc = XDocument.Parse(response);
+            var product = doc.Root.Element("product");
+
+            var priceGuide = product.Element("priceGuide");
+
+            return new MkmProduct()
+            {
+                ProductId = product?.Element("idProduct")?.Value,
+                Name = product?.Element("enName")?.Value,
+                WebSite = product?.Element("website")?.Value,
+
+                PriceSell = priceGuide?.Element("SELL")?.Value,
+                PriceLow = priceGuide?.Element("LOW")?.Value,
+                PriceLowEx = priceGuide?.Element("LOWEX")?.Value,
+                PriceLowFoil = priceGuide?.Element("LOWFOIL")?.Value,
+                PriceAverage = priceGuide?.Element("AVG")?.Value,
+                PriceTrend = priceGuide?.Element("TREND")?.Value,
+                PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
+            };
+        }
+
+        public MkmProduct GetArticles(
+            MkmAuthentication authentication, 
+            string productId,
+            bool commercialOnly)
+        {
+            var parameters = new List<string>();
+            if (commercialOnly)
+            {
+                // parameters.Add($"userType=commercial");
+                parameters.Add("userType=private&idLanguage=1&minCondition=NM&start=0&maxResults=10");
+            }
+
+            var parameterString = "";
+            if (parameters.Any())
+            {
+                parameterString = "?" + string.Join("&", parameters);
+            }
+
+            var response = MakeRequest(
+                authentication,
+                $"articles/{productId}", parameterString);
 
             var doc = XDocument.Parse(response);
             var product = doc.Root.Element("product");
@@ -72,13 +117,13 @@ namespace MtgBinder.Domain.Mkm
 
         internal string MakeRequest(
             MkmAuthentication authentication,
-            string urlCommand)
+            string urlCommand,
+            string parameters)
         {
             var method = "GET";
-            // var url = "https://api.cardmarket.com/ws/v2.0/account";
             var url = $"https://api.cardmarket.com/ws/v2.0/{urlCommand}";
 
-            var request = WebRequest.CreateHttp(url) as HttpWebRequest;
+            var request = WebRequest.CreateHttp(url + parameters) as HttpWebRequest;
             var header = new OAuthHeader(authentication);
             request.Headers.Add(HttpRequestHeader.Authorization, header.getAuthorizationHeader(method, url));
             request.Method = method;
