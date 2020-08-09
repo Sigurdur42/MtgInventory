@@ -1,12 +1,15 @@
-﻿using System;
+﻿using System.Linq;
+using System.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ReactiveUI;
 using static System.Environment;
 
 namespace MkmApi.TestUI.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ReactiveObject
     {
 
         public MainWindowViewModel()
@@ -40,6 +43,42 @@ namespace MkmApi.TestUI.ViewModels
         }
 
         public MkmAuthenticationData AuthenticationData { get; set; }
-        public string Greeting => "Hello World!";
+
+        private string _output = "Initial value";
+        public string Output
+        {
+            get => _output;
+
+            // set => RaiseAndSetIfChanged(ref _output, value);
+        }
+
+        public void OnDownloadSetsCommand()
+        {
+
+            Console.Write("");
+
+            // Output = "Download sets pressed";
+        }
+
+        public void OnDownloadStock()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var request = new MkmRequest();
+            var result = request.GetStockAsCsv(AuthenticationData);
+
+            stopwatch.Stop();
+
+            var dump = $"Reading {result.Count()} took {stopwatch.Elapsed}";
+            DisplayResult(dump);
+
+            // Output = "Download sets pressed";
+
+        }
+
+        private void DisplayResult(string result)
+        {
+            
+        }
+
     }
 }

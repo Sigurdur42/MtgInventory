@@ -29,7 +29,7 @@ namespace MkmApi.TestUI
 
         public bool Match(object data)
         {
-            return data is ViewModelBase;
+            return data is MainWindowViewModel;
         }
     }
 }
