@@ -49,7 +49,7 @@ namespace MkmApi.TestUI.ViewModels
         {
             get => _output;
 
-            // set => RaiseAndSetIfChanged(ref _output, value);
+            set => this.RaiseAndSetIfChanged(ref _output, value);
         }
 
         public void OnDownloadSetsCommand()
@@ -77,7 +77,7 @@ namespace MkmApi.TestUI.ViewModels
 
         private void DisplayResult(string result)
         {
-            
+            Output = result;
         }
 
     }
