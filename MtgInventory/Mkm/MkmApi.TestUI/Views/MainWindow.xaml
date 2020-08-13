@@ -16,7 +16,7 @@
         <StackPanel Grid.Row="0">
 
             <Button Command="{Binding OnDownloadSetsCommand}">Download Sets</Button>
-            <Button>Download All Cards</Button>
+            <Button Command="{Binding OnDownloadAllCards}">Download All Cards</Button>
             <Button Command="{Binding OnDownloadStock}">Download Stock Items</Button>
         </StackPanel>
 

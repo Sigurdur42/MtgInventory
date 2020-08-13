@@ -1,17 +1,27 @@
-﻿namespace MkmApi
-{
-    public class MkmProduct
-    {
-        public string ProductId { get; set; }
-        public string Name { get; set; }
-        public string WebSite { get; set; }
+using CsvHelper.Configuration.Attributes;
 
-        public string PriceSell { get; set; }
-        public string PriceLow { get; set; }
-        public string PriceLowEx { get; set; }
-        public string PriceLowFoil { get; set; }
-        public string PriceAverage { get; set; }
-        public string PriceTrend { get; set; }
-        public string PriceTrendFoil { get; set; }
+namespace MkmApi {
+    public class MkmProduct {
+        // "idProduct","Name","Category ID","Category","Expansion ID","Metacard ID","Date Added"
+        [Name ("idProduct")]
+        public string Id { get; set; }
+
+        [Name ("Name")]
+        public string Name { get; set; }
+
+        [Name ("Category ID")]
+        public string CategoryId { get; set; }
+
+        [Name ("Category")]
+        public string Category { get; set; }
+
+        [Name ("Expansion ID")]
+        public string ExpansionId { get; set; }
+
+        [Name ("Metacard ID")]
+        public string MetacardId { get; set; }
+
+        [Name ("Date Added")]
+        public string DateAdded { get; set; }
     }
 }
