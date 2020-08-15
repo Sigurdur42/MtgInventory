@@ -36,7 +36,7 @@ namespace MtgBinder.Domain.Mkm
                         csv.Configuration.Delimiter = ";";
                         csv.Configuration.BadDataFound = (context) =>
                         {
-                            var debug = 0;
+                            // var debug = 0;
                         };
                         return csv.GetRecords<MkmStockItem>().ToList();
                     }
