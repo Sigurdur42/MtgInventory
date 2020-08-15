@@ -4,25 +4,26 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" x:Class="MkmApi.TestUI.Views.MainWindow" Icon="/Assets/avalonia-logo.ico" Title="MkmApi.TestUI">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0">
+    <StackPanel Grid.Row="0">
 
-            <Button Command="{Binding OnDownloadSetsCommand}">Download Sets</Button>
-            <Button Command="{Binding OnDownloadAllCards}">Download All Cards</Button>
-            <Button Command="{Binding OnDownloadStock}">Download Stock Items</Button>
-        </StackPanel>
+      <Button Command="{Binding OnDownloadSetsCommand}">Download Sets</Button>
+      <Button Command="{Binding OnDownloadAllCards}">Download All Cards</Button>
+      <Button Command="{Binding OnDownloadStock}">Download Stock Items</Button>
+      <Button Command="{Binding OnDownloadWithParameters}">Download Article with Paramaters</Button>
+    </StackPanel>
 
-        <TextBlock Grid.Row="1" Text="{Binding Output}" />
+    <TextBlock Grid.Row="1" Text="{Binding Output}" />
 
 
-    </Grid>
+  </Grid>
 
 </Window>

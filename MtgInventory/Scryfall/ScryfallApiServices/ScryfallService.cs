@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using MtgBinder.Domain.Database;
-using MtgBinder.Domain.Tools;
-using MtgDomain;
+
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
 
