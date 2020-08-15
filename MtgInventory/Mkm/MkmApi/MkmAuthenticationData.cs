@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MkmApi
+﻿namespace MkmApi
 {
     public sealed class MkmAuthenticationData
     {

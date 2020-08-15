@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgInventory.Application.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgInventory", "MtgInventory\MtgInventory\MtgInventory.csproj", "{92605CF3-8776-495A-892A-F930BE2C69CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MkmApi.Tests", "Mkm\MkmApi.Tests\MkmApi.Tests.csproj", "{B8AF5C42-C59C-4F83-B6F0-66C52297022B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{92605CF3-8776-495A-892A-F930BE2C69CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92605CF3-8776-495A-892A-F930BE2C69CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92605CF3-8776-495A-892A-F930BE2C69CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8AF5C42-C59C-4F83-B6F0-66C52297022B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8AF5C42-C59C-4F83-B6F0-66C52297022B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8AF5C42-C59C-4F83-B6F0-66C52297022B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8AF5C42-C59C-4F83-B6F0-66C52297022B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{FCC639A7-FEC3-4CD4-AE3E-949C212C8CBD} = {8B1B8C75-2DA1-406A-8C99-CCF19A38B730}
 		{B71DA683-0814-458F-8D72-3BDC25FB0B7B} = {72B7C620-1C36-4F32-9738-A5877109BE49}
 		{C833AE4C-4805-4D74-A1F0-32ED8389C8A5} = {72B7C620-1C36-4F32-9738-A5877109BE49}
+		{B8AF5C42-C59C-4F83-B6F0-66C52297022B} = {8B1B8C75-2DA1-406A-8C99-CCF19A38B730}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {54E19809-5A03-4D4E-8C34-EF5F9BBFF040}

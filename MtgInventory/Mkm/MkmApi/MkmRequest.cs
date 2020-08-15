@@ -1,4 +1,6 @@
 ﻿using CsvHelper;
+using MkmApi.Entities;
+using MkmApi.EntityReader;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,7 +15,7 @@ namespace MkmApi
 {
     public class MkmRequest
     {
-        public MkmProductMagic GetArticles(
+        public IEnumerable<Article> GetArticles(
             MkmAuthenticationData authentication,
             string productId,
             bool commercialOnly,
@@ -35,24 +37,28 @@ namespace MkmApi
                 $"articles/{productId}", parameters);
 
             var doc = XDocument.Parse(response);
-            var product = doc.Root.Element("product");
+            var articles = doc.Root.Elements("article")
+                .Select(a => a.ReadArticle())
+                .ToArray();
 
-            var priceGuide = product.Element("priceGuide");
+            return articles;
 
-            return new MkmProductMagic()
-            {
-                ProductId = product?.Element("idProduct")?.Value,
-                Name = product?.Element("enName")?.Value,
-                WebSite = product?.Element("website")?.Value,
+            ////var priceGuide = product.Element("priceGuide");
 
-                PriceSell = priceGuide?.Element("SELL")?.Value,
-                PriceLow = priceGuide?.Element("LOW")?.Value,
-                PriceLowEx = priceGuide?.Element("LOWEX")?.Value,
-                PriceLowFoil = priceGuide?.Element("LOWFOIL")?.Value,
-                PriceAverage = priceGuide?.Element("AVG")?.Value,
-                PriceTrend = priceGuide?.Element("TREND")?.Value,
-                PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
-            };
+            ////return new MkmProductMagic()
+            ////{
+            ////    ProductId = product?.Element("idProduct")?.Value,
+            ////    Name = product?.Element("enName")?.Value,
+            ////    WebSite = product?.Element("website")?.Value,
+
+            ////    PriceSell = priceGuide?.Element("SELL")?.Value,
+            ////    PriceLow = priceGuide?.Element("LOW")?.Value,
+            ////    PriceLowEx = priceGuide?.Element("LOWEX")?.Value,
+            ////    PriceLowFoil = priceGuide?.Element("LOWFOIL")?.Value,
+            ////    PriceAverage = priceGuide?.Element("AVG")?.Value,
+            ////    PriceTrend = priceGuide?.Element("TREND")?.Value,
+            ////    PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
+            ////};
         }
 
         public MkmProductMagic GetProductData(MkmAuthenticationData authentication, string productId)
@@ -99,9 +105,9 @@ namespace MkmApi
 
             using (var decompressionStream = new GZipStream(new MemoryStream(bytes), CompressionMode.Decompress))
             {
-                // // using (var fileStream = File.Create (Path.Combine ("/home/michael", "temp.txt"))) {
-                // //     decompressionStream.CopyTo (fileStream);
-                // // }
+                //// using (var fileStream = File.Create (Path.Combine ("/home/michael", "temp.txt"))) {
+                ////     decompressionStream.CopyTo (fileStream);
+                //// }
 
                 using (var decompressedStreamReader = new StreamReader(decompressionStream, Encoding.UTF8))
                 {
