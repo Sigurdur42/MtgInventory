@@ -21,7 +21,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgInventory.Application.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgInventory", "MtgInventory\MtgInventory\MtgInventory.csproj", "{92605CF3-8776-495A-892A-F930BE2C69CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MkmApi.Tests", "Mkm\MkmApi.Tests\MkmApi.Tests.csproj", "{B8AF5C42-C59C-4F83-B6F0-66C52297022B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MkmApi.Tests", "Mkm\MkmApi.Tests\MkmApi.Tests.csproj", "{B8AF5C42-C59C-4F83-B6F0-66C52297022B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_SolutionItems", "_SolutionItems", "{C78CC9CC-7134-4624-A4FC-377A2692877B}"
+	ProjectSection(SolutionItems) = preProject
+		readme.md = readme.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
