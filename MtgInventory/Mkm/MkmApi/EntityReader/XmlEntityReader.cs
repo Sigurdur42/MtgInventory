@@ -64,7 +64,17 @@ namespace MkmApi.EntityReader
                 SellCount = element.GetContent("sellCount"),
                 SoldItems = element.GetContentInt("soldItems"),
                 AvgShippingTime = element.GetContent("avgShippingTime"),
-                OnVacation=element.GetContent("onVacation")
+                OnVacation = element.GetContent("onVacation")
+            };
+        }
+
+        public static Game ReadGame(this XElement node)
+        {
+            return new Game
+            {
+                IdGame = node.GetContentInt("idGame"),
+                Name = node.GetContent("name"),
+                Abbreviation = node.GetContent("abbreviation")
             };
         }
 
@@ -92,7 +102,7 @@ namespace MkmApi.EntityReader
                 WebSite = product?.Element("website")?.Value,
                 CountReprints = product.GetContentInt("countReprints"),
 
-               PriceGuide = product.Element("priceGuide").ReadPriceGuide(),
+                PriceGuide = product.Element("priceGuide").ReadPriceGuide(),
             };
         }
 

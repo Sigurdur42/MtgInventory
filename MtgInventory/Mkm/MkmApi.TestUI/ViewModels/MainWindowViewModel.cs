@@ -80,6 +80,21 @@ namespace MkmApi.TestUI.ViewModels
             // Output = "Download sets pressed";
         }
 
+        public void OnDownloadGames()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var request = new MkmRequest();
+            var result = request.GetGames(AuthenticationData).OrderBy(g => g.IdGame);
+
+            stopwatch.Stop();
+
+            var all = string.Join(Environment.NewLine, result.Select(g => $"{g.IdGame} {g.Name}"));
+            var dump = $"Reading {all} took {stopwatch.Elapsed}";
+            DisplayResult(dump);
+
+            // Output = "Download sets pressed";
+        }
+
         public void OnDownloadWithParameters()
         {
             var stopwatch = Stopwatch.StartNew();

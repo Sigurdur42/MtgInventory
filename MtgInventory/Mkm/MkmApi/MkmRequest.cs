@@ -31,7 +31,6 @@ namespace MkmApi
                 parameters.Add(new QueryParameter("maxResults", "10"));
             }
 
-
             var response = MakeRequest(
                 authentication,
                 $"articles/{productId}", parameters);
@@ -59,6 +58,20 @@ namespace MkmApi
             ////    PriceTrend = priceGuide?.Element("TREND")?.Value,
             ////    PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
             ////};
+        }
+
+        public IEnumerable<Game> GetGames(MkmAuthenticationData authentication)
+        {
+            var response = MakeRequest(
+                authentication,
+                $"games",
+                null);
+
+            var doc = XDocument.Parse(response);
+            return doc.Root
+                .Elements("game")
+                .Select(g => g.ReadGame())
+                .ToArray();
         }
 
         public Product GetProductData(MkmAuthenticationData authentication, string productId)
