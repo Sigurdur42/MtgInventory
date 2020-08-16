@@ -66,6 +66,20 @@ namespace MkmApi.TestUI.ViewModels
             // Output = "Download sets pressed";
         }
 
+        public void OnDownloadSingleProduct()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var request = new MkmRequest();
+            var result = request.GetProductData(AuthenticationData, "16366");
+
+            stopwatch.Stop();
+
+            var dump = $"Reading {result.NameEn} took {stopwatch.Elapsed}";
+            DisplayResult(dump);
+
+            // Output = "Download sets pressed";
+        }
+
         public void OnDownloadWithParameters()
         {
             var stopwatch = Stopwatch.StartNew();

@@ -19,6 +19,7 @@
       <Button Command="{Binding OnDownloadAllCards}">Download All Cards</Button>
       <Button Command="{Binding OnDownloadStock}">Download Stock Items</Button>
       <Button Command="{Binding OnDownloadWithParameters}">Download Article with Paramaters</Button>
+      <Button Command="{Binding OnDownloadSingleProduct}">Download SingleProduct</Button>
     </StackPanel>
 
     <TextBlock Grid.Row="1" Text="{Binding Output}" />

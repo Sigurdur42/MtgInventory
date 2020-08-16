@@ -61,7 +61,7 @@ namespace MkmApi
             ////};
         }
 
-        public MkmProductMagic GetProductData(MkmAuthenticationData authentication, string productId)
+        public Product GetProductData(MkmAuthenticationData authentication, string productId)
         {
             var response = MakeRequest(
                 authentication,
@@ -71,22 +71,7 @@ namespace MkmApi
             var doc = XDocument.Parse(response);
             var product = doc.Root.Element("product");
 
-            var priceGuide = product.Element("priceGuide");
-
-            return new MkmProductMagic()
-            {
-                ProductId = product?.Element("idProduct")?.Value,
-                Name = product?.Element("enName")?.Value,
-                WebSite = product?.Element("website")?.Value,
-
-                PriceSell = priceGuide?.Element("SELL")?.Value,
-                PriceLow = priceGuide?.Element("LOW")?.Value,
-                PriceLowEx = priceGuide?.Element("LOWEX")?.Value,
-                PriceLowFoil = priceGuide?.Element("LOWFOIL")?.Value,
-                PriceAverage = priceGuide?.Element("AVG")?.Value,
-                PriceTrend = priceGuide?.Element("TREND")?.Value,
-                PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
-            };
+            return product.ReadProduct();
         }
 
         public void GetProductsAsCsv(

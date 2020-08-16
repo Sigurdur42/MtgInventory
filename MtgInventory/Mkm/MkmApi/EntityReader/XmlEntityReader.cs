@@ -68,6 +68,34 @@ namespace MkmApi.EntityReader
             };
         }
 
+        public static PriceGuide ReadPriceGuide(this XElement priceGuide)
+        {
+            return new PriceGuide
+            {
+                PriceSell = priceGuide?.Element("SELL")?.Value,
+                PriceLow = priceGuide?.Element("LOW")?.Value,
+                PriceLowEx = priceGuide?.Element("LOWEX")?.Value,
+                PriceLowFoil = priceGuide?.Element("LOWFOIL")?.Value,
+                PriceAverage = priceGuide?.Element("AVG")?.Value,
+                PriceTrend = priceGuide?.Element("TREND")?.Value,
+                PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
+            };
+        }
+
+        public static Product ReadProduct(this XElement product)
+        {
+            return new Product()
+            {
+                IdProduct = product?.Element("idProduct")?.Value,
+                IdMetaproduct = product?.Element("idMetaproduct")?.Value,
+                NameEn = product?.Element("enName")?.Value,
+                WebSite = product?.Element("website")?.Value,
+                CountReprints = product.GetContentInt("countReprints"),
+
+               PriceGuide = product.Element("priceGuide").ReadPriceGuide(),
+            };
+        }
+
         public static string GetContent(this XElement element, string name)
         {
             return element?.Element(name)?.Value;
