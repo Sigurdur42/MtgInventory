@@ -89,7 +89,7 @@ namespace MkmApi
 
         public void GetProductsAsCsv(
             MkmAuthenticationData authentication,
-            Action<MkmProductInfo> readSingleProductCallback)
+            Action<ProductInfo> readSingleProductCallback)
         {
             var response = MakeRequest(
                 authentication,
@@ -118,7 +118,7 @@ namespace MkmApi
                             // var debug = 0;
                         };
 
-                        foreach (var product in csv.GetRecords<MkmProductInfo>())
+                        foreach (var product in csv.GetRecords<ProductInfo>())
                         {
                             readSingleProductCallback?.Invoke(product);
                         }

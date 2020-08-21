@@ -7,11 +7,12 @@ namespace MkmApi
         {
             if (!fileToLoad.Exists)
             {
-                return null;
+                return new MkmAuthenticationData();
             }
 
             var content = File.ReadAllText(fileToLoad.FullName);
             var deserializer = new YamlDotNet.Serialization.Deserializer();
+            
             return deserializer.Deserialize<MkmAuthenticationData>(content);
         }
 

@@ -2,7 +2,7 @@ using CsvHelper.Configuration.Attributes;
 
 namespace MkmApi
 {
-    public class MkmProductInfo
+    public class ProductInfo
     {
         [Name("idProduct")]
         public string Id { get; set; }
