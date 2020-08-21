@@ -3,6 +3,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ScryfallAPI.Client" Version="*"/>
+    <PackageReference Include="ScryfallAPI.Client" Version="1.0.4" />
   </ItemGroup>
 </Project>
