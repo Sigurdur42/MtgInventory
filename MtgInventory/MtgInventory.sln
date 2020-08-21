@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScryfallApiServices.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScryfallApiServices", "Scryfall\ScryfallApiServices\ScryfallApiServices.csproj", "{C833AE4C-4805-4D74-A1F0-32ED8389C8A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgInventory.Application", "MtgInventory\MtgInventory.Application\MtgInventory.Application.csproj", "{55649152-2F3C-4377-90D8-5BE7322095F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgInventory.Service", "MtgInventory\MtgInventory.Application\MtgInventory.Service.csproj", "{55649152-2F3C-4377-90D8-5BE7322095F4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgInventory.Application.Tests", "MtgInventory\MtgInventory.Application.Tests\MtgInventory.Application.Tests.csproj", "{0CED1B61-2017-4EF6-A7C6-0696670E8A0C}"
 EndProject

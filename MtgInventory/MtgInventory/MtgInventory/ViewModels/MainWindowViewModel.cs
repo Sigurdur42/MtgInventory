@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using MtgInventory.Service;
 
 namespace MtgInventory.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public string BaseFolder => "Hello World!";
+        public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
+
+        public MtgInventoryService MainService { get; } = new MtgInventoryService();
     }
 }

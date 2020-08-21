@@ -18,4 +18,9 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.9.9" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.9" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Mkm\MkmApi\MkmApi.csproj" />
+    <ProjectReference Include="..\..\Scryfall\ScryfallApiServices\ScryfallApiServices.csproj" />
+    <ProjectReference Include="..\MtgInventory.Application\MtgInventory.Service.csproj" />
+  </ItemGroup>
 </Project>
