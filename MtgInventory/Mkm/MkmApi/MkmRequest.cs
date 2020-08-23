@@ -15,8 +15,14 @@ namespace MkmApi
 {
     public class MkmRequest
     {
+        private readonly MkmAuthenticationData _authenticationData;
+
+        public MkmRequest(MkmAuthenticationData authenticationData)
+        {
+            _authenticationData = authenticationData;
+        }
+
         public IEnumerable<Article> GetArticles(
-            MkmAuthenticationData authentication,
             string productId,
             bool commercialOnly,
             IEnumerable<QueryParameter> queryParameters)
@@ -32,7 +38,6 @@ namespace MkmApi
             }
 
             var response = MakeRequest(
-                authentication,
                 $"articles/{productId}", parameters);
 
             var doc = XDocument.Parse(response);
@@ -60,10 +65,9 @@ namespace MkmApi
             ////};
         }
 
-        public IEnumerable<Game> GetGames(MkmAuthenticationData authentication)
+        public IEnumerable<Game> GetGames()
         {
             var response = MakeRequest(
-                authentication,
                 $"games",
                 null);
 
@@ -74,10 +78,9 @@ namespace MkmApi
                 .ToArray();
         }
 
-        public Product GetProductData(MkmAuthenticationData authentication, string productId)
+        public Product GetProductData(string productId)
         {
             var response = MakeRequest(
-                authentication,
                 $"products/{productId}",
                 null);
 
@@ -87,50 +90,18 @@ namespace MkmApi
             return product.ReadProduct();
         }
 
-        public void GetProductsAsCsv(
-            MkmAuthenticationData authentication,
-            Action<ProductInfo> readSingleProductCallback)
+        public ProductCsvData GetProductsAsCsv()
         {
             var response = MakeRequest(
-                authentication,
                 "productlist",
                 null);
 
-            var doc = XDocument.Parse(response);
-            var node = doc.Root.Element("productsfile");
-
-            var bytes = Convert.FromBase64String(node.Value);
-
-            using (var decompressionStream = new GZipStream(new MemoryStream(bytes), CompressionMode.Decompress))
-            {
-                //// using (var fileStream = File.Create (Path.Combine ("/home/michael", "temp.txt"))) {
-                ////     decompressionStream.CopyTo (fileStream);
-                //// }
-
-                using (var decompressedStreamReader = new StreamReader(decompressionStream, Encoding.UTF8))
-                {
-                    using (var csv = new CsvReader(decompressedStreamReader, CultureInfo.InvariantCulture))
-                    {
-                        csv.Configuration.HasHeaderRecord = true;
-                        csv.Configuration.Delimiter = ",";
-                        csv.Configuration.BadDataFound = (context) =>
-                        {
-                            // var debug = 0;
-                        };
-
-                        foreach (var product in csv.GetRecords<ProductInfo>())
-                        {
-                            readSingleProductCallback?.Invoke(product);
-                        }
-                    }
-                }
-            }
+            return new ProductCsvData(response);
         }
 
-        public IEnumerable<MkmStockItem> GetStockAsCsv(MkmAuthenticationData authentication)
+        public IEnumerable<MkmStockItem> GetStockAsCsv()
         {
             var response = MakeRequest(
-                authentication,
                 "stock/file",
                 null);
 
@@ -155,7 +126,6 @@ namespace MkmApi
         }
 
         internal string MakeRequest(
-            MkmAuthenticationData authentication,
             string urlCommand,
             List<QueryParameter> parameters)
         {
@@ -165,7 +135,7 @@ namespace MkmApi
             var url = $"https://api.cardmarket.com/ws/v2.0/{urlCommand}";
 
             var request = WebRequest.CreateHttp(url + parameters?.GenerateQueryString()) as HttpWebRequest;
-            var header = new OAuthHeader(authentication);
+            var header = new OAuthHeader(_authenticationData);
             request.Headers.Add(HttpRequestHeader.Authorization, header.GetAuthorizationHeader(method, url, parameters));
             request.Method = method;
 

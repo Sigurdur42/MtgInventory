@@ -28,14 +28,17 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadAllCards()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest();
+            var request = new MkmRequest(AuthenticationData);
 
             var index = 0;
-            request.GetProductsAsCsv(AuthenticationData, (p) =>
+            using (var products = request.GetProductsAsCsv())
             {
-                ++index;
-                Console.WriteLine($"have read product line: {p.Name}");
-            });
+                foreach (var p in products.Products)
+                {
+                    ++index;
+                    Console.WriteLine($"have read product line: {p.Name}");
+                }
+            };
 
             stopwatch.Stop();
 
@@ -55,8 +58,8 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadStock()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest();
-            var result = request.GetStockAsCsv(AuthenticationData);
+            var request = new MkmRequest(AuthenticationData);
+            var result = request.GetStockAsCsv();
 
             stopwatch.Stop();
 
@@ -69,8 +72,8 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadSingleProduct()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest();
-            var result = request.GetProductData(AuthenticationData, "16366");
+            var request = new MkmRequest(AuthenticationData);
+            var result = request.GetProductData("16366");
 
             stopwatch.Stop();
 
@@ -83,8 +86,8 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadGames()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest();
-            var result = request.GetGames(AuthenticationData).OrderBy(g => g.IdGame);
+            var request = new MkmRequest(AuthenticationData);
+            var result = request.GetGames().OrderBy(g => g.IdGame);
 
             stopwatch.Stop();
 
@@ -98,9 +101,8 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadWithParameters()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest();
+            var request = new MkmRequest(AuthenticationData);
             var result = request.GetArticles(
-                AuthenticationData,
                 "16366",
                 true,
                 null);

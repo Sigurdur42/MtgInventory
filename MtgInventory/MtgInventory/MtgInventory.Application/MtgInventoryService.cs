@@ -36,13 +36,12 @@ namespace MtgInventory.Service
             _mkmAuthenticationDataFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, ".mkmAuthenticationData"));
             MkmAuthenticationData = reader.ReadFromYaml(_mkmAuthenticationDataFile);
 
-            _mkmRequest = new MkmRequest();
+            _mkmRequest = new MkmRequest(MkmAuthenticationData);
 
             _cardDatabase.Initialize(SystemFolders.BaseFolder);
 
             // TODO: Implement async init
             // Loading of database etc.
-
 
             // TODO: Implement reading all products from MKM and put it into database
         }
@@ -50,6 +49,13 @@ namespace MtgInventory.Service
         public void ShutDown()
         {
             _cardDatabase.Dispose();
+        }
+
+        public void DownloadMkmProducts()
+        {
+            using var products = _mkmRequest.GetProductsAsCsv();
+
+            _cardDatabase.InsertProductInfo(products.Products);
         }
     }
 }
