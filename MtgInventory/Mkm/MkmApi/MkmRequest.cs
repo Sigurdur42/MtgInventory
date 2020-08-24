@@ -78,6 +78,19 @@ namespace MkmApi
                 .ToArray();
         }
 
+        public IEnumerable<Expansion> GetExpansions(int gameId)
+        {
+            var response = MakeRequest(
+                $"games/{gameId}/expansions",
+                null);
+
+            var doc = XDocument.Parse(response);
+            return doc.Root
+                .Elements("expansion")
+                .Select(g => g.ReadExpansion())
+                .ToArray();
+        }
+
         public Product GetProductData(string productId)
         {
             var response = MakeRequest(

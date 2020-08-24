@@ -1,5 +1,6 @@
 ﻿using LiteDB;
 using MkmApi;
+using MkmApi.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,6 +14,7 @@ namespace MtgInventory.Service.Database
         public bool IsInitialized { get; private set; }
 
         public ILiteCollection<ProductInfo> MkmProductInfo { get; private set; }
+        public ILiteCollection<Expansion> MkmExpansion { get; private set; }
 
         public void Dispose()
         {
@@ -33,6 +35,7 @@ namespace MtgInventory.Service.Database
             _cardDatabase = new LiteDatabase(databaseFile);
 
             MkmProductInfo = _cardDatabase.GetCollection<ProductInfo>();
+            MkmExpansion = _cardDatabase.GetCollection<Expansion>();
 
             IsInitialized = true;
         }
@@ -68,6 +71,16 @@ namespace MtgInventory.Service.Database
         {
             MkmProductInfo.InsertBulk(products);
             MkmProductInfo.EnsureIndex(p => p.Name);
+        }
+
+        internal void InsertExpansions(IEnumerable<Expansion> expansions)
+        {
+            MkmExpansion.DeleteAll();
+            MkmExpansion.InsertBulk(expansions);
+
+            MkmExpansion.EnsureIndex(e => e.EnName);
+            MkmExpansion.EnsureIndex(e => e.IdExpansion);
+            MkmExpansion.EnsureIndex(e => e.IdGame);
         }
     }
 }

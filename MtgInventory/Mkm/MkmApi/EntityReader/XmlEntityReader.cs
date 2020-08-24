@@ -78,6 +78,21 @@ namespace MkmApi.EntityReader
             };
         }
 
+        public static Expansion ReadExpansion(this XElement node)
+        {
+            return new Expansion
+            {
+                Icon = node.GetContent("icon"),
+                ReleaseDate = node.GetContent("releaseDate"),
+                IdExpansion = node.GetContentInt("idExpansion"),
+                IdGame = node.GetContentInt("idGame"),
+                EnName = node.GetContent("enName"),
+                Abbreviation = node.GetContent("abbreviation"),
+                IsReleased = node.GetContent("isReleased"),
+            };
+        }
+
+
         public static PriceGuide ReadPriceGuide(this XElement priceGuide)
         {
             return new PriceGuide

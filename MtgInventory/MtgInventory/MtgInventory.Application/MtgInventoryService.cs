@@ -57,6 +57,9 @@ namespace MtgInventory.Service
 
         public void DownloadMkmProducts()
         {
+            var expansions = _mkmRequest.GetExpansions(1);
+            _cardDatabase.InsertExpansions(expansions);
+
             using var products = _mkmRequest.GetProductsAsCsv();
 
             _cardDatabase.InsertProductInfo(products.Products);
