@@ -1,5 +1,7 @@
-﻿using MtgInventory.Service;
+﻿using MkmApi;
+using MtgInventory.Service;
 using ReactiveUI;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MtgInventory.ViewModels
@@ -7,6 +9,8 @@ namespace MtgInventory.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         private string _mkmProductsSummary;
+
+        private string _mkmProductLookupName;
 
         public MainWindowViewModel()
         {
@@ -18,12 +22,26 @@ namespace MtgInventory.ViewModels
         }
 
         public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
+        
         public MtgInventoryService MainService { get; } = new MtgInventoryService();
 
         public string MkmProductsSummary
         {
             get => _mkmProductsSummary;
             set => this.RaiseAndSetIfChanged(ref _mkmProductsSummary, value);
+        }
+
+        public string MkmProductLookupName
+        {
+            get => _mkmProductLookupName;
+            set => this.RaiseAndSetIfChanged(ref _mkmProductLookupName, value);
+        }
+
+        private IEnumerable<ProductInfo> _mkmProductsFound;
+        public IEnumerable<ProductInfo> MkmProductsFound
+        {
+            get => _mkmProductsFound;
+            set => this.RaiseAndSetIfChanged(ref _mkmProductsFound, value);
         }
 
         public void ShutDown()
@@ -35,6 +53,11 @@ namespace MtgInventory.ViewModels
         {
             MainService?.DownloadMkmProducts();
             MkmProductsSummary = MainService?.MkmProductsSummary;
+        }
+
+        public void OnSearchMkmProduct()
+        {
+            MkmProductsFound = MainService?.MkmFindProductsByName(_mkmProductLookupName);
         }
     }
 }

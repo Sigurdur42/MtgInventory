@@ -16,11 +16,11 @@
 
     <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
   <TabControl>
-    <!--<TabItem Header="MKM">
+    <TabItem Header="MKM Products">
       <Grid>
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -29,12 +29,13 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <TextBlock VerticalAlignment="Center" >Base Folder</TextBlock>
-        <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding BaseFolder}" IsReadOnly="True"/>
+        <TextBlock VerticalAlignment="Center" >Name</TextBlock>
+        <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding MkmProductLookupName}" />
+        <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>
 
-
+        <DataGrid AutoGenerateColumns="True" Items="{Binding MkmProductsFound}" Grid.Row="1" Grid.ColumnSpan="3"/>
       </Grid>
-    </TabItem>-->
+    </TabItem>
     
     <TabItem Header="System">
       <Grid>

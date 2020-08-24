@@ -1,6 +1,7 @@
 ﻿using MkmApi;
 using MtgInventory.Service.Database;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace MtgInventory.Service
@@ -59,6 +60,14 @@ namespace MtgInventory.Service
             using var products = _mkmRequest.GetProductsAsCsv();
 
             _cardDatabase.InsertProductInfo(products.Products);
+        }
+
+        public IEnumerable<ProductInfo> MkmFindProductsByName(string name)
+        {
+            return _cardDatabase.MkmProductInfo
+                .Query()
+                .Where(p => p.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase))
+                .ToList();
         }
     }
 }
