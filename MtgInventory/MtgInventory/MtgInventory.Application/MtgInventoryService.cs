@@ -24,6 +24,8 @@ namespace MtgInventory.Service
 
         public MkmAuthenticationData MkmAuthenticationData { get; private set; }
 
+        public string MkmProductsSummary { get; private set; }
+
         public void Dispose()
         {
             ShutDown();
@@ -39,6 +41,7 @@ namespace MtgInventory.Service
             _mkmRequest = new MkmRequest(MkmAuthenticationData);
 
             _cardDatabase.Initialize(SystemFolders.BaseFolder);
+            MkmProductsSummary = $"{_cardDatabase.MkmProductInfo.Count()} products in database";
 
             // TODO: Implement async init
             // Loading of database etc.

@@ -41,6 +41,9 @@
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -51,6 +54,13 @@
 
         <TextBlock VerticalAlignment="Center" >Base Folder</TextBlock>
         <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding SystemBaseFolder}" IsReadOnly="True" />
+
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
+          <TextBlock>Mkm Products:</TextBlock>
+          <TextBlock Text="{Binding MkmProductsSummary}"/>
+          <Button Command="{Binding OnDownloadMkmProducts}">Update</Button>
+        </StackPanel>
+        
       </Grid>
     </TabItem>
       

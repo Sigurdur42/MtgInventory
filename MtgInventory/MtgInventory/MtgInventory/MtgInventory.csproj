@@ -18,6 +18,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
     <PackageReference Include="LiteDB" Version="5.0.9" />
+    <PackageReference Include="MessageBox.Avalonia" Version="0.9.6.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Mkm\MkmApi\MkmApi.csproj" />
