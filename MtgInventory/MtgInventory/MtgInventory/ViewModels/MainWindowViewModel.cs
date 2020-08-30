@@ -1,5 +1,6 @@
 ﻿using MkmApi;
 using MtgInventory.Service;
+using MtgInventory.Service.Models;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -37,8 +38,8 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _mkmProductLookupName, value);
         }
 
-        private IEnumerable<ProductInfo> _mkmProductsFound;
-        public IEnumerable<ProductInfo> MkmProductsFound
+        private IEnumerable<MkmProductInfo> _mkmProductsFound;
+        public IEnumerable<MkmProductInfo> MkmProductsFound
         {
             get => _mkmProductsFound;
             set => this.RaiseAndSetIfChanged(ref _mkmProductsFound, value);

@@ -1,9 +1,12 @@
 ﻿using LiteDB;
 using MkmApi;
 using MkmApi.Entities;
+using MtgInventory.Service.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace MtgInventory.Service.Database
 {
@@ -13,7 +16,7 @@ namespace MtgInventory.Service.Database
 
         public bool IsInitialized { get; private set; }
 
-        public ILiteCollection<ProductInfo> MkmProductInfo { get; private set; }
+        public ILiteCollection<MkmProductInfo> MkmProductInfo { get; private set; }
         public ILiteCollection<Expansion> MkmExpansion { get; private set; }
 
         public void Dispose()
@@ -34,7 +37,7 @@ namespace MtgInventory.Service.Database
             var databaseFile = Path.Combine(folder.FullName, "CardDatabase.db");
             _cardDatabase = new LiteDatabase(databaseFile);
 
-            MkmProductInfo = _cardDatabase.GetCollection<ProductInfo>();
+            MkmProductInfo = _cardDatabase.GetCollection<MkmProductInfo>();
             MkmExpansion = _cardDatabase.GetCollection<Expansion>();
 
             IsInitialized = true;
@@ -47,15 +50,26 @@ namespace MtgInventory.Service.Database
             _cardDatabase = null;
         }
 
-        public void InsertProductInfo(IEnumerable<ProductInfo> products)
+        public void InsertProductInfo(
+            IEnumerable<ProductInfo> products,
+            IEnumerable<Expansion> expansions)
         {
             MkmProductInfo.DeleteAll();
 
-            var temp = new List<ProductInfo>();
+            var orderedExpansions = expansions.ToDictionary(_ => _.IdExpansion.ToString(CultureInfo.InvariantCulture) ?? "");
+
+            var temp = new List<MkmProductInfo>();
 
             foreach (var p in products)
             {
-                temp.Add(p);
+                var product = new MkmProductInfo(p);
+                if (orderedExpansions.TryGetValue(p.ExpansionId?.ToString(CultureInfo.InvariantCulture) ?? "", out var foundExpansion))
+                {
+                    product.ExpansionName = foundExpansion.EnName;
+                    product.ExpansionCode = foundExpansion.Abbreviation;
+                }
+
+                temp.Add(product);
 
                 if (temp.Count >= 1000)
                 {
@@ -67,10 +81,11 @@ namespace MtgInventory.Service.Database
             BulkInsertProductInfo(temp);
         }
 
-        private void BulkInsertProductInfo(IList<ProductInfo> products)
+        private void BulkInsertProductInfo(IList<MkmProductInfo> products)
         {
             MkmProductInfo.InsertBulk(products);
             MkmProductInfo.EnsureIndex(p => p.Name);
+            MkmProductInfo.EnsureIndex(p => p.CategoryId);
         }
 
         internal void InsertExpansions(IEnumerable<Expansion> expansions)

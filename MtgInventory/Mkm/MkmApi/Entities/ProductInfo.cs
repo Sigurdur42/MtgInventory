@@ -11,7 +11,7 @@ namespace MkmApi
         public string Name { get; set; }
 
         [Name("Category ID")]
-        public string CategoryId { get; set; }
+        public int CategoryId { get; set; }
 
         [Name("Category")]
         public string Category { get; set; }
