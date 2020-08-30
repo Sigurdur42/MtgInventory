@@ -1,8 +1,12 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Shapes;
 using Avalonia.Markup.Xaml;
+using MtgInventory.Service;
 using MtgInventory.ViewModels;
 using MtgInventory.Views;
+using Serilog;
+using System;
 
 namespace MtgInventory
 {
@@ -10,6 +14,15 @@ namespace MtgInventory
     {
         public override void Initialize()
         {
+            var systemFolders = new SystemFolders();
+            var folder = System.IO.Path.Combine(systemFolders.BaseFolder.FullName, "Logs");
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                // .WriteTo.Console()
+                .WriteTo.File(System.IO.Path.Combine(folder, "MtgInventory.log"), rollingInterval: RollingInterval.Minute)
+                .CreateLogger();
+
             AvaloniaXamlLoader.Load(this);
         }
 

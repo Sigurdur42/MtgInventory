@@ -2,6 +2,7 @@
 using MkmApi;
 using MkmApi.Entities;
 using MtgInventory.Service.Models;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,6 +15,7 @@ namespace MtgInventory.Service.Database
     {
         private LiteDatabase _cardDatabase;
 
+        private ILogger _logger = Log.ForContext<CardDatabase>();
         public bool IsInitialized { get; private set; }
 
         public ILiteCollection<MkmProductInfo> MkmProductInfo { get; private set; }
@@ -27,11 +29,11 @@ namespace MtgInventory.Service.Database
         public void Initialize(
             DirectoryInfo folder)
         {
+            _logger.Information($"{nameof(Initialize)}: Initializing database service...");
             // define mappings
             ////var mapper = BsonMapper.Global;
             ////mapper.Entity<ProductInfo>()
             ////    .Id(p => p.Id);
-
 
             folder.EnsureExists();
             var databaseFile = Path.Combine(folder.FullName, "CardDatabase.db");
@@ -45,6 +47,8 @@ namespace MtgInventory.Service.Database
 
         public void ShutDown()
         {
+            _logger.Information($"{nameof(ShutDown)}: Shutting down database service...");
+
             IsInitialized = false;
             _cardDatabase?.Dispose();
             _cardDatabase = null;
@@ -54,11 +58,13 @@ namespace MtgInventory.Service.Database
             IEnumerable<ProductInfo> products,
             IEnumerable<Expansion> expansions)
         {
+            _logger.Information($"{nameof(InsertProductInfo)}: Cleaning existing product info...");
             MkmProductInfo.DeleteAll();
 
             var orderedExpansions = expansions.ToDictionary(_ => _.IdExpansion.ToString(CultureInfo.InvariantCulture) ?? "");
 
             var temp = new List<MkmProductInfo>();
+            var total = 0;
 
             foreach (var p in products)
             {
@@ -73,19 +79,17 @@ namespace MtgInventory.Service.Database
 
                 if (temp.Count >= 1000)
                 {
+                    total += temp.Count;
+                    _logger.Information($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total}...");
+
                     BulkInsertProductInfo(temp);
                     temp.Clear();
                 }
             }
 
+            total += temp.Count;
+            _logger.Information($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total}...");
             BulkInsertProductInfo(temp);
-        }
-
-        private void BulkInsertProductInfo(IList<MkmProductInfo> products)
-        {
-            MkmProductInfo.InsertBulk(products);
-            MkmProductInfo.EnsureIndex(p => p.Name);
-            MkmProductInfo.EnsureIndex(p => p.CategoryId);
         }
 
         internal void InsertExpansions(IEnumerable<Expansion> expansions)
@@ -96,6 +100,13 @@ namespace MtgInventory.Service.Database
             MkmExpansion.EnsureIndex(e => e.EnName);
             MkmExpansion.EnsureIndex(e => e.IdExpansion);
             MkmExpansion.EnsureIndex(e => e.IdGame);
+        }
+
+        private void BulkInsertProductInfo(IList<MkmProductInfo> products)
+        {
+            MkmProductInfo.InsertBulk(products);
+            MkmProductInfo.EnsureIndex(p => p.Name);
+            MkmProductInfo.EnsureIndex(p => p.CategoryId);
         }
     }
 }
