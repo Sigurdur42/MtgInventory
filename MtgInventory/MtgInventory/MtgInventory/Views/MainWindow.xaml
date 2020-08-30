@@ -8,7 +8,7 @@
         Height="600"
         x:Class="MtgInventory.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="MtgInventory" 
+        Title="{Binding MainTitle}" 
         x:Name="rootWindow">
 
   <Design.DataContext>

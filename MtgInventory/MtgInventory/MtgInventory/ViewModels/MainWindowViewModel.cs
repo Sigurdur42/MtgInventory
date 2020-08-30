@@ -3,6 +3,7 @@ using MtgInventory.Service;
 using MtgInventory.Service.Models;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace MtgInventory.ViewModels
@@ -15,6 +16,8 @@ namespace MtgInventory.ViewModels
 
         public MainWindowViewModel()
         {
+            MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly().GetName().Version;
+
             Task.Factory.StartNew(() =>
             {
                 MainService.Initialize();
@@ -23,6 +26,8 @@ namespace MtgInventory.ViewModels
         }
 
         public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
+
+        public string MainTitle { get; private set; }
         
         public MtgInventoryService MainService { get; } = new MtgInventoryService();
 
