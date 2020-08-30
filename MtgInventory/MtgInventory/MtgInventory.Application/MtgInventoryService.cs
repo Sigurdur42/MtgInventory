@@ -5,6 +5,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MtgInventory.Service
 {
@@ -104,7 +105,9 @@ namespace MtgInventory.Service
                 .Query()
                 .Where(p => p.CategoryId == 1)
                 .Where(p => p.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase))
+                .ToList()
                 .OrderBy(p => p.Name)
+                .ThenBy(p => p.ExpansionName)
                 .ToList();
         }
     }

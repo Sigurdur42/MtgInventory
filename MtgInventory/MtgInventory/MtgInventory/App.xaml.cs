@@ -19,7 +19,7 @@ namespace MtgInventory
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                // .WriteTo.Console()
+                .WriteTo.Console()
                 .WriteTo.File(System.IO.Path.Combine(folder, "MtgInventory.log"), rollingInterval: RollingInterval.Minute)
                 .CreateLogger();
 
