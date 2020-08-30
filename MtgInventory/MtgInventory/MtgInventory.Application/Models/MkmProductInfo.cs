@@ -1,4 +1,6 @@
 ﻿using MkmApi;
+using MkmApi.Entities;
+using System;
 
 namespace MtgInventory.Service.Models
 {
@@ -36,5 +38,15 @@ namespace MtgInventory.Service.Models
         public string ExpansionName { get; set; }
 
         public string ExpansionCode { get; set; }
+
+        public DateTime? LastDetailUpdate { get; set; }
+
+        public string MkmProductUrl { get; set; }
+
+        public void UpdateFromProduct(Product rhs)
+        {
+            MkmProductUrl = "https://www.cardmarket.com" + rhs.WebSite;
+            LastDetailUpdate = DateTime.Now;
+        }
     }
 }

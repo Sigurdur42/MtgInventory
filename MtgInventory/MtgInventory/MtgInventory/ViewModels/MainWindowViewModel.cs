@@ -60,5 +60,10 @@ namespace MtgInventory.ViewModels
         {
             MkmProductsFound = MainService?.MkmFindProductsByName(_mkmProductLookupName);
         }
+
+        public void OnOpenMkmProductPage(MkmProductInfo info)
+        {
+            MainService?.OpenMkmProductPage(info);
+        }
     }
 }

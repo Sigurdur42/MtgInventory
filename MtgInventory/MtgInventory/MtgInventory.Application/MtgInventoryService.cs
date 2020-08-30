@@ -66,6 +66,26 @@ namespace MtgInventory.Service
             _cardDatabase.InsertProductInfo(products.Products, expansions);
         }
 
+        public void OpenMkmProductPage(MkmProductInfo product)
+        {
+            if (product == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(product.MkmProductUrl))
+            {
+                // We need to download the product details first
+                var p = _mkmRequest.GetProductData(product.Id);
+                product.UpdateFromProduct(p);
+
+                _cardDatabase.MkmProductInfo.Update(product);
+            }
+
+            // Now open a browser with the url
+            Browser.OpenBrowser(product.MkmProductUrl);
+        }
+
         public IEnumerable<MkmProductInfo> MkmFindProductsByName(string name)
         {
             return _cardDatabase.MkmProductInfo
