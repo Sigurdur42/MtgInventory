@@ -85,12 +85,18 @@ namespace MtgInventory.ViewModels
 
         public void OnSearchMkmProduct()
         {
-            MkmProductsFound = MainService?.MkmFindProductsByName(_mkmProductLookupName);
+            Task.Factory.StartNew(() =>
+            {
+                MkmProductsFound = MainService?.MkmFindProductsByName(_mkmProductLookupName);
+            });
         }
 
         public void OnOpenMkmProductPage(MkmProductInfo info)
         {
-            MainService?.OpenMkmProductPage(info);
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.OpenMkmProductPage(info);
+            });
         }
 
         public async Task OnLoadDeckFile()
