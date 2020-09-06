@@ -1,4 +1,6 @@
-﻿namespace MkmApi.Entities
+﻿using System;
+
+namespace MkmApi.Entities
 {
     public class Expansion
     {
@@ -22,5 +24,7 @@
         public string ReleaseDate { get; set; }
         public string IsReleased { get; set; }
         public int IdGame { get; set; }
+
+        public DateTime? ReleaseDateParsed { get; set; }
     }
 }

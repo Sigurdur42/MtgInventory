@@ -11,11 +11,11 @@ namespace MtgInventory.Service.Decks
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
+        
         //  public Format Format { get; set; }
 
         public List<DeckItem> Mainboard { get; set; } = new List<DeckItem>();
         public List<DeckItem> Sideboard { get; set; } = new List<DeckItem>();
-
 
 
         [BsonIgnore]

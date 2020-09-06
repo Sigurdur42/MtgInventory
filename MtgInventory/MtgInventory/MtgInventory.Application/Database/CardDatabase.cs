@@ -1,6 +1,7 @@
 ﻿using LiteDB;
 using MkmApi;
 using MkmApi.Entities;
+using MtgInventory.Service.Converter;
 using MtgInventory.Service.Models;
 using Serilog;
 using System;
@@ -15,10 +16,12 @@ namespace MtgInventory.Service.Database
     {
         private LiteDatabase _cardDatabase;
 
-        private ILogger _logger = Log.ForContext<CardDatabase>();
+        private readonly ILogger _logger = Log.ForContext<CardDatabase>();
+
         public bool IsInitialized { get; private set; }
 
         public ILiteCollection<MkmProductInfo> MkmProductInfo { get; private set; }
+
         public ILiteCollection<Expansion> MkmExpansion { get; private set; }
 
         public void Dispose()
@@ -92,8 +95,15 @@ namespace MtgInventory.Service.Database
             BulkInsertProductInfo(temp);
         }
 
+
+
         internal void InsertExpansions(IEnumerable<Expansion> expansions)
         {
+            foreach (var exp in expansions)
+            {
+                exp.ReleaseDateParsed = exp.ReleaseDate.ParseDateTime();
+            }
+
             MkmExpansion.DeleteAll();
             MkmExpansion.InsertBulk(expansions);
 

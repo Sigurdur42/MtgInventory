@@ -17,7 +17,7 @@
   </Design.DataContext>
 
   <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
-  <TabControl SelectedItem="1">
+  <TabControl>
     <TabItem Header="MKM Products">
       <Grid>
         <Grid.RowDefinitions>
@@ -93,10 +93,17 @@
             
             <DataGridTextColumn Header="Name"
                  Binding="{Binding Name}" />
+
+            <DataGridTextColumn Header="Extension Code"
+                 Binding="{Binding SetCode}" />
+
+            <DataGridTextColumn Header="Extension"
+              Binding="{Binding SetName}" />
+
+            <DataGridTextColumn Header="MkmId"
+              Binding="{Binding MkmId}" />
             
-            <!--<DataGridTextColumn Header="Category"
-                 Binding="{Binding Category}"
-                              />
+            <!--
             <DataGridTextColumn Header="Expansion Name"
                  Binding="{Binding ExpansionName}"
                               />

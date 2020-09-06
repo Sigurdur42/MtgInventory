@@ -108,8 +108,7 @@ namespace MtgInventory.ViewModels
                     MessageBoxDialog.DisplayWarning("Reading deck", display);
                 }
 
-                // TODO: Enrich files with id, reprints, etc.
-
+                MainService.EnrichDeckListWithDetails(loaded.Deck);
                 CurrentDeckList = loaded.Deck;
             }
         }

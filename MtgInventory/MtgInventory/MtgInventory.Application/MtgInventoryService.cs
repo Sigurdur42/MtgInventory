@@ -1,5 +1,6 @@
 ﻿using MkmApi;
 using MtgInventory.Service.Database;
+using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
 using Serilog;
 using System;
@@ -109,6 +110,37 @@ namespace MtgInventory.Service
                 .OrderBy(p => p.Name)
                 .ThenBy(p => p.ExpansionName)
                 .ToList();
+        }
+
+        public void EnrichDeckListWithDetails(DeckList deckList)
+        {
+            Log.Debug($"{nameof(EnrichDeckListWithDetails)} for deck {deckList.Name}");
+            var expansions = _cardDatabase.MkmExpansion
+                .Query()
+                .OrderByDescending(e => e.ReleaseDateParsed)
+                .ToList();
+
+            foreach (var card in deckList.Mainboard.Where(c => c.MkmId == null))
+            {
+                var found = _cardDatabase.MkmProductInfo
+                    .Query()
+                    .Where(c => c.Name.Equals(card.Name))
+                    .Where(c => c.ExpansionCode != null)
+                    .ToList();
+
+                var validExpansions = expansions
+                    .Where(e => found.Any(f => f.ExpansionCode == e.Abbreviation))
+                    .OrderByDescending(e => e.ReleaseDateParsed)
+                    .ToArray();
+
+                if (found.Any())
+                {
+                    var use = found.First(f => f.ExpansionCode == validExpansions.First().Abbreviation);
+                    card.MkmId = use.Id;
+                    card.SetCode = use.ExpansionCode;
+                    card.SetName = use.ExpansionName;
+                }
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using MkmApi.Entities;
+using System;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace MkmApi.EntityReader
@@ -80,10 +82,12 @@ namespace MkmApi.EntityReader
 
         public static Expansion ReadExpansion(this XElement node)
         {
+            var releaseDate = node.GetContent("releaseDate");
+
             return new Expansion
             {
                 Icon = node.GetContent("icon"),
-                ReleaseDate = node.GetContent("releaseDate"),
+                ReleaseDate = releaseDate,
                 IdExpansion = node.GetContentInt("idExpansion"),
                 IdGame = node.GetContentInt("idGame"),
                 EnName = node.GetContent("enName"),
@@ -92,6 +96,7 @@ namespace MkmApi.EntityReader
             };
         }
 
+     
 
         public static PriceGuide ReadPriceGuide(this XElement priceGuide)
         {
