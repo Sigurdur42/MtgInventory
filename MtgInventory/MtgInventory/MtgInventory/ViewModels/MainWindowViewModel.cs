@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using MtgInventory.Logging;
 using MtgInventory.Service;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
@@ -32,6 +33,8 @@ namespace MtgInventory.ViewModels
                 MainService.Initialize();
                 MkmProductsSummary = MainService?.MkmProductsSummary;
             });
+
+            LogSink = PanelLogSink.Instance;
         }
 
         public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
@@ -39,6 +42,8 @@ namespace MtgInventory.ViewModels
         public string MainTitle { get; private set; }
 
         public MtgInventoryService MainService { get; } = new MtgInventoryService();
+
+        public PanelLogSink LogSink { get; private set; }
 
         public DeckList CurrentDeckList
         {
@@ -71,8 +76,11 @@ namespace MtgInventory.ViewModels
 
         public void OnDownloadMkmProducts()
         {
-            MainService?.DownloadMkmProducts();
-            MkmProductsSummary = MainService?.MkmProductsSummary;
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.DownloadMkmProducts();
+                MkmProductsSummary = MainService?.MkmProductsSummary;
+            });
         }
 
         public void OnSearchMkmProduct()

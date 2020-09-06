@@ -16,6 +16,37 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="3*"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- Logging Panel -->
+    <DataGrid AutoGenerateColumns="False" Items="{Binding LogSink.LogMessages}" Grid.Column="1" 
+            >
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Level"
+                         Binding="{Binding LogLevel}"
+                              />
+        <DataGridTextColumn Header="Message"
+             Binding="{Binding Message}"
+                              />
+       
+
+        <!--<DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate >
+              <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>-->
+
+      </DataGrid.Columns>
+    </DataGrid>
+    
   <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
   <TabControl>
     <TabItem Header="MKM Products">
@@ -155,5 +186,5 @@
     </TabItem>
 
   </TabControl>
-
+  </Grid>
 </Window>
