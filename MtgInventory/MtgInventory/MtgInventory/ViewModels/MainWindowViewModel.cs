@@ -1,8 +1,13 @@
-﻿using MkmApi;
+﻿using Avalonia.Controls;
 using MtgInventory.Service;
+using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
+using MtgInventory.Views;
 using ReactiveUI;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -13,6 +18,10 @@ namespace MtgInventory.ViewModels
         private string _mkmProductsSummary;
 
         private string _mkmProductLookupName;
+
+        private IEnumerable<MkmProductInfo> _mkmProductsFound;
+
+        private DeckList _currentDeckList;
 
         public MainWindowViewModel()
         {
@@ -28,8 +37,14 @@ namespace MtgInventory.ViewModels
         public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
 
         public string MainTitle { get; private set; }
-        
+
         public MtgInventoryService MainService { get; } = new MtgInventoryService();
+
+        public DeckList CurrentDeckList
+        {
+            get => _currentDeckList;
+            set => this.RaiseAndSetIfChanged(ref _currentDeckList, value);
+        }
 
         public string MkmProductsSummary
         {
@@ -43,7 +58,6 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _mkmProductLookupName, value);
         }
 
-        private IEnumerable<MkmProductInfo> _mkmProductsFound;
         public IEnumerable<MkmProductInfo> MkmProductsFound
         {
             get => _mkmProductsFound;
@@ -69,6 +83,35 @@ namespace MtgInventory.ViewModels
         public void OnOpenMkmProductPage(MkmProductInfo info)
         {
             MainService?.OpenMkmProductPage(info);
+        }
+
+        public async Task OnLoadDeckFile()
+        {
+            var openFile = new OpenFileDialog()
+            {
+                Title = "Select deck file",
+                AllowMultiple = false,
+            };
+
+            var result = await openFile.ShowAsync(MainWindow.Instance);
+            if (result != null && result.Any())
+            {
+                var file = result.First();
+
+                var content = File.ReadAllText(file);
+                var reader = new TextDeckReader();
+                var loaded = reader.ReadDeck(content, new FileInfo(file).Name);
+
+                if (loaded.UnreadLines?.Any() ?? false)
+                {
+                    var display = $"These lines could not be read:{Environment.NewLine}{string.Join(Environment.NewLine, loaded.UnreadLines)}";
+                    MessageBoxDialog.DisplayWarning("Reading deck", display);
+                }
+
+                // TODO: Enrich files with id, reprints, etc.
+
+                CurrentDeckList = loaded.Deck;
+            }
         }
     }
 }

@@ -11,13 +11,17 @@ namespace MtgInventory.Views
             InitializeComponent();
         }
 
+        public static MainWindow Instance { get; private set; }
+
         private void InitializeComponent()
         {
+            Instance = this;
+
             AvaloniaXamlLoader.Load(this);
 
             this.Closing += MainWindow_Closing;
         }
-            
+
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             var viewModel = DataContext as MainWindowViewModel;

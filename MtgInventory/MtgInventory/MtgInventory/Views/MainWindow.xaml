@@ -9,7 +9,7 @@
         WindowState="Maximized"
         x:Class="MtgInventory.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="{Binding MainTitle}" 
+        Title="{Binding MainTitle}"
         x:Name="rootWindow">
 
   <Design.DataContext>
@@ -17,7 +17,7 @@
   </Design.DataContext>
 
   <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
-  <TabControl>
+  <TabControl SelectedItem="1">
     <TabItem Header="MKM Products">
       <Grid>
         <Grid.RowDefinitions>
@@ -62,6 +62,57 @@
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
+
+          </DataGrid.Columns>
+        </DataGrid>
+      </Grid>
+    </TabItem>
+
+    <TabItem Header="Deck">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Column="0" Command="{Binding OnLoadDeckFile}">Load Deck File!</Button>
+
+        <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentDeckList.Mainboard}" Grid.Row="1" Grid.ColumnSpan="3">
+          <DataGrid.Columns>
+            <!--<DataGridTextColumn Header="Id"
+                             Binding="{Binding Id}"
+                              />-->
+            <DataGridTextColumn Header="Count"
+                 Binding="{Binding Count}" />
+            
+            <DataGridTextColumn Header="Name"
+                 Binding="{Binding Name}" />
+            
+            <!--<DataGridTextColumn Header="Category"
+                 Binding="{Binding Category}"
+                              />
+            <DataGridTextColumn Header="Expansion Name"
+                 Binding="{Binding ExpansionName}"
+                              />
+            <DataGridTextColumn Header="Expansion Code"
+                 Binding="{Binding ExpansionCode}"
+                              />
+
+            <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate >
+                  <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+                  </StackPanel>
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>-->
 
           </DataGrid.Columns>
         </DataGrid>
