@@ -14,10 +14,8 @@ namespace MtgInventory.Service.Database
 {
     public sealed class CardDatabase : IDisposable
     {
-        private LiteDatabase _cardDatabase;
-
         private readonly ILogger _logger = Log.ForContext<CardDatabase>();
-
+        private LiteDatabase _cardDatabase;
         public bool IsInitialized { get; private set; }
 
         public ILiteCollection<MkmProductInfo> MkmProductInfo { get; private set; }
@@ -33,10 +31,6 @@ namespace MtgInventory.Service.Database
             DirectoryInfo folder)
         {
             _logger.Information($"{nameof(Initialize)}: Initializing database service...");
-            // define mappings
-            ////var mapper = BsonMapper.Global;
-            ////mapper.Entity<ProductInfo>()
-            ////    .Id(p => p.Id);
 
             folder.EnsureExists();
             var databaseFile = Path.Combine(folder.FullName, "CardDatabase.db");
@@ -94,8 +88,6 @@ namespace MtgInventory.Service.Database
             _logger.Information($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total}...");
             BulkInsertProductInfo(temp);
         }
-
-
 
         internal void InsertExpansions(IEnumerable<Expansion> expansions)
         {
