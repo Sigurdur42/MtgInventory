@@ -1,7 +1,4 @@
-﻿using CsvHelper;
-using MkmApi.Entities;
-using MkmApi.EntityReader;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -10,16 +7,23 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Xml.Linq;
+using CsvHelper;
+using MkmApi.Entities;
+using MkmApi.EntityReader;
 
 namespace MkmApi
 {
     public class MkmRequest
     {
         private readonly MkmAuthenticationData _authenticationData;
+        private readonly IApiCallStatistic _apiCallStatistic;
 
-        public MkmRequest(MkmAuthenticationData authenticationData)
+        public MkmRequest(
+            MkmAuthenticationData authenticationData,
+            IApiCallStatistic apiCallStatistic)
         {
             _authenticationData = authenticationData;
+            _apiCallStatistic = apiCallStatistic;
         }
 
         public IEnumerable<Article> GetArticles(
@@ -144,6 +148,8 @@ namespace MkmApi
         {
             parameters = parameters?.OrderBy(p => p.Name)?.ToList() ?? new List<QueryParameter>();
 
+            IncrementCallStatistic();
+
             var method = "GET";
             var url = $"https://api.cardmarket.com/ws/v2.0/{urlCommand}";
 
@@ -162,6 +168,24 @@ namespace MkmApi
                 var reader = new StreamReader(stream, encoding);
                 return reader.ReadToEnd();
             }
+        }
+
+        private void IncrementCallStatistic()
+        {
+            if (_apiCallStatistic == null)
+            {
+                return;
+            }
+
+            var today = DateTime.Now.Date;
+            if (_apiCallStatistic.Today != today)
+            {
+                _apiCallStatistic.Today = today;
+                _apiCallStatistic.CountToday = 0;
+            }
+
+            _apiCallStatistic.CountToday += 1;
+            _apiCallStatistic.CountTotal += 1;
         }
     }
 }

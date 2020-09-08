@@ -22,8 +22,35 @@
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
 
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- API Statistics-->
+    <Grid Grid.Column="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <TextBlock>MKM Calls Today</TextBlock>
+      <StackPanel Orientation="Horizontal" Grid.Column="1">
+        <TextBlock Margin="5,0,0,0"  Text="{Binding MkmApiCallStatistics.CountToday}"></TextBlock>
+        <TextBlock Margin="5,0,0,0">(Total: </TextBlock>
+        <TextBlock Text="{Binding MkmApiCallStatistics.CountTotal}"></TextBlock>
+        <TextBlock >)</TextBlock>
+      </StackPanel>
+
+    </Grid>
+
     <!-- Logging Panel -->
-    <DataGrid AutoGenerateColumns="False" Items="{Binding LogSink.LogMessages}" Grid.Column="1" 
+    <DataGrid AutoGenerateColumns="False" Items="{Binding LogSink.LogMessages}" Grid.Column="1" Grid.Row="1"
             >
       <DataGrid.Columns>
         <DataGridTextColumn Header="Level"
@@ -32,7 +59,7 @@
         <DataGridTextColumn Header="Message"
              Binding="{Binding Message}"
                               />
-       
+
 
         <!--<DataGridTemplateColumn Header="Open MKM" Width="Auto" >
           <DataGridTemplateColumn.CellTemplate>
@@ -46,95 +73,95 @@
 
       </DataGrid.Columns>
     </DataGrid>
-    
-  <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
-  <TabControl>
-    <TabItem Header="MKM Products">
-      <Grid>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+    <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
+    <TabControl Grid.Row="0" Grid.RowSpan="2">
+      <TabItem Header="MKM Products">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
 
-        <TextBlock VerticalAlignment="Center" >Name</TextBlock>
-        <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding MkmProductLookupName}" />
-        <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
 
-        <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="1" Grid.ColumnSpan="3">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Id"
-                             Binding="{Binding Id}"
+          <TextBlock VerticalAlignment="Center" >Name</TextBlock>
+          <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding MkmProductLookupName}" />
+          <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>
+
+          <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="1" Grid.ColumnSpan="3">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Id"
+                               Binding="{Binding Id}"
                               />
-            <DataGridTextColumn Header="Name"
-                 Binding="{Binding Name}"
+              <DataGridTextColumn Header="Name"
+                   Binding="{Binding Name}"
                               />
-            <DataGridTextColumn Header="Category"
-                 Binding="{Binding Category}"
+              <DataGridTextColumn Header="Category"
+                   Binding="{Binding Category}"
                               />
-            <DataGridTextColumn Header="Expansion Name"
-                 Binding="{Binding ExpansionName}"
+              <DataGridTextColumn Header="Expansion Name"
+                   Binding="{Binding ExpansionName}"
                               />
-            <DataGridTextColumn Header="Expansion Code"
-                 Binding="{Binding ExpansionCode}"
+              <DataGridTextColumn Header="Expansion Code"
+                   Binding="{Binding ExpansionCode}"
                               />
 
-            <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
-              <DataGridTemplateColumn.CellTemplate>
-                <DataTemplate >
-                  <StackPanel Orientation="Horizontal">
-                    <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
-                  </StackPanel>
-                </DataTemplate>
-              </DataGridTemplateColumn.CellTemplate>
-            </DataGridTemplateColumn>
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate >
+                    <StackPanel Orientation="Horizontal">
+                      <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
 
-          </DataGrid.Columns>
-        </DataGrid>
-      </Grid>
-    </TabItem>
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
+      </TabItem>
 
-    <TabItem Header="Deck">
-      <Grid>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+      <TabItem Header="Deck">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
 
-        <Button Grid.Column="0" Command="{Binding OnLoadDeckFile}">Load Deck File!</Button>
+          <Button Grid.Column="0" Command="{Binding OnLoadDeckFile}">Load Deck File!</Button>
 
-        <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentDeckList.Mainboard}" Grid.Row="1" Grid.ColumnSpan="3">
-          <DataGrid.Columns>
-            <!--<DataGridTextColumn Header="Id"
+          <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentDeckList.Mainboard}" Grid.Row="1" Grid.ColumnSpan="3">
+            <DataGrid.Columns>
+              <!--<DataGridTextColumn Header="Id"
                              Binding="{Binding Id}"
                               />-->
-            <DataGridTextColumn Header="Count"
-                 Binding="{Binding Count}" />
-            
-            <DataGridTextColumn Header="Name"
-                 Binding="{Binding Name}" />
+              <DataGridTextColumn Header="Count"
+                   Binding="{Binding Count}" />
 
-            <DataGridTextColumn Header="Extension Code"
-                 Binding="{Binding SetCode}" />
+              <DataGridTextColumn Header="Name"
+                   Binding="{Binding Name}" />
 
-            <DataGridTextColumn Header="Extension"
-              Binding="{Binding SetName}" />
+              <DataGridTextColumn Header="Extension Code"
+                   Binding="{Binding SetCode}" />
 
-            <DataGridTextColumn Header="MkmId"
-              Binding="{Binding MkmId}" />
-            
-            <!--
+              <DataGridTextColumn Header="Extension"
+                Binding="{Binding SetName}" />
+
+              <DataGridTextColumn Header="MkmId"
+                Binding="{Binding MkmId}" />
+
+              <!--
             <DataGridTextColumn Header="Expansion Name"
                  Binding="{Binding ExpansionName}"
                               />
@@ -152,39 +179,39 @@
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>-->
 
-          </DataGrid.Columns>
-        </DataGrid>
-      </Grid>
-    </TabItem>
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
+      </TabItem>
 
-    <TabItem Header="System">
-      <Grid>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+      <TabItem Header="System">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto" />
-          <ColumnDefinition Width="*" />
-          <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
 
-        <TextBlock VerticalAlignment="Center" >Base Folder</TextBlock>
-        <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding SystemBaseFolder}" IsReadOnly="True" />
+          <TextBlock VerticalAlignment="Center" >Base Folder</TextBlock>
+          <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding SystemBaseFolder}" IsReadOnly="True" />
 
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
-          <TextBlock  VerticalAlignment="Center">Mkm Products:</TextBlock>
-          <TextBlock Text="{Binding MkmProductsSummary}" VerticalAlignment="Center"/>
-          <Button Command="{Binding OnDownloadMkmProducts}">Update</Button>
-        </StackPanel>
+          <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
+            <TextBlock  VerticalAlignment="Center">Mkm Products:</TextBlock>
+            <TextBlock Text="{Binding MkmProductsSummary}" VerticalAlignment="Center"/>
+            <Button Command="{Binding OnDownloadMkmProducts}">Update</Button>
+          </StackPanel>
 
-      </Grid>
-    </TabItem>
+        </Grid>
+      </TabItem>
 
-  </TabControl>
+    </TabControl>
   </Grid>
 </Window>

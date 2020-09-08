@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MtgInventory.Service
 {
@@ -31,12 +32,14 @@ namespace MtgInventory.Service
 
         public string MkmProductsSummary { get; private set; }
 
+        public IApiCallStatistic MkmApiCallStatistic { get; private set; }
+
         public void Dispose()
         {
             ShutDown();
         }
 
-        public void Initialize()
+        public void Initialize(IApiCallStatistic mkmApiCallStatistic)
         {
             Log.Information($"{nameof(Initialize)}: Initializing application service");
 
@@ -47,10 +50,18 @@ namespace MtgInventory.Service
 
             MkmAuthenticationData = reader.ReadFromYaml(_mkmAuthenticationDataFile);
 
-            _mkmRequest = new MkmRequest(MkmAuthenticationData);
-
             _cardDatabase.Initialize(SystemFolders.BaseFolder);
+            
+            MkmApiCallStatistic = mkmApiCallStatistic;
+            var fromDatabase = _cardDatabase.GetMkmCallStatistic();
+            mkmApiCallStatistic.CountToday = fromDatabase.CountToday;
+            mkmApiCallStatistic.CountTotal = fromDatabase.CountTotal;
+            mkmApiCallStatistic.Today = fromDatabase.Today;
+            mkmApiCallStatistic.Id = fromDatabase.Id;
+
             MkmProductsSummary = $"{_cardDatabase.MkmProductInfo.Count()} products in database";
+
+            _mkmRequest = new MkmRequest(MkmAuthenticationData, MkmApiCallStatistic);
         }
 
         public void ShutDown()
@@ -72,6 +83,8 @@ namespace MtgInventory.Service
 
             Log.Debug($"{nameof(DownloadMkmProducts)}: Inserting products into database...");
             _cardDatabase.InsertProductInfo(products.Products, expansions);
+
+            _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
         }
 
         public void OpenMkmProductPage(MkmProductInfo product)
@@ -92,12 +105,15 @@ namespace MtgInventory.Service
                 product.UpdateFromProduct(p);
 
                 _cardDatabase.MkmProductInfo.Update(product);
+
+                _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
             }
 
             // Now open a browser with the url
             Log.Debug($"{prefix}: Opening MKM product page...");
             Browser.OpenBrowser(product.MkmProductUrl);
         }
+
 
         public IEnumerable<MkmProductInfo> MkmFindProductsByName(string name)
         {

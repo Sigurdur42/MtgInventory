@@ -11,6 +11,8 @@ namespace MkmApi.TestUI.ViewModels
     {
         private string _output = "Initial value";
 
+        private ApiCallStatistics _apiCallStatistics = new ApiCallStatistics();
+
         public MainWindowViewModel()
         {
             GenerateMkmTokenFile();
@@ -28,7 +30,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadAllCards()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(AuthenticationData);
+            var request = new MkmRequest(AuthenticationData, _apiCallStatistics);
 
             var index = 0;
             using (var products = request.GetProductsAsCsv())
@@ -58,7 +60,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadStock()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(AuthenticationData);
+            var request = new MkmRequest(AuthenticationData, _apiCallStatistics);
             var result = request.GetStockAsCsv();
 
             stopwatch.Stop();
@@ -72,7 +74,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadSingleProduct()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(AuthenticationData);
+            var request = new MkmRequest(AuthenticationData, _apiCallStatistics);
             var result = request.GetProductData("16366");
 
             stopwatch.Stop();
@@ -86,7 +88,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadGames()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(AuthenticationData);
+            var request = new MkmRequest(AuthenticationData, _apiCallStatistics);
             var result = request.GetGames().OrderBy(g => g.IdGame);
 
             stopwatch.Stop();
@@ -98,22 +100,22 @@ namespace MkmApi.TestUI.ViewModels
             // Output = "Download sets pressed";
         }
 
-        public void OnDownloadWithParameters()
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(AuthenticationData);
-            var result = request.GetArticles(
-                "16366",
-                true,
-                null);
+        ////public void OnDownloadWithParameters()
+        ////{
+        ////    var stopwatch = Stopwatch.StartNew();
+        ////    var request = new MkmRequest(AuthenticationData);
+        ////    var result = request.GetArticles(
+        ////        "16366",
+        ////        true,
+        ////        null);
 
-            stopwatch.Stop();
+        ////    stopwatch.Stop();
 
-            //var dump = $"Reading {result.Count()} took {stopwatch.Elapsed}";
-            //DisplayResult(dump);
+        ////    //var dump = $"Reading {result.Count()} took {stopwatch.Elapsed}";
+        ////    //DisplayResult(dump);
 
-            // Output = "Download sets pressed";
-        }
+        ////    // Output = "Download sets pressed";
+        ////}
 
         private void DisplayResult(string result)
         {

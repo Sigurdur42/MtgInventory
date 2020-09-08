@@ -1,16 +1,17 @@
-﻿using Avalonia.Controls;
-using MtgInventory.Logging;
-using MtgInventory.Service;
-using MtgInventory.Service.Decks;
-using MtgInventory.Service.Models;
-using MtgInventory.Views;
-using ReactiveUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using MtgInventory.Logging;
+using MtgInventory.Models;
+using MtgInventory.Service;
+using MtgInventory.Service.Decks;
+using MtgInventory.Service.Models;
+using MtgInventory.Views;
+using ReactiveUI;
 
 namespace MtgInventory.ViewModels
 {
@@ -24,13 +25,17 @@ namespace MtgInventory.ViewModels
 
         private DeckList _currentDeckList;
 
+        private MkmApiCallStatistics _mkmApiCallStatistics;
+
         public MainWindowViewModel()
         {
             MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly().GetName().Version;
 
             Task.Factory.StartNew(() =>
             {
-                MainService.Initialize();
+                MkmApiCallStatistics = new MkmApiCallStatistics();
+                MainService.Initialize(MkmApiCallStatistics);
+
                 MkmProductsSummary = MainService?.MkmProductsSummary;
             });
 
@@ -55,6 +60,12 @@ namespace MtgInventory.ViewModels
         {
             get => _mkmProductsSummary;
             set => this.RaiseAndSetIfChanged(ref _mkmProductsSummary, value);
+        }
+
+        public MkmApiCallStatistics MkmApiCallStatistics
+        {
+            get => _mkmApiCallStatistics;
+            set => this.RaiseAndSetIfChanged(ref _mkmApiCallStatistics, value);
         }
 
         public string MkmProductLookupName
