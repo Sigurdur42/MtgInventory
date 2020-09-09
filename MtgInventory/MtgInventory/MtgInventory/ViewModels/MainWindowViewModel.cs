@@ -27,6 +27,8 @@ namespace MtgInventory.ViewModels
 
         private MkmApiCallStatistics _mkmApiCallStatistics;
 
+        private IEnumerable<MkmStockItemExtended> _currentStock;
+
         public MainWindowViewModel()
         {
             MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly().GetName().Version;
@@ -74,6 +76,12 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _mkmProductLookupName, value);
         }
 
+        public IEnumerable<MkmStockItemExtended> CurrentStock
+        {
+            get => _currentStock;
+            set => this.RaiseAndSetIfChanged(ref _currentStock, value);
+        }
+
         public IEnumerable<MkmProductInfo> MkmProductsFound
         {
             get => _mkmProductsFound;
@@ -102,11 +110,27 @@ namespace MtgInventory.ViewModels
             });
         }
 
+        public void OnLoadMkmStock()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                CurrentStock = MainService?.DownloadMkmStock();
+            });
+        }
+
         public void OnOpenMkmProductPage(MkmProductInfo info)
         {
             Task.Factory.StartNew(() =>
             {
                 MainService?.OpenMkmProductPage(info);
+            });
+        }
+
+        public void OnOpenStockItemInMkmProductPage(MkmStockItemExtended stockItem)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.OpenMkmProductPage(stockItem?.StockItem.IdProduct);
             });
         }
 

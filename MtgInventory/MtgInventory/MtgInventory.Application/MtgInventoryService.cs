@@ -87,6 +87,23 @@ namespace MtgInventory.Service
             _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
         }
 
+        public void OpenMkmProductPage(string productId)
+        {
+            if (string.IsNullOrEmpty(productId))
+            {
+                Log.Warning($"Cannot find product with empty MKM id");
+            }
+
+            var found = _cardDatabase.MkmProductInfo.Query().Where(p => p.Id == productId).FirstOrDefault();
+            if (found == null)
+            {
+                Log.Warning($"Cannot find product with MKM id {productId}");
+                return;
+            }
+
+            OpenMkmProductPage(found);
+        }
+
         public void OpenMkmProductPage(MkmProductInfo product)
         {
             if (product == null)
@@ -157,6 +174,22 @@ namespace MtgInventory.Service
                     card.SetName = use.ExpansionName;
                 }
             }
+        }
+
+        public IEnumerable<MkmStockItemExtended> DownloadMkmStock()
+        {
+            Log.Debug($"{nameof(DownloadMkmStock)} now...");
+
+            var result = _mkmRequest
+                .GetStockAsCsv()
+                .Select(s => new MkmStockItemExtended(s))
+                .ToArray();
+
+            _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+
+            Log.Debug($"{nameof(DownloadMkmStock)} loaded {result.Length} items");
+
+            return result;
         }
     }
 }

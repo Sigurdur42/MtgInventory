@@ -126,6 +126,65 @@
         </Grid>
       </TabItem>
 
+      <TabItem Header="MKM Stock">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+
+          <Button Grid.Column="2" Command="{Binding OnLoadMkmStock}">Load!</Button>
+
+          <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentStock}" Grid.Row="1" Grid.ColumnSpan="3">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Price"
+                               Binding="{Binding StockItem.Price}" />
+
+              <DataGridTextColumn Header="Quantity"
+                               Binding="{Binding StockItem.Amount}" />
+              
+              <DataGridTextColumn Header="Name"
+                   Binding="{Binding StockItem.EnglishName}" />
+
+              <DataGridTextColumn Header="Language"
+                   Binding="{Binding StockItem.Language}" />
+
+               <DataGridTextColumn Header="Condition"
+                   Binding="{Binding StockItem.Condition}" />
+
+              <DataGridTextColumn Header="Foil?"
+                  Binding="{Binding StockItem.Foil}" />
+
+              <DataGridTextColumn Header="Playset?"
+                  Binding="{Binding StockItem.Playset}" />
+
+              <DataGridTextColumn Header="Expansion Code"
+                   Binding="{Binding StockItem.SetCode}" />
+
+              <DataGridTextColumn Header="Expansion"
+                   Binding="{Binding StockItem.SetName}" />
+
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate >
+                    <StackPanel Orientation="Horizontal">
+                      <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
+      </TabItem>
+
       <TabItem Header="Deck">
         <Grid>
           <Grid.RowDefinitions>
