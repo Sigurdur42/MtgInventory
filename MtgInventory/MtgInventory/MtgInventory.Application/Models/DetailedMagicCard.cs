@@ -1,4 +1,5 @@
 ﻿using System;
+using MkmApi.Entities;
 using ScryfallApi.Client.Models;
 
 namespace MtgInventory.Service.Models
@@ -25,6 +26,7 @@ namespace MtgInventory.Service.Models
 
         public void UpdateFromScryfall(Card card)
         {
+            NameEn = card.Name;
             ScryfallId = card.Id;
             SetCode = card.Set;
             SetName = card.SetName;
@@ -33,9 +35,16 @@ namespace MtgInventory.Service.Models
 
         internal void UpdateFromMkm(MkmProductInfo card)
         {
+            NameEn = card.Name;
             MkmId = card.Id;
             MkmWebSite = card.MkmProductUrl;
 
+            LastUpdateMkm = DateTime.Now;
+        }
+
+        internal void UpdateFromProduct(Product card)
+        {
+            MkmWebSite = "https://www.cardmarket.com" + card.WebSite;
             LastUpdateMkm = DateTime.Now;
         }
     }

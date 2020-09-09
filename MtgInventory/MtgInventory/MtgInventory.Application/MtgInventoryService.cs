@@ -47,6 +47,8 @@ namespace MtgInventory.Service
 
         public IApiCallStatistic MkmApiCallStatistic { get; private set; }
 
+        public IEnumerable<DetailedSetInfo> AllSets => _cardDatabase.MagicSets.FindAll();
+
         public void Dispose()
         {
             ShutDown();
@@ -93,7 +95,7 @@ namespace MtgInventory.Service
             var scryfallCardDownload = Task.Factory.StartNew(() =>
             {
                 Log.Debug($"{nameof(DownloadMkmProducts)}: Loading Scryfall expansions...");
-                var scryfallSets = _scryfallService.RetrieveSets().ToArray();
+                var scryfallSets = _scryfallService.RetrieveSets().ToArray().OrderByDescending(s=>s.Name).ToArray();
                 _cardDatabase.InsertScryfallSets(scryfallSets);
 
                 _cardDatabase.ClearScryfallCards();
@@ -134,9 +136,9 @@ namespace MtgInventory.Service
             Log.Information($"Updating complete database took {stopwatch.Elapsed}");
         }
 
-        public void RebuildInternalDatabase()
+        public Task RebuildInternalDatabase()
         {
-            Task.Factory.StartNew(() =>
+            return Task.Factory.StartNew(() =>
             {
                 if (_isUpdatingDetailedCards)
                 {
@@ -163,62 +165,62 @@ namespace MtgInventory.Service
             });
         }
 
-        public void OpenMkmProductPage(string productId)
+        public void OpenMkmProductPage(string mkmId)
         {
-            if (string.IsNullOrEmpty(productId))
+            if (string.IsNullOrEmpty(mkmId))
             {
                 Log.Warning($"Cannot find product with empty MKM id");
             }
 
-            var found = _cardDatabase.MkmProductInfo.Query().Where(p => p.Id == productId).FirstOrDefault();
+            var found = _cardDatabase.MagicCards.Query().Where(p => p.MkmId == mkmId).FirstOrDefault();
             if (found == null)
             {
-                Log.Warning($"Cannot find product with MKM id {productId}");
+                Log.Warning($"Cannot find product with MKM id {mkmId}");
                 return;
             }
 
             OpenMkmProductPage(found);
         }
 
-        public void OpenMkmProductPage(MkmProductInfo product)
+        public void OpenMkmProductPage(DetailedMagicCard product)
         {
             if (product == null)
             {
                 return;
             }
 
-            var prefix = $"{nameof(OpenMkmProductPage)}({product.Id} {product.Name} {product.ExpansionCode})";
+            var prefix = $"{nameof(OpenMkmProductPage)}({product.Id} {product.NameEn} {product.SetCode})";
 
-            if (string.IsNullOrEmpty(product.MkmProductUrl))
+            if (string.IsNullOrEmpty(product.MkmWebSite))
             {
                 Log.Information($"{prefix}: Downloading additional info...");
 
                 // TODO: Update detailed card
 
                 // We need to download the product details first
-                var p = _mkmRequest.GetProductData(product.Id);
+                var p = _mkmRequest.GetProductData(product.MkmId);
                 product.UpdateFromProduct(p);
 
-                _cardDatabase.MkmProductInfo.Update(product);
+                _cardDatabase.MagicCards.Update(product);
 
                 _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
             }
 
             // Now open a browser with the url
             Log.Debug($"{prefix}: Opening MKM product page...");
-            Browser.OpenBrowser(product.MkmProductUrl);
+            Browser.OpenBrowser(product.MkmWebSite);
         }
 
-        public IEnumerable<MkmProductInfo> MkmFindProductsByName(string name)
+        public IEnumerable<DetailedMagicCard> MkmFindProductsByName(string name)
         {
             Log.Debug($"{nameof(MkmFindProductsByName)}: {name}");
-            return _cardDatabase.MkmProductInfo
+            return _cardDatabase.MagicCards
                 .Query()
-                .Where(p => p.CategoryId == 1)
-                .Where(p => p.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase))
+                // .Where(p => p.CategoryId == 1)
+                .Where(p => p.NameEn.Contains(name, StringComparison.InvariantCultureIgnoreCase))
                 .ToList()
-                .OrderBy(p => p.Name)
-                .ThenBy(p => p.ExpansionName)
+                .OrderBy(p => p.NameEn)
+                .ThenBy(p => p.SetName)
                 .ToList();
         }
 

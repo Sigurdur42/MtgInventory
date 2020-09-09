@@ -32,7 +32,7 @@ namespace MtgInventory.Service.Database
         public ILiteCollection<Card> ScryfallCards { get; private set; }
         public ILiteCollection<Set> ScryfallSets { get; private set; }
 
-        public ILiteCollection<SetUpdateInfo> SetUpdateInfo { get; private set; }
+        public ILiteCollection<DetailedSetInfo> MagicSets { get; private set; }
         public ILiteCollection<DetailedMagicCard> MagicCards { get; private set; }
 
         public void Dispose()
@@ -58,7 +58,7 @@ namespace MtgInventory.Service.Database
             ScryfallCards = _scryfallDatabase.GetCollection<Card>();
             ScryfallSets = _scryfallDatabase.GetCollection<Set>();
 
-            SetUpdateInfo = _cardDatabase.GetCollection<SetUpdateInfo>();
+            MagicSets = _cardDatabase.GetCollection<DetailedSetInfo>();
             MagicCards = _cardDatabase.GetCollection<DetailedMagicCard>();
 
             IsInitialized = true;
@@ -85,29 +85,6 @@ namespace MtgInventory.Service.Database
 
             ScryfallSets.EnsureIndex(e => e.Code);
             ScryfallSets.EnsureIndex(e => e.Name);
-
-            SetSetUpdateDate(sets, DateTime.Now);
-        }
-
-        public void SetSetUpdateDate(IEnumerable<Set> sets, DateTime updateDate)
-        {
-            foreach (var set in sets)
-            {
-                var found = SetUpdateInfo.Query().Where(s => s.SetCode == set.Code).FirstOrDefault();
-                if (found == null)
-                {
-                    SetUpdateInfo.Insert(new SetUpdateInfo
-                    {
-                        SetCode = set.Code,
-                        LastUpdated = updateDate,
-                    });
-                }
-                else
-                {
-                    found.LastUpdated = updateDate;
-                    SetUpdateInfo.Update(found);
-                }
-            }
         }
 
         public void InsertScryfallCards(IEnumerable<Card> cards)
@@ -170,16 +147,6 @@ namespace MtgInventory.Service.Database
                     _logger.Information($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total}...");
 
                     BulkInsertProductInfo(temp);
-
-                    lock (_lock)
-                    {
-                        foreach (var card in temp)
-                        {
-                            UpdateDetailedCardFromMkm(card, false);
-                        }
-
-                        EnsureMagicCardsIndex();
-                    }
 
                     temp.Clear();
                 }
@@ -269,6 +236,50 @@ namespace MtgInventory.Service.Database
 
             Log.Debug($"{nameof(RebuildDetailedDatabase)} - Updating index...");
             EnsureMagicCardsIndex();
+
+            // Set data
+            MagicSets.DeleteAll();
+            var indexedSets = new Dictionary<string, DetailedSetInfo>();
+
+            Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM Set data...");
+            foreach (var mkm in MkmExpansion.FindAll())
+            {
+                // TODO Handle different art versions
+                var key = mkm.Abbreviation.ToUpperInvariant();
+                if (indexedSets.TryGetValue(key, out var found))
+                {
+                    Log.Warning($"Duplicate MKM set found: {mkm}");
+                    continue;
+                }
+
+                var set = new DetailedSetInfo();
+                set.UpdateFromMkm(mkm);
+                indexedSets.Add(key, set);
+            }
+
+            Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall Set data...");
+            foreach (var scryfall in ScryfallSets.FindAll())
+            {
+                var key = scryfall.Code.ToUpperInvariant();
+                if (!indexedSets.TryGetValue(key, out var found))
+                {
+                    found = new DetailedSetInfo();
+                    indexedSets.Add(key, found);
+                }
+
+                found.UpdateFromScryfall(scryfall);
+            }
+
+            Log.Debug($"{nameof(RebuildDetailedDatabase)} - inserting sets now...");
+
+            MagicSets.InsertBulk(indexedSets.Values);
+
+            Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding set index...");
+
+            MagicSets.EnsureIndex(s => s.SetNameScryfall);
+            MagicSets.EnsureIndex(s => s.SetNameMkm);
+            MagicSets.EnsureIndex(s => s.SetCodeScryfall);
+            MagicSets.EnsureIndex(s => s.SetCodeMkm);
         }
 
         internal void InsertExpansions(IEnumerable<Expansion> expansions)

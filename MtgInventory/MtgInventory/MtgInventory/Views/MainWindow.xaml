@@ -95,20 +95,18 @@
 
           <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="1" Grid.ColumnSpan="3">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Id"
-                               Binding="{Binding Id}"
-                              />
+            
               <DataGridTextColumn Header="Name"
-                   Binding="{Binding Name}"
+                   Binding="{Binding NameEn}"
                               />
-              <DataGridTextColumn Header="Category"
-                   Binding="{Binding Category}"
-                              />
+              <!--<DataGridTextColumn Header="Category"
+                   Binding="{Binding Category}" />-->
+              
               <DataGridTextColumn Header="Expansion Name"
-                   Binding="{Binding ExpansionName}"
+                   Binding="{Binding SetName}"
                               />
               <DataGridTextColumn Header="Expansion Code"
-                   Binding="{Binding ExpansionCode}"
+                   Binding="{Binding SetCOde}"
                               />
 
               <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
@@ -139,27 +137,30 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
 
-          <TextBlock VerticalAlignment="Center" >Name</TextBlock>
+          <!--<TextBlock VerticalAlignment="Center" >Name</TextBlock>
           <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding MkmProductLookupName}" />
-          <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>
+          <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>-->
 
-          <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="1" Grid.ColumnSpan="3">
+          <DataGrid AutoGenerateColumns="False" Items="{Binding AllSets}" Grid.Row="1" Grid.ColumnSpan="3">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Id"
-                               Binding="{Binding Id}"
-                              />
+             
               <DataGridTextColumn Header="Name"
-                   Binding="{Binding Name}"
-                              />
-              <DataGridTextColumn Header="Category"
-                   Binding="{Binding Category}"
-                              />
-              <DataGridTextColumn Header="Expansion Name"
-                   Binding="{Binding ExpansionName}"
-                              />
-              <DataGridTextColumn Header="Expansion Code"
-                   Binding="{Binding ExpansionCode}"
-                              />
+                   Binding="{Binding Name}" />
+              
+           
+              <DataGridTextColumn Header="Name (MKM)"
+                   Binding="{Binding SetNameMkm}" />
+              <DataGridTextColumn Header="Code (MKM)" 
+                   Binding="{Binding SetCodeMkm}" />
+
+              <DataGridTextColumn Header="Name (Scryfall)"
+               Binding="{Binding SetNameScryfall}" />
+              <DataGridTextColumn Header="Code (Scryfall)"
+                   Binding="{Binding SetCodeScryfall}" />
+
+              <DataGridTextColumn Header="Released"
+               Binding="{Binding ReleaseDateParsed}" />
+
 
               <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
                 <DataGridTemplateColumn.CellTemplate>

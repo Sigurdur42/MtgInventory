@@ -21,13 +21,15 @@ namespace MtgInventory.ViewModels
 
         private string _mkmProductLookupName;
 
-        private IEnumerable<MkmProductInfo> _mkmProductsFound;
+        private IEnumerable<DetailedMagicCard> _mkmProductsFound;
 
         private DeckList _currentDeckList;
 
         private MkmApiCallStatistics _mkmApiCallStatistics;
 
         private IEnumerable<MkmStockItemExtended> _currentStock;
+
+        private IEnumerable<DetailedSetInfo> _allSets;
 
         public MainWindowViewModel()
         {
@@ -39,13 +41,12 @@ namespace MtgInventory.ViewModels
                 MainService.Initialize(MkmApiCallStatistics);
 
                 UpdateProductSummary();
+
+                AllSets = MainService.AllSets.ToArray();
             });
 
             LogSink = PanelLogSink.Instance;
         }
-
-        private void UpdateProductSummary() 
-            => MkmProductsSummary = "MKM: " + MainService?.MkmProductsSummary + Environment.NewLine + "Scryfall: " + MainService?.ScryfallProductsSummary + Environment.NewLine + "Internal: " + MainService?.InternalProductsSummary;
 
         public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
 
@@ -59,6 +60,12 @@ namespace MtgInventory.ViewModels
         {
             get => _currentDeckList;
             set => this.RaiseAndSetIfChanged(ref _currentDeckList, value);
+        }
+
+        public IEnumerable<DetailedSetInfo> AllSets
+        {
+            get => _allSets;
+            set => this.RaiseAndSetIfChanged(ref _allSets, value);
         }
 
         public string MkmProductsSummary
@@ -85,7 +92,7 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _currentStock, value);
         }
 
-        public IEnumerable<MkmProductInfo> MkmProductsFound
+        public IEnumerable<DetailedMagicCard> MkmProductsFound
         {
             get => _mkmProductsFound;
             set => this.RaiseAndSetIfChanged(ref _mkmProductsFound, value);
@@ -102,6 +109,7 @@ namespace MtgInventory.ViewModels
             {
                 MainService?.DownloadMkmProducts();
                 UpdateProductSummary();
+                AllSets = MainService.AllSets.ToArray();
             });
         }
 
@@ -109,8 +117,12 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.RebuildInternalDatabase();
-                UpdateProductSummary();
+                var task = MainService?.RebuildInternalDatabase();
+                task?.ContinueWith((task) =>
+                {
+                    UpdateProductSummary();
+                    AllSets = MainService.AllSets.ToArray();
+                });
             });
         }
 
@@ -130,11 +142,11 @@ namespace MtgInventory.ViewModels
             });
         }
 
-        public void OnOpenMkmProductPage(MkmProductInfo info)
+        public void OnOpenMkmProductPage(DetailedMagicCard info)
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.OpenMkmProductPage(info);
+                MainService?.OpenMkmProductPage(info?.MkmId);
                 UpdateProductSummary();
             });
         }
@@ -174,5 +186,8 @@ namespace MtgInventory.ViewModels
                 CurrentDeckList = loaded.Deck;
             }
         }
+
+        private void UpdateProductSummary()
+                                                                                                                                                                    => MkmProductsSummary = "MKM: " + MainService?.MkmProductsSummary + Environment.NewLine + "Scryfall: " + MainService?.ScryfallProductsSummary + Environment.NewLine + "Internal: " + MainService?.InternalProductsSummary;
     }
 }
