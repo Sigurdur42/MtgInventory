@@ -198,6 +198,11 @@ namespace MtgInventory.Service
                 // TODO: Update detailed card
 
                 // We need to download the product details first
+                if (string.IsNullOrEmpty(product.MkmId))
+                {
+                    Log.Warning($"Card {product} does not exist on MKM. ");
+                    return;
+                }
                 var p = _mkmRequest.GetProductData(product.MkmId);
                 product.UpdateFromProduct(p);
 

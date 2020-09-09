@@ -95,15 +95,7 @@ namespace MtgInventory.Service.Database
             ScryfallCards.EnsureIndex(e => e.Set);
             ScryfallCards.EnsureIndex(e => e.Name);
 
-            lock (_lock)
-            {
-                foreach (var card in cards)
-                {
-                    UpdateDetailedCardFromScryfall(card, false);
-                }
-
-                EnsureMagicCardsIndex();
-            }
+          
         }
 
         public void ClearScryfallCards()
@@ -203,7 +195,7 @@ namespace MtgInventory.Service.Database
             var indexedCards = new Dictionary<string, DetailedMagicCard>();
 
             Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM card data...");
-            foreach (var mkm in MkmProductInfo.FindAll())
+            foreach (var mkm in MkmProductInfo.Query().Where(c=> c.CategoryId == 1).ToArray())
             {
                 // TODO Handle different art versions
                 var key = $"{mkm.ExpansionCode}_{mkm.Name}".ToUpperInvariant();
@@ -319,27 +311,7 @@ namespace MtgInventory.Service.Database
             }
         }
 
-        private void UpdateDetailedCardFromMkm(MkmProductInfo card, bool updateIndex)
-        {
-            var found = MagicCards.Query().Where(c => c.MkmId == card.Id).FirstOrDefault();
-            if (found == null)
-            {
-                found = new DetailedMagicCard()
-                {
-                    MkmId = card.Id,
-                };
-
-                MagicCards.Insert(found);
-            }
-
-            found.UpdateFromMkm(card);
-            MagicCards.Update(found);
-
-            if (updateIndex)
-            {
-                EnsureMagicCardsIndex();
-            }
-        }
+      
 
         private void EnsureMagicCardsIndex()
         {

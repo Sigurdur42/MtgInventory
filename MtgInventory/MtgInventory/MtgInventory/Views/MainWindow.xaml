@@ -106,8 +106,10 @@
                    Binding="{Binding SetName}"
                               />
               <DataGridTextColumn Header="Expansion Code"
-                   Binding="{Binding SetCOde}"
-                              />
+                   Binding="{Binding SetCode}" />
+
+              <DataGridTextColumn Header="Type"
+                Binding="{Binding TypeLine}" />
 
               <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
                 <DataGridTemplateColumn.CellTemplate>

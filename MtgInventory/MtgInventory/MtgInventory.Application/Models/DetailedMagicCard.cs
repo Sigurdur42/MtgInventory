@@ -16,13 +16,21 @@ namespace MtgInventory.Service.Models
         public string NameEn { get; set; }
         public string SetCode { get; set; }
         public string SetName { get; set; }
+        public string TypeLine { get; set; }
 
         public string MkmWebSite { get; set; }
+        public string ScryfallCardSite { get; set; }
 
         public int CountReprints { get; set; }
 
         public DateTime? LastUpdateMkm { get; set; }
+
         public DateTime? LastUpdateScryfall { get; set; }
+
+        public override string ToString()
+        {
+            return $"{NameEn} {SetName} [{MkmId}, {ScryfallId}]";
+        }
 
         public void UpdateFromScryfall(Card card)
         {
@@ -30,11 +38,16 @@ namespace MtgInventory.Service.Models
             ScryfallId = card.Id;
             SetCode = card.Set;
             SetName = card.SetName;
+            TypeLine = card.TypeLine;
+            ScryfallCardSite = card.ScryfallUri?.ToString();
             LastUpdateScryfall = DateTime.Now;
         }
 
         internal void UpdateFromMkm(MkmProductInfo card)
         {
+            SetCode = card.ExpansionCode;
+            SetName = card.ExpansionName;
+
             NameEn = card.Name;
             MkmId = card.Id;
             MkmWebSite = card.MkmProductUrl;
