@@ -8,6 +8,7 @@ using MkmApi;
 using MkmApi.Entities;
 using MtgInventory.Service.Converter;
 using MtgInventory.Service.Models;
+using ScryfallApi.Client.Models;
 using Serilog;
 
 namespace MtgInventory.Service.Database
@@ -23,6 +24,8 @@ namespace MtgInventory.Service.Database
 
         public ILiteCollection<Expansion> MkmExpansion { get; private set; }
         public ILiteCollection<ApiCallStatistics> ApiCallStatistics { get; private set; }
+        public ILiteCollection<Card> ScryfallCards { get; private set; }
+        public ILiteCollection<Set> ScryfallSets { get; private set; }
 
         public void Dispose()
         {
@@ -41,6 +44,8 @@ namespace MtgInventory.Service.Database
             MkmProductInfo = _cardDatabase.GetCollection<MkmProductInfo>();
             MkmExpansion = _cardDatabase.GetCollection<Expansion>();
             ApiCallStatistics = _cardDatabase.GetCollection<ApiCallStatistics>();
+            ScryfallCards = _cardDatabase.GetCollection<Card>();
+            ScryfallSets = _cardDatabase.GetCollection<Set>();
 
             IsInitialized = true;
         }
@@ -52,6 +57,31 @@ namespace MtgInventory.Service.Database
             IsInitialized = false;
             _cardDatabase?.Dispose();
             _cardDatabase = null;
+        }
+
+        public void InsertScryfallSets(IEnumerable<Set> sets)
+        {
+            _logger.Information($"{nameof(InsertScryfallSets)}: Cleaning existing set info...");
+            ScryfallSets.DeleteAll();
+            ScryfallSets.InsertBulk(sets);
+
+            ScryfallSets.EnsureIndex(e => e.Code);
+            ScryfallSets.EnsureIndex(e => e.Name);
+        }
+
+        public void InsertScryfallCards(IEnumerable<Card> cards)
+        {
+            _logger.Information($"{nameof(InsertScryfallCards)}: Inserting new scryfall cards...");
+            ScryfallCards.InsertBulk(cards);
+
+            ScryfallCards.EnsureIndex(e => e.Set);
+            ScryfallCards.EnsureIndex(e => e.Name);
+        }
+
+        public void ClearScryfallCards()
+        {
+            _logger.Information($"{nameof(ClearScryfallCards)}: Cleaning existing card info...");
+            ScryfallCards.DeleteAll();
         }
 
         public void InsertProductInfo(

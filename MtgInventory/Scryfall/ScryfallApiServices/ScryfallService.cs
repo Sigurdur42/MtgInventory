@@ -9,14 +9,13 @@ namespace MtgBinder.Domain.Scryfall
     public class ScryfallService : IScryfallService
     {
         private readonly ScryfallApiClient _apiClient;
-        
+
         private readonly GoodCiticenAutoSleep _autoSleep = new GoodCiticenAutoSleep();
 
         public ScryfallService(
             ScryfallApiClient apiClient)
         {
             _apiClient = apiClient;
-
         }
 
         public IEnumerable<Set> RetrieveSets()
@@ -29,21 +28,17 @@ namespace MtgBinder.Domain.Scryfall
 
         public Card[] RetrieveCardsForSetCode(string setCode)
         {
-
-
             var query = $"e:{setCode}";
             return InternalSearch(query, SearchOptions.RollupMode.Prints);
         }
 
         public Card[] RetrieveCardsByCardName(string cardName, SearchOptions.RollupMode rollupMode)
         {
-     
-
             var query = $"{cardName}";
-            return InternalSearch( query, rollupMode);
+            return InternalSearch(query, rollupMode);
         }
 
-        internal Card[] InternalSearch(      
+        internal Card[] InternalSearch(
             string lookupPattern,
             SearchOptions.RollupMode rollupMode)
         {
@@ -68,15 +63,17 @@ namespace MtgBinder.Domain.Scryfall
                 {
                     // Initialize progress
                     var pageCount = cards.TotalCards / cards.Data.Count;
-               
                 }
-   
+
                 ++page;
 
-                result.AddRange(cards.Data);               
-            } while (cards.HasMore);
+                if (cards.Data != null)
+                {
+                    result.AddRange(cards.Data);
+                }
 
-     
+                // TODO: Handle errors
+            } while (cards.HasMore);
 
             return result.ToArray();
         }

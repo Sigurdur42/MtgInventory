@@ -1,13 +1,16 @@
 ﻿using MkmApi;
+using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
+using ScryfallApi.Client;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace MtgInventory.Service
 {
@@ -20,10 +23,17 @@ namespace MtgInventory.Service
         private MkmRequest _mkmRequest;
         private FileInfo _mkmAuthenticationDataFile;
 
+        // TODO: Use ScryfallService to download all sets
+        private IScryfallService _scryfallService;
+
         public MtgInventoryService()
         {
             SystemFolders = new SystemFolders();
             _cardDatabase = new CardDatabase();
+            _scryfallService = new ScryfallService(new ScryfallApiClient(new System.Net.Http.HttpClient()
+            {
+                BaseAddress = new Uri("https://api.scryfall.com/")
+            }, null, null));
         }
 
         public SystemFolders SystemFolders { get; }
@@ -51,7 +61,7 @@ namespace MtgInventory.Service
             MkmAuthenticationData = reader.ReadFromYaml(_mkmAuthenticationDataFile);
 
             _cardDatabase.Initialize(SystemFolders.BaseFolder);
-            
+
             MkmApiCallStatistic = mkmApiCallStatistic;
             var fromDatabase = _cardDatabase.GetMkmCallStatistic();
             mkmApiCallStatistic.CountToday = fromDatabase.CountToday;
@@ -73,18 +83,43 @@ namespace MtgInventory.Service
 
         public void DownloadMkmProducts()
         {
-            Log.Debug($"{nameof(DownloadMkmProducts)}: Loading expansions...");
+            var scryfallCardDownload = Task.Factory.StartNew(() =>
+            {
+                Log.Debug($"{nameof(DownloadMkmProducts)}: Loading Scryfall expansions...");
+                var scryfallSets = _scryfallService.RetrieveSets().ToArray();
+                _cardDatabase.InsertScryfallSets(scryfallSets);
 
-            var expansions = _mkmRequest.GetExpansions(1);
-            _cardDatabase.InsertExpansions(expansions);
+                _cardDatabase.ClearScryfallCards();
+                var remainingSets = scryfallSets.Length;
+                foreach (var set in scryfallSets)
+                {
+                    Log.Debug($"{nameof(DownloadMkmProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
+                    var cards = _scryfallService.RetrieveCardsForSetCode(set.Code);
+                    _cardDatabase.InsertScryfallCards(cards);
+                    remainingSets--;
+                }
 
-            Log.Debug($"{nameof(DownloadMkmProducts)}: Loading products...");
-            using var products = _mkmRequest.GetProductsAsCsv();
+                Log.Debug($"{nameof(DownloadMkmProducts)}: Done loading Scryfall cards ...");
+            });
 
-            Log.Debug($"{nameof(DownloadMkmProducts)}: Inserting products into database...");
-            _cardDatabase.InsertProductInfo(products.Products, expansions);
+            var mkmTask = Task.Factory.StartNew(() =>
+            {
+                Log.Debug($"{nameof(DownloadMkmProducts)}: Loading MKM expansions...");
 
-            _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+                var expansions = _mkmRequest.GetExpansions(1);
+                _cardDatabase.InsertExpansions(expansions);
+
+                Log.Debug($"{nameof(DownloadMkmProducts)}: Loading MKM products...");
+                using var products = _mkmRequest.GetProductsAsCsv();
+
+                Log.Debug($"{nameof(DownloadMkmProducts)}: Inserting products into database...");
+                _cardDatabase.InsertProductInfo(products.Products, expansions);
+
+                _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+            });
+
+            mkmTask.Wait();
+            scryfallCardDownload.Wait();
         }
 
         public void OpenMkmProductPage(string productId)
