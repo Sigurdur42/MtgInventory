@@ -24,5 +24,10 @@ namespace MkmApi
 
         [Name("Date Added")]
         public string DateAdded { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Id} {Name} {ExpansionId} ({MetacardId})";
+        }
     }
 }

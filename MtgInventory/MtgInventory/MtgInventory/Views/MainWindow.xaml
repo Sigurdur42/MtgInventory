@@ -18,7 +18,7 @@
 
   <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="3*"/>
+      <ColumnDefinition Width="2*"/>
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
 
@@ -76,7 +76,57 @@
 
     <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
     <TabControl Grid.Row="0" Grid.RowSpan="2">
-      <TabItem Header="MKM Products">
+      <TabItem Header="Magic Cards">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+
+          <TextBlock VerticalAlignment="Center" >Name</TextBlock>
+          <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding MkmProductLookupName}" />
+          <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>
+
+          <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="1" Grid.ColumnSpan="3">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Id"
+                               Binding="{Binding Id}"
+                              />
+              <DataGridTextColumn Header="Name"
+                   Binding="{Binding Name}"
+                              />
+              <DataGridTextColumn Header="Category"
+                   Binding="{Binding Category}"
+                              />
+              <DataGridTextColumn Header="Expansion Name"
+                   Binding="{Binding ExpansionName}"
+                              />
+              <DataGridTextColumn Header="Expansion Code"
+                   Binding="{Binding ExpansionCode}"
+                              />
+
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate >
+                    <StackPanel Orientation="Horizontal">
+                      <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Magic Sets">
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -263,9 +313,10 @@
           <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding SystemBaseFolder}" IsReadOnly="True" />
 
           <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
-            <TextBlock  VerticalAlignment="Center">Mkm Products:</TextBlock>
+            <TextBlock  VerticalAlignment="Center">Products Statistics:</TextBlock>
             <TextBlock Text="{Binding MkmProductsSummary}" VerticalAlignment="Center"/>
             <Button Command="{Binding OnDownloadMkmProducts}">Update</Button>
+            <Button Margin="5,0,0,0" Command="{Binding OnRebuildInternalDatabase}">Rebuild Internal Database (No Download)</Button>
           </StackPanel>
 
         </Grid>

@@ -38,11 +38,14 @@ namespace MtgInventory.ViewModels
                 MkmApiCallStatistics = new MkmApiCallStatistics();
                 MainService.Initialize(MkmApiCallStatistics);
 
-                MkmProductsSummary = MainService?.MkmProductsSummary;
+                UpdateProductSummary();
             });
 
             LogSink = PanelLogSink.Instance;
         }
+
+        private void UpdateProductSummary() 
+            => MkmProductsSummary = "MKM: " + MainService?.MkmProductsSummary + Environment.NewLine + "Scryfall: " + MainService?.ScryfallProductsSummary + Environment.NewLine + "Internal: " + MainService?.InternalProductsSummary;
 
         public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
 
@@ -98,7 +101,16 @@ namespace MtgInventory.ViewModels
             Task.Factory.StartNew(() =>
             {
                 MainService?.DownloadMkmProducts();
-                MkmProductsSummary = MainService?.MkmProductsSummary;
+                UpdateProductSummary();
+            });
+        }
+
+        public void OnRebuildInternalDatabase()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.RebuildInternalDatabase();
+                UpdateProductSummary();
             });
         }
 
@@ -123,6 +135,7 @@ namespace MtgInventory.ViewModels
             Task.Factory.StartNew(() =>
             {
                 MainService?.OpenMkmProductPage(info);
+                UpdateProductSummary();
             });
         }
 

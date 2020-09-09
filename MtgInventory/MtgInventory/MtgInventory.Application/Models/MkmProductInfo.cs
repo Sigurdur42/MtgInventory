@@ -48,5 +48,10 @@ namespace MtgInventory.Service.Models
             MkmProductUrl = "https://www.cardmarket.com" + rhs.WebSite;
             LastDetailUpdate = DateTime.Now;
         }
+
+        public override string ToString()
+        {
+            return $"{Id} {Name} [{ExpansionCode} {ExpansionName}] [{Category}] ({MetacardId})";
+        }
     }
 }

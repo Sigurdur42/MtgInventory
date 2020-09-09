@@ -1,16 +1,16 @@
-﻿using MkmApi;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using MkmApi;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
 using ScryfallApi.Client;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 
 namespace MtgInventory.Service
 {
@@ -23,8 +23,9 @@ namespace MtgInventory.Service
         private MkmRequest _mkmRequest;
         private FileInfo _mkmAuthenticationDataFile;
 
-        // TODO: Use ScryfallService to download all sets
         private IScryfallService _scryfallService;
+
+        private bool _isUpdatingDetailedCards;
 
         public MtgInventoryService()
         {
@@ -41,6 +42,8 @@ namespace MtgInventory.Service
         public MkmAuthenticationData MkmAuthenticationData { get; private set; }
 
         public string MkmProductsSummary { get; private set; }
+        public string ScryfallProductsSummary { get; private set; }
+        public string InternalProductsSummary { get; private set; }
 
         public IApiCallStatistic MkmApiCallStatistic { get; private set; }
 
@@ -69,7 +72,7 @@ namespace MtgInventory.Service
             mkmApiCallStatistic.Today = fromDatabase.Today;
             mkmApiCallStatistic.Id = fromDatabase.Id;
 
-            MkmProductsSummary = $"{_cardDatabase.MkmProductInfo.Count()} products in database";
+            UpdateProductSummary();
 
             _mkmRequest = new MkmRequest(MkmAuthenticationData, MkmApiCallStatistic);
         }
@@ -83,6 +86,10 @@ namespace MtgInventory.Service
 
         public void DownloadMkmProducts()
         {
+            var stopwatch = Stopwatch.StartNew();
+
+            _cardDatabase.ClearDetailedCards();
+
             var scryfallCardDownload = Task.Factory.StartNew(() =>
             {
                 Log.Debug($"{nameof(DownloadMkmProducts)}: Loading Scryfall expansions...");
@@ -120,6 +127,40 @@ namespace MtgInventory.Service
 
             mkmTask.Wait();
             scryfallCardDownload.Wait();
+
+            UpdateProductSummary();
+            stopwatch.Stop();
+
+            Log.Information($"Updating complete database took {stopwatch.Elapsed}");
+        }
+
+        public void RebuildInternalDatabase()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                if (_isUpdatingDetailedCards)
+                {
+                    Log.Debug($"{nameof(RebuildInternalDatabase)}: Update already running - ignoring new request");
+                    return;
+                }
+
+                try
+                {
+                    _isUpdatingDetailedCards = true;
+                    var stopwatch = Stopwatch.StartNew();
+                    Log.Information($"{nameof(RebuildInternalDatabase)}: Starting database rebuild");
+
+                    _cardDatabase.RebuildDetailedDatabase();
+                    UpdateProductSummary();
+
+                    stopwatch.Stop();
+                    Log.Information($"{nameof(RebuildInternalDatabase)}: Rebuild done in {stopwatch.Elapsed}");
+                }
+                finally
+                {
+                    _isUpdatingDetailedCards = false;
+                }
+            });
         }
 
         public void OpenMkmProductPage(string productId)
@@ -152,6 +193,8 @@ namespace MtgInventory.Service
             {
                 Log.Information($"{prefix}: Downloading additional info...");
 
+                // TODO: Update detailed card
+
                 // We need to download the product details first
                 var p = _mkmRequest.GetProductData(product.Id);
                 product.UpdateFromProduct(p);
@@ -165,7 +208,6 @@ namespace MtgInventory.Service
             Log.Debug($"{prefix}: Opening MKM product page...");
             Browser.OpenBrowser(product.MkmProductUrl);
         }
-
 
         public IEnumerable<MkmProductInfo> MkmFindProductsByName(string name)
         {
@@ -225,6 +267,13 @@ namespace MtgInventory.Service
             Log.Debug($"{nameof(DownloadMkmStock)} loaded {result.Length} items");
 
             return result;
+        }
+
+        private void UpdateProductSummary()
+        {
+            MkmProductsSummary = $"{_cardDatabase.MkmProductInfo.Count()} products in {_cardDatabase.MkmExpansion.Count()} sets";
+            ScryfallProductsSummary = $"{_cardDatabase.ScryfallCards.Count()} cards in {_cardDatabase.ScryfallSets.Count()} sets";
+            InternalProductsSummary = $"{_cardDatabase.MagicCards.Count()} cards";
         }
     }
 }
