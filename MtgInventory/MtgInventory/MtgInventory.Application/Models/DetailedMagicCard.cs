@@ -18,7 +18,6 @@ namespace MtgInventory.Service.Models
         public string SetName { get; set; }
         public string TypeLine { get; set; }
 
-        public string MkmWebSite { get; set; }
         public string ScryfallCardSite { get; set; }
 
         public int CountReprints { get; set; }
@@ -50,14 +49,12 @@ namespace MtgInventory.Service.Models
 
             NameEn = card.Name;
             MkmId = card.Id;
-            MkmWebSite = card.MkmProductUrl;
 
             LastUpdateMkm = DateTime.Now;
         }
 
         internal void UpdateFromProduct(Product card)
         {
-            MkmWebSite = "https://www.cardmarket.com" + card.WebSite;
             LastUpdateMkm = DateTime.Now;
         }
     }

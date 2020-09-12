@@ -104,7 +104,9 @@ namespace MkmApi
             var doc = XDocument.Parse(response);
             var product = doc.Root.Element("product");
 
-            return product.ReadProduct();
+            var result = product.ReadProduct();
+            result.WebSite = "https://www.cardmarket.com" + result.WebSite;
+            return result;
         }
 
         public ProductCsvData GetProductsAsCsv()

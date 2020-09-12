@@ -191,7 +191,9 @@ namespace MtgInventory.Service
 
             var prefix = $"{nameof(OpenMkmProductPage)}({product.Id} {product.NameEn} {product.SetCode})";
 
-            if (string.IsNullOrEmpty(product.MkmWebSite))
+            var url = _cardDatabase.FindAdditionalMkmInfo(product.MkmId)?.MkmWebSite;
+
+            if (string.IsNullOrEmpty(url))
             {
                 Log.Information($"{prefix}: Downloading additional info...");
 
@@ -203,17 +205,15 @@ namespace MtgInventory.Service
                     Log.Warning($"Card {product} does not exist on MKM. ");
                     return;
                 }
-                var p = _mkmRequest.GetProductData(product.MkmId);
-                product.UpdateFromProduct(p);
-
-                _cardDatabase.MagicCards.Update(product);
+                url = _mkmRequest.GetProductData(product.MkmId)?.WebSite;
+                _cardDatabase.UpdateMkmAdditionalInfo(product.MkmId, url);
 
                 _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
             }
 
             // Now open a browser with the url
             Log.Debug($"{prefix}: Opening MKM product page...");
-            Browser.OpenBrowser(product.MkmWebSite);
+            Browser.OpenBrowser(url);
         }
 
         public IEnumerable<DetailedMagicCard> MkmFindProductsByName(string name)

@@ -28,6 +28,7 @@ namespace MtgInventory.Service.Database
 
         public ILiteCollection<Expansion> MkmExpansion { get; private set; }
         public ILiteCollection<ApiCallStatistics> ApiCallStatistics { get; private set; }
+        public ILiteCollection<MkmAdditionalCardInfo> MkmAdditionalInfo { get; private set; }
 
         public ILiteCollection<Card> ScryfallCards { get; private set; }
         public ILiteCollection<Set> ScryfallSets { get; private set; }
@@ -54,6 +55,7 @@ namespace MtgInventory.Service.Database
             MkmProductInfo = _mkmDatabase.GetCollection<MkmProductInfo>();
             MkmExpansion = _mkmDatabase.GetCollection<Expansion>();
             ApiCallStatistics = _mkmDatabase.GetCollection<ApiCallStatistics>();
+            MkmAdditionalInfo = _mkmDatabase.GetCollection<MkmAdditionalCardInfo>();
 
             ScryfallCards = _scryfallDatabase.GetCollection<Card>();
             ScryfallSets = _scryfallDatabase.GetCollection<Set>();
@@ -94,8 +96,6 @@ namespace MtgInventory.Service.Database
 
             ScryfallCards.EnsureIndex(e => e.Set);
             ScryfallCards.EnsureIndex(e => e.Name);
-
-          
         }
 
         public void ClearScryfallCards()
@@ -109,6 +109,30 @@ namespace MtgInventory.Service.Database
             _logger.Information($"{nameof(ClearDetailedCards)}: Cleaning existing detailed card info...");
             MagicCards.DeleteAll();
         }
+
+        public void UpdateMkmAdditionalInfo(
+            string mkmId,
+            string mkmWebSite)
+        {
+            var found = FindAdditionalMkmInfo(mkmId);
+            if (found == null)
+            {
+                found = new MkmAdditionalCardInfo
+                {
+                    MkmId = mkmId,
+                };
+
+                MkmAdditionalInfo.Insert(found);
+            }
+
+            found.MkmWebSite = mkmWebSite;
+            MkmAdditionalInfo.Update(found);
+            MkmAdditionalInfo.EnsureIndex(c => c.MkmId);
+        }
+
+        public MkmAdditionalCardInfo FindAdditionalMkmInfo(string mkmId)
+            => MkmAdditionalInfo.Query().Where(c => c.MkmId == mkmId).FirstOrDefault();
+        
 
         public void InsertProductInfo(
             IEnumerable<ProductInfo> products,
@@ -195,7 +219,7 @@ namespace MtgInventory.Service.Database
             var indexedCards = new Dictionary<string, DetailedMagicCard>();
 
             Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM card data...");
-            foreach (var mkm in MkmProductInfo.Query().Where(c=> c.CategoryId == 1).ToArray())
+            foreach (var mkm in MkmProductInfo.Query().Where(c => c.CategoryId == 1).ToArray())
             {
                 // TODO Handle different art versions
                 var key = $"{mkm.ExpansionCode}_{mkm.Name}".ToUpperInvariant();
@@ -310,8 +334,6 @@ namespace MtgInventory.Service.Database
                 EnsureMagicCardsIndex();
             }
         }
-
-      
 
         private void EnsureMagicCardsIndex()
         {
