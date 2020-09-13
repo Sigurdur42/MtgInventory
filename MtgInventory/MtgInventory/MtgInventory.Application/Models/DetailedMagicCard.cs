@@ -54,15 +54,15 @@ namespace MtgInventory.Service.Models
 
         public void UpdateFromTypeLine(string typeLine)
         {
-            IsBasicLand = typeLine.Contains("Basic Land", StringComparison.InvariantCulture);
-            IsLand = typeLine.Contains("Land", StringComparison.InvariantCulture);
-            IsArtifact = typeLine.Contains("Artifact", StringComparison.InvariantCulture);
-            IsCreature = typeLine.Contains("Creature", StringComparison.InvariantCulture);
-            IsInstant = typeLine.Contains("Instant", StringComparison.InvariantCulture);
-            IsSorcery = typeLine.Contains("Sorcery", StringComparison.InvariantCulture);
+            IsBasicLand = IsBasicLand || typeLine.Contains("Basic Land", StringComparison.InvariantCulture);
+            IsLand = IsLand || typeLine.Contains("Land", StringComparison.InvariantCulture);
+            IsArtifact = IsArtifact || typeLine.Contains("Artifact", StringComparison.InvariantCulture);
+            IsCreature = IsCreature || typeLine.Contains("Creature", StringComparison.InvariantCulture);
+            IsInstant = IsInstant || typeLine.Contains("Instant", StringComparison.InvariantCulture);
+            IsSorcery = IsSorcery || typeLine.Contains("Sorcery", StringComparison.InvariantCulture);
 
             // TODO: Improve token detection
-            IsToken = typeLine.Contains("Token", StringComparison.InvariantCulture);
+            IsToken = IsToken || typeLine.Contains("Token", StringComparison.InvariantCulture);
         }
 
         internal void UpdateFromMkm(MkmProductInfo card)
@@ -74,6 +74,8 @@ namespace MtgInventory.Service.Models
             MkmId = card.Id;
 
             LastUpdateMkm = DateTime.Now;
+
+            UpdateFromTypeLine(card.Name);
         }
 
         internal void UpdateFromProduct(Product card)
