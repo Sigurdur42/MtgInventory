@@ -26,6 +26,13 @@ namespace MtgInventory.Service.Models
 
         public DateTime? LastUpdateScryfall { get; set; }
 
+        public bool IsBasicLand { get; set; }
+        public bool IsLand { get; set; }
+        public bool IsCreature { get; set; }
+        public bool IsArtifact { get; set; }
+        public bool IsInstant { get; set; }
+        public bool IsSorcery { get; set; }
+
         public override string ToString()
         {
             return $"{NameEn} {SetName} [{MkmId}, {ScryfallId}]";
@@ -40,6 +47,16 @@ namespace MtgInventory.Service.Models
             TypeLine = card.TypeLine;
             ScryfallCardSite = card.ScryfallUri?.ToString();
             LastUpdateScryfall = DateTime.Now;
+        }
+
+        public void UpdateFromTypeLine(string typeLine)
+        {
+            IsBasicLand = typeLine.Contains("Basic Land", StringComparison.InvariantCulture);
+            IsLand = typeLine.Contains("Land", StringComparison.InvariantCulture);
+            IsArtifact = typeLine.Contains("Artifact", StringComparison.InvariantCulture);
+            IsCreature = typeLine.Contains("Creature", StringComparison.InvariantCulture);
+            IsInstant = typeLine.Contains("Instant", StringComparison.InvariantCulture);
+            IsSorcery = typeLine.Contains("Sorcery", StringComparison.InvariantCulture);
         }
 
         internal void UpdateFromMkm(MkmProductInfo card)

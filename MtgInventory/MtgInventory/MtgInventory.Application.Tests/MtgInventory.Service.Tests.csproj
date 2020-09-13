@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MtgInventory.Application\MtgInventory.Service.csproj" />
+  </ItemGroup>
+
 </Project>
