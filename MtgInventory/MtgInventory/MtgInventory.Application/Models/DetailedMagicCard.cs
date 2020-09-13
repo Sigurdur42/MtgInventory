@@ -32,6 +32,7 @@ namespace MtgInventory.Service.Models
         public bool IsArtifact { get; set; }
         public bool IsInstant { get; set; }
         public bool IsSorcery { get; set; }
+        public bool IsToken { get; set; }
 
         public override string ToString()
         {
@@ -47,6 +48,8 @@ namespace MtgInventory.Service.Models
             TypeLine = card.TypeLine;
             ScryfallCardSite = card.ScryfallUri?.ToString();
             LastUpdateScryfall = DateTime.Now;
+
+            UpdateFromTypeLine(card.TypeLine);
         }
 
         public void UpdateFromTypeLine(string typeLine)
@@ -57,6 +60,9 @@ namespace MtgInventory.Service.Models
             IsCreature = typeLine.Contains("Creature", StringComparison.InvariantCulture);
             IsInstant = typeLine.Contains("Instant", StringComparison.InvariantCulture);
             IsSorcery = typeLine.Contains("Sorcery", StringComparison.InvariantCulture);
+
+            // TODO: Improve token detection
+            IsToken = typeLine.Contains("Token", StringComparison.InvariantCulture);
         }
 
         internal void UpdateFromMkm(MkmProductInfo card)

@@ -18,7 +18,5 @@ Write something fancy here
 
 ## Open tasks
 
-- Download expansions
-- Download product for single expansion
-- Improve general result
-- Improve handling of errors
+- Handle MKM tokens (no typeline issue)
+- Handle duplicate lands with different arts

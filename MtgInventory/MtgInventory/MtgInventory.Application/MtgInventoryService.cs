@@ -95,7 +95,7 @@ namespace MtgInventory.Service
             var scryfallCardDownload = Task.Factory.StartNew(() =>
             {
                 Log.Debug($"{nameof(DownloadMkmProducts)}: Loading Scryfall expansions...");
-                var scryfallSets = _scryfallService.RetrieveSets().ToArray().OrderByDescending(s=>s.Name).ToArray();
+                var scryfallSets = _scryfallService.RetrieveSets().ToArray().OrderByDescending(s => s.Name).ToArray();
                 _cardDatabase.InsertScryfallSets(scryfallSets);
 
                 _cardDatabase.ClearScryfallCards();
@@ -216,13 +216,30 @@ namespace MtgInventory.Service
             Browser.OpenBrowser(url);
         }
 
-        public IEnumerable<DetailedMagicCard> MkmFindProductsByName(string name)
+        public IEnumerable<DetailedMagicCard> FindDetailedCardsByName(QueryCardOptions query)
         {
-            Log.Debug($"{nameof(MkmFindProductsByName)}: {name}");
-            return _cardDatabase.MagicCards
-                .Query()
-                // .Where(p => p.CategoryId == 1)
-                .Where(p => p.NameEn.Contains(name, StringComparison.InvariantCultureIgnoreCase))
+            Log.Debug($"{nameof(FindDetailedCardsByName)}: {query}");
+
+            var databaseQuery = _cardDatabase.MagicCards
+                .Query();
+
+            if (!string.IsNullOrEmpty(query.Name))
+            {
+                databaseQuery = databaseQuery.Where(p => p.NameEn.Contains(query.Name, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            if (query.IsBasicLand)
+            {
+                databaseQuery = databaseQuery.Where(q => q.IsBasicLand);
+            }
+
+            if (query.IsToken)
+            {
+                databaseQuery = databaseQuery.Where(q => q.IsToken);
+            }
+
+            return
+                databaseQuery
                 .ToList()
                 .OrderBy(p => p.NameEn)
                 .ThenBy(p => p.SetName)

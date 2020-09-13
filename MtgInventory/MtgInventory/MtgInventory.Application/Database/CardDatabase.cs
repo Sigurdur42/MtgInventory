@@ -341,6 +341,8 @@ namespace MtgInventory.Service.Database
             MagicCards.EnsureIndex(c => c.ScryfallId);
             MagicCards.EnsureIndex(c => c.NameEn);
             MagicCards.EnsureIndex(c => c.SetCode);
+            MagicCards.EnsureIndex(c => c.IsBasicLand);
+            MagicCards.EnsureIndex(c => c.IsToken);
         }
 
         private void BulkInsertProductInfo(IList<MkmProductInfo> products)

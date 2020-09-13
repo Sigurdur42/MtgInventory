@@ -19,8 +19,6 @@ namespace MtgInventory.ViewModels
     {
         private string _mkmProductsSummary;
 
-        private string _mkmProductLookupName;
-
         private IEnumerable<DetailedMagicCard> _mkmProductsFound;
 
         private DeckList _currentDeckList;
@@ -30,6 +28,8 @@ namespace MtgInventory.ViewModels
         private IEnumerable<MkmStockItemExtended> _currentStock;
 
         private IEnumerable<DetailedSetInfo> _allSets;
+
+        private QueryCardOptions _queryCardOptions = new QueryCardOptions();
 
         public MainWindowViewModel()
         {
@@ -74,16 +74,16 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _mkmProductsSummary, value);
         }
 
+        public QueryCardOptions DetailedCardQueryOptions
+        {
+            get => _queryCardOptions;
+            set => this.RaiseAndSetIfChanged(ref _queryCardOptions, value);
+        }
+
         public MkmApiCallStatistics MkmApiCallStatistics
         {
             get => _mkmApiCallStatistics;
             set => this.RaiseAndSetIfChanged(ref _mkmApiCallStatistics, value);
-        }
-
-        public string MkmProductLookupName
-        {
-            get => _mkmProductLookupName;
-            set => this.RaiseAndSetIfChanged(ref _mkmProductLookupName, value);
         }
 
         public IEnumerable<MkmStockItemExtended> CurrentStock
@@ -130,7 +130,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MkmProductsFound = MainService?.MkmFindProductsByName(_mkmProductLookupName);
+                MkmProductsFound = MainService?.FindDetailedCardsByName(_queryCardOptions);
             });
         }
 

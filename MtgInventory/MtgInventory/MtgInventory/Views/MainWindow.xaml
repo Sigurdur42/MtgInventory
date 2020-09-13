@@ -80,6 +80,7 @@
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
           </Grid.RowDefinitions>
 
@@ -90,10 +91,30 @@
           </Grid.ColumnDefinitions>
 
           <TextBlock VerticalAlignment="Center" >Name</TextBlock>
-          <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding MkmProductLookupName}" />
+          <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding DetailedCardQueryOptions.Name}" />
           <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>
 
-          <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="1" Grid.ColumnSpan="3">
+          <Expander Grid.Row="1" Grid.ColumnSpan="3" Header="Advanced" IsExpanded="True">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />               
+              </Grid.ColumnDefinitions>
+
+              <CheckBox Grid.Row="0" Grid.Column="0" IsChecked="{Binding DetailedCardQueryOptions.IsBasicLand}">Basic Land</CheckBox>
+
+              <CheckBox Grid.Row="1" Grid.Column="0" IsChecked="{Binding DetailedCardQueryOptions.IsToken}">Token"</CheckBox>
+            </Grid>
+          </Expander>
+
+          <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="2" Grid.ColumnSpan="3">
             <DataGrid.Columns>
             
               <DataGridTextColumn Header="Name"
