@@ -20,3 +20,6 @@ Write something fancy here
 
 - Handle MKM tokens (no typeline issue)
 - Handle duplicate lands with different arts
+  * handle difference in old cards between MKM and Scryfall
+  * Handle different set codes for old stuff
+- Display price in deck list view (USD / EUR from Scryfall, add MKM EUR as separate column)

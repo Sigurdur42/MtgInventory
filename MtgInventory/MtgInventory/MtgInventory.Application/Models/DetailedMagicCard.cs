@@ -10,6 +10,8 @@ namespace MtgInventory.Service.Models
         public Guid Id { get; set; }
 
         public string MkmId { get; set; }
+        public string MkmMetaCardId { get; set; }
+        public string CollectorNumber { get; set; }
 
         public Guid ScryfallId { get; set; }
 
@@ -48,6 +50,7 @@ namespace MtgInventory.Service.Models
             TypeLine = card.TypeLine;
             ScryfallCardSite = card.ScryfallUri?.ToString();
             LastUpdateScryfall = DateTime.Now;
+            CollectorNumber = card.CollectorNumber;
 
             UpdateFromTypeLine(card.TypeLine);
         }
@@ -72,6 +75,7 @@ namespace MtgInventory.Service.Models
 
             NameEn = card.Name;
             MkmId = card.Id;
+            MkmMetaCardId = card.MetacardId;
 
             LastUpdateMkm = DateTime.Now;
 
