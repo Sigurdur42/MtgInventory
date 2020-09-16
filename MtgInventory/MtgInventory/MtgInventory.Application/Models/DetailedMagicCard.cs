@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MkmApi.Entities;
 using ScryfallApi.Client.Models;
 
@@ -7,12 +8,11 @@ namespace MtgInventory.Service.Models
     public class DetailedMagicCard
     {
         // The internal id for the database
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         public string MkmId { get; set; }
         public string MkmMetaCardId { get; set; }
         public string CollectorNumber { get; set; }
-
         public Guid ScryfallId { get; set; }
 
         public string NameEn { get; set; }
@@ -24,6 +24,7 @@ namespace MtgInventory.Service.Models
 
         public int CountReprints { get; set; }
 
+        public DateTime? SetReleaseDate { get; set; }
         public DateTime? LastUpdateMkm { get; set; }
 
         public DateTime? LastUpdateScryfall { get; set; }
@@ -36,13 +37,18 @@ namespace MtgInventory.Service.Models
         public bool IsSorcery { get; set; }
         public bool IsToken { get; set; }
 
+        public int PrimaryMultiverseId { get; set; }
+        public int[] MultiverseIds { get; set; }
+
         public override string ToString()
         {
             return $"{NameEn} {SetName} [{MkmId}, {ScryfallId}]";
         }
 
-        public void UpdateFromScryfall(Card card)
+        public void UpdateFromScryfall(ScryfallCard scryfallCard, DetailedSetInfo setInfo)
         {
+            var card = scryfallCard.Card;
+
             NameEn = card.Name;
             ScryfallId = card.Id;
             SetCode = card.Set;
@@ -51,8 +57,15 @@ namespace MtgInventory.Service.Models
             ScryfallCardSite = card.ScryfallUri?.ToString();
             LastUpdateScryfall = DateTime.Now;
             CollectorNumber = card.CollectorNumber;
+            MultiverseIds = card.MultiverseIds;
+            PrimaryMultiverseId = card.MultiverseIds.FirstOrDefault();
 
             UpdateFromTypeLine(card.TypeLine);
+
+            if (setInfo?.ReleaseDateParsed != null)
+            {
+                SetReleaseDate = setInfo?.ReleaseDateParsed;
+            }
         }
 
         public void UpdateFromTypeLine(string typeLine)
@@ -68,7 +81,7 @@ namespace MtgInventory.Service.Models
             IsToken = IsToken || typeLine.Contains("Token", StringComparison.InvariantCulture);
         }
 
-        internal void UpdateFromMkm(MkmProductInfo card)
+        internal void UpdateFromMkm(MkmProductInfo card, DetailedSetInfo setInfo)
         {
             SetCode = card.ExpansionCode;
             SetName = card.ExpansionName;
@@ -79,8 +92,15 @@ namespace MtgInventory.Service.Models
 
             LastUpdateMkm = DateTime.Now;
 
+            if (setInfo?.ReleaseDateParsed != null)
+            {
+                SetReleaseDate = setInfo?.ReleaseDateParsed;
+            }
+
             UpdateFromTypeLine(card.Name);
         }
+
+
 
         internal void UpdateFromProduct(Product card)
         {

@@ -18,5 +18,20 @@ namespace MkmApi.EntityReader
 
             return -1;
         }
+
+        public static decimal? ToDecimal(this string content)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return null;
+            }
+
+            if (decimal.TryParse(content, NumberStyles.Any, CultureInfo.InvariantCulture, out var converted))
+            {
+                return converted;
+            }
+
+            return null;
+        }
     }
 }

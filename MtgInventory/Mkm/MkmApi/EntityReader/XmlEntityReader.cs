@@ -1,7 +1,5 @@
-﻿using MkmApi.Entities;
-using System;
-using System.Globalization;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
+using MkmApi.Entities;
 
 namespace MkmApi.EntityReader
 {
@@ -96,19 +94,17 @@ namespace MkmApi.EntityReader
             };
         }
 
-     
-
         public static PriceGuide ReadPriceGuide(this XElement priceGuide)
         {
             return new PriceGuide
             {
-                PriceSell = priceGuide?.Element("SELL")?.Value,
-                PriceLow = priceGuide?.Element("LOW")?.Value,
-                PriceLowEx = priceGuide?.Element("LOWEX")?.Value,
-                PriceLowFoil = priceGuide?.Element("LOWFOIL")?.Value,
-                PriceAverage = priceGuide?.Element("AVG")?.Value,
-                PriceTrend = priceGuide?.Element("TREND")?.Value,
-                PriceTrendFoil = priceGuide?.Element("TRENDFOIL")?.Value,
+                PriceSell = GetContentDecimal(priceGuide, "SELL"),
+                PriceLow = GetContentDecimal(priceGuide, "LOW"),
+                PriceLowEx = GetContentDecimal(priceGuide, "LOWEX"),
+                PriceLowFoil = GetContentDecimal(priceGuide, "LOWFOIL"),
+                PriceAverage = GetContentDecimal(priceGuide, "AVG"),
+                PriceTrend = GetContentDecimal(priceGuide, "TREND"),
+                PriceTrendFoil = GetContentDecimal(priceGuide, "TRENDFOIL"),
             };
         }
 
@@ -135,6 +131,12 @@ namespace MkmApi.EntityReader
         {
             string content = element?.Element(name)?.Value;
             return content.ToInt();
+        }
+
+        public static decimal? GetContentDecimal(this XElement element, string name)
+        {
+            string content = element?.Element(name)?.Value;
+            return content.ToDecimal();
         }
     }
 }

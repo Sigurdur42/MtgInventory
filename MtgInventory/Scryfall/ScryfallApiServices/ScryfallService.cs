@@ -23,7 +23,13 @@ namespace MtgBinder.Domain.Scryfall
             _autoSleep.AutoSleep();
 
             var sets = _apiClient.Sets.Get().Result;
-            return sets.Data.ToArray();
+            var result = sets.Data.ToArray();
+            foreach (var item in result)
+            {
+                item.Code = item.Code?.ToUpperInvariant();
+            }
+
+            return result;
         }
 
         public Card[] RetrieveCardsForSetCode(string setCode)

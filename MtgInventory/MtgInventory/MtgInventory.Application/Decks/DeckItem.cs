@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace MtgInventory.Service.Decks
 {
@@ -13,6 +14,6 @@ namespace MtgInventory.Service.Decks
 
         public string SetName { get; set; }
 
-        public string MkmId { get; set; }
+        public Guid CardId { get; set; }
     }
 }

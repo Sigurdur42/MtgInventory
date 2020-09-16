@@ -26,6 +26,7 @@ namespace MtgInventory.Service
         private IScryfallService _scryfallService;
 
         private bool _isUpdatingDetailedCards;
+        private MkmPriceService _mkmPriceService;
 
         public MtgInventoryService()
         {
@@ -77,6 +78,8 @@ namespace MtgInventory.Service
             UpdateProductSummary();
 
             _mkmRequest = new MkmRequest(MkmAuthenticationData, MkmApiCallStatistic);
+
+            _mkmPriceService = new MkmPriceService(_cardDatabase, _mkmRequest);
         }
 
         public void ShutDown()
@@ -86,42 +89,66 @@ namespace MtgInventory.Service
             _cardDatabase.Dispose();
         }
 
-        public void DownloadMkmProducts()
+        public ScryfallSet[] DownloadScryfallSets(bool rebuildDetailedSetInfo)
         {
-            var stopwatch = Stopwatch.StartNew();
+            Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall expansions...");
+            var scryfallSets = _scryfallService.RetrieveSets().OrderByDescending(s => s.Name).Select(s => new ScryfallSet(s)).ToArray();
+            _cardDatabase.InsertScryfallSets(scryfallSets);
 
-            _cardDatabase.ClearDetailedCards();
-
-            var scryfallCardDownload = Task.Factory.StartNew(() =>
+            if (rebuildDetailedSetInfo)
             {
-                Log.Debug($"{nameof(DownloadMkmProducts)}: Loading Scryfall expansions...");
-                var scryfallSets = _scryfallService.RetrieveSets().ToArray().OrderByDescending(s => s.Name).ToArray();
-                _cardDatabase.InsertScryfallSets(scryfallSets);
+                _cardDatabase.RebuildSetData();
+            }
+
+            Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall expansions...");
+            return scryfallSets;
+        }
+
+        internal Task DownloadScryfallData()
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var scryfallSets = DownloadScryfallSets(false);
 
                 _cardDatabase.ClearScryfallCards();
                 var remainingSets = scryfallSets.Length;
                 foreach (var set in scryfallSets)
                 {
-                    Log.Debug($"{nameof(DownloadMkmProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
-                    var cards = _scryfallService.RetrieveCardsForSetCode(set.Code);
+                    Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
+                    var cards = _scryfallService.RetrieveCardsForSetCode(set.Code).Select(c => new ScryfallCard(c)).ToArray();
                     _cardDatabase.InsertScryfallCards(cards);
                     remainingSets--;
+
+                    // Insert prices from Scryfall
+                    var prices = cards.Select(c => new CardPrice(c));
+                    _cardDatabase.CardPrices.InsertBulk(prices);
                 }
 
-                Log.Debug($"{nameof(DownloadMkmProducts)}: Done loading Scryfall cards ...");
+                _cardDatabase.EnsureCardPriceIndex();
+
+                Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
             });
+        }
+
+        public void DownloadAllProducts()
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            _cardDatabase.ClearDetailedCards();
+
+            var scryfallCardDownload = DownloadScryfallData();
 
             var mkmTask = Task.Factory.StartNew(() =>
             {
-                Log.Debug($"{nameof(DownloadMkmProducts)}: Loading MKM expansions...");
+                Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM expansions...");
 
                 var expansions = _mkmRequest.GetExpansions(1);
                 _cardDatabase.InsertExpansions(expansions);
 
-                Log.Debug($"{nameof(DownloadMkmProducts)}: Loading MKM products...");
+                Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM products...");
                 using var products = _mkmRequest.GetProductsAsCsv();
 
-                Log.Debug($"{nameof(DownloadMkmProducts)}: Inserting products into database...");
+                Log.Debug($"{nameof(DownloadAllProducts)}: Inserting products into database...");
                 _cardDatabase.InsertProductInfo(products.Products, expansions);
 
                 _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
@@ -129,6 +156,8 @@ namespace MtgInventory.Service
 
             mkmTask.Wait();
             scryfallCardDownload.Wait();
+
+            RebuildInternalDatabase();
 
             UpdateProductSummary();
             stopwatch.Stop();
@@ -249,30 +278,24 @@ namespace MtgInventory.Service
         public void EnrichDeckListWithDetails(DeckList deckList)
         {
             Log.Debug($"{nameof(EnrichDeckListWithDetails)} for deck {deckList.Name}");
-            var expansions = _cardDatabase.MkmExpansion
-                .Query()
-                .OrderByDescending(e => e.ReleaseDateParsed)
-                .ToList();
 
-            foreach (var card in deckList.Mainboard.Where(c => c.MkmId == null))
+            foreach (var card in deckList.Mainboard.Where(c => c.CardId == null))
             {
-                var found = _cardDatabase.MkmProductInfo
+                var found = _cardDatabase.MagicCards
                     .Query()
-                    .Where(c => c.Name.Equals(card.Name))
-                    .Where(c => c.ExpansionCode != null)
-                    .ToList();
-
-                var validExpansions = expansions
-                    .Where(e => found.Any(f => f.ExpansionCode == e.Abbreviation))
-                    .OrderByDescending(e => e.ReleaseDateParsed)
+                    .Where(c => c.NameEn.Equals(card.Name))
+                    .Where(c => c.SetCode != null)
+                    .ToList()
+                    .Where(c => c.SetReleaseDate.HasValue)
+                    .OrderByDescending(c => c.SetReleaseDate)
                     .ToArray();
 
                 if (found.Any())
                 {
-                    var use = found.First(f => f.ExpansionCode == validExpansions.First().Abbreviation);
-                    card.MkmId = use.Id;
-                    card.SetCode = use.ExpansionCode;
-                    card.SetName = use.ExpansionName;
+                    var use = found.First();
+                    card.CardId = use.Id;
+                    card.SetCode = use.SetCode;
+                    card.SetName = use.SetName;
                 }
             }
         }

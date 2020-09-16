@@ -21,7 +21,7 @@ namespace MtgInventory.ViewModels
 
         private IEnumerable<DetailedMagicCard> _mkmProductsFound;
 
-        private DeckList _currentDeckList;
+        private DeckListItemViewModel[] _currentDeckList;
 
         private MkmApiCallStatistics _mkmApiCallStatistics;
 
@@ -56,7 +56,7 @@ namespace MtgInventory.ViewModels
 
         public PanelLogSink LogSink { get; private set; }
 
-        public DeckList CurrentDeckList
+        public DeckListItemViewModel[] CurrentDeckList
         {
             get => _currentDeckList;
             set => this.RaiseAndSetIfChanged(ref _currentDeckList, value);
@@ -107,12 +107,20 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.DownloadMkmProducts();
+                MainService?.DownloadAllProducts();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
             });
         }
-
+        public void OnDownloadScryfallSets()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.DownloadScryfallSets(true);
+                UpdateProductSummary();
+                AllSets = MainService.AllSets.ToArray();
+            });
+        }
         public void OnRebuildInternalDatabase()
         {
             Task.Factory.StartNew(() =>
@@ -183,7 +191,7 @@ namespace MtgInventory.ViewModels
                 }
 
                 MainService.EnrichDeckListWithDetails(loaded.Deck);
-                CurrentDeckList = loaded.Deck;
+                CurrentDeckList = loaded.Deck.Mainboard.Select(c => new DeckListItemViewModel(c)).ToArray();
             }
         }
 

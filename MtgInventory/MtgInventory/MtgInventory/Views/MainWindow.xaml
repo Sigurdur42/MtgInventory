@@ -274,21 +274,21 @@
 
           <Button Grid.Column="0" Command="{Binding OnLoadDeckFile}">Load Deck File!</Button>
 
-          <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentDeckList.Mainboard}" Grid.Row="1" Grid.ColumnSpan="3">
+          <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentDeckList}" Grid.Row="1" Grid.ColumnSpan="3">
             <DataGrid.Columns>
               <!--<DataGridTextColumn Header="Id"
                              Binding="{Binding Id}"
                               />-->
-              <DataGridTextColumn Header="Count"
-                   Binding="{Binding Count}" />
+              <DataGridTextColumn Header="Qty"
+                   Binding="{Binding Quantity}" />
 
               <DataGridTextColumn Header="Name"
                    Binding="{Binding Name}" />
 
-              <DataGridTextColumn Header="Extension Code"
+              <DataGridTextColumn Header="Set Code"
                    Binding="{Binding SetCode}" />
 
-              <DataGridTextColumn Header="Extension"
+              <DataGridTextColumn Header="Set"
                 Binding="{Binding SetName}" />
 
               <DataGridTextColumn Header="MkmId"
@@ -339,7 +339,8 @@
           <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
             <TextBlock  VerticalAlignment="Center">Products Statistics:</TextBlock>
             <TextBlock Text="{Binding MkmProductsSummary}" VerticalAlignment="Center"/>
-            <Button Command="{Binding OnDownloadMkmProducts}">Update</Button>
+            <Button Command="{Binding OnDownloadMkmProducts}">Download All</Button>
+            <Button Margin="5,0,0,0" Command="{Binding OnDownloadScryfallSets}">Download Scryfall Sets</Button>
             <Button Margin="5,0,0,0" Command="{Binding OnRebuildInternalDatabase}">Rebuild Internal Database (No Download)</Button>
           </StackPanel>
 
