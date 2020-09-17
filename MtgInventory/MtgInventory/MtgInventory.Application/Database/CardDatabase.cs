@@ -325,7 +325,7 @@ namespace MtgInventory.Service.Database
                         .OrderBy(c => c.MkmMetaCardId)
                         .ToArray();
 
-                    var scryfallCards = group.OrderBy(c => c.Card.CollectorNumber).ToArray();
+                    var scryfallCards = group.OrderBy(c => c.CollectorNumber).ToArray();
 
                     if (existingCards.Length != scryfallCards.Length)
                     {

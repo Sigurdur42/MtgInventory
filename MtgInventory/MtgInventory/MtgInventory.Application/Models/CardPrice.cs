@@ -12,11 +12,11 @@ namespace MtgInventory.Service.Models
         public CardPrice(ScryfallCard card)
         {
             ScryfallId = card.Id;
-            ScryfallUsd = card.Card.Price?.Usd;
-            ScryfallUsdFoil = card.Card.Price?.UsdFoil;
-            ScryfallEur = card.Card.Price?.Eur;
-            ScryfallEurFoil = card.Card.Price?.EurFoil;
-            ScryfallTix = card.Card.Price?.Tix;
+            ScryfallUsd = card.Price?.Usd;
+            ScryfallUsdFoil = card.Price?.UsdFoil;
+            ScryfallEur = card.Price?.Eur;
+            ScryfallEurFoil = card.Price?.EurFoil;
+            ScryfallTix = card.Price?.Tix;
 
             UpdateDate = card.UpdateDateUtc;
             Source = CardPriceSource.Scryfall;

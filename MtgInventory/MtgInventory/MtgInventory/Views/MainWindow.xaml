@@ -244,11 +244,27 @@
               <DataGridTextColumn Header="Expansion"
                    Binding="{Binding StockItem.SetName}" />
 
+              <DataGridTextColumn Header="Market Price"
+                   Binding="{Binding StockItem.MarketPrice}" />
+
+              <DataGridTextColumn Header="Price Date"
+                   Binding="{Binding StockItem.MarketPriceDate}" />
+
               <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
                 <DataGridTemplateColumn.CellTemplate>
                   <DataTemplate >
                     <StackPanel Orientation="Horizontal">
-                      <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+                      <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInMkmProductPage}" CommandParameter="{Binding}"> MKM</Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+
+              <DataGridTemplateColumn Header="Open Scryfall" Width="Auto" >
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate >
+                    <StackPanel Orientation="Horizontal">
+                      <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInScryfall}" CommandParameter="{Binding}"> Scryfall</Button>
                     </StackPanel>
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>

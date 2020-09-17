@@ -23,3 +23,6 @@ Write something fancy here
   * handle difference in old cards between MKM and Scryfall
   * Handle different set codes for old stuff
 - Display price in deck list view (USD / EUR from Scryfall, add MKM EUR as separate column)
+
+- view model for stock items
+- Display price in stock items list

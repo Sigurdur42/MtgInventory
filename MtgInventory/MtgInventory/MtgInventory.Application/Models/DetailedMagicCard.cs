@@ -45,10 +45,8 @@ namespace MtgInventory.Service.Models
             return $"{NameEn} {SetName} [{MkmId}, {ScryfallId}]";
         }
 
-        public void UpdateFromScryfall(ScryfallCard scryfallCard, DetailedSetInfo setInfo)
+        public void UpdateFromScryfall(ScryfallCard card, DetailedSetInfo setInfo)
         {
-            var card = scryfallCard.Card;
-
             NameEn = card.Name;
             ScryfallId = card.Id;
             SetCode = card.Set;
