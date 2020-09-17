@@ -27,6 +27,7 @@ namespace MtgInventory.Service
 
         private bool _isUpdatingDetailedCards;
         private MkmPriceService _mkmPriceService;
+        private AutoScryfallService _autoScryfallService;
 
         public MtgInventoryService()
         {
@@ -80,6 +81,7 @@ namespace MtgInventory.Service
             _mkmRequest = new MkmRequest(MkmAuthenticationData, MkmApiCallStatistic);
 
             _mkmPriceService = new MkmPriceService(_cardDatabase, _mkmRequest);
+            _autoScryfallService = new AutoScryfallService(_cardDatabase, _scryfallService);
         }
 
         public void ShutDown()
@@ -225,8 +227,6 @@ namespace MtgInventory.Service
             if (string.IsNullOrEmpty(url))
             {
                 Log.Information($"{prefix}: Downloading additional info...");
-
-                // TODO: Update detailed card
 
                 // We need to download the product details first
                 if (string.IsNullOrEmpty(product.MkmId))

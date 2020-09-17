@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ScryfallApi.Client.Models;
 
 namespace MtgBinder.Domain.Scryfall
@@ -10,5 +11,7 @@ namespace MtgBinder.Domain.Scryfall
         Card[] RetrieveCardsForSetCode(string setCode);
 
         Card[] RetrieveCardsByCardName(string cardName, SearchOptions.RollupMode rollupMode);
+
+        Card[] RetrieveCardsByCardNameAndSet(string cardName, string setCode, SearchOptions.RollupMode rollupMode);
     }
 }

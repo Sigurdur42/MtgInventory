@@ -44,6 +44,12 @@ namespace MtgBinder.Domain.Scryfall
             return InternalSearch(query, rollupMode);
         }
 
+        public Card[] RetrieveCardsByCardNameAndSet(string cardName, string setCode, SearchOptions.RollupMode rollupMode)
+        {
+            var query = $"!{cardName} e:{setCode}";
+            return InternalSearch(query, rollupMode);
+        }
+
         internal Card[] InternalSearch(
             string lookupPattern,
             SearchOptions.RollupMode rollupMode)
@@ -83,5 +89,7 @@ namespace MtgBinder.Domain.Scryfall
 
             return result.ToArray();
         }
+
+      
     }
 }
