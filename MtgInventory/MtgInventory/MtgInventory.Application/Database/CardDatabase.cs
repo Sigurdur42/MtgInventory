@@ -301,48 +301,59 @@ namespace MtgInventory.Service.Database
 
                 found.UpdateFromScryfall(scryfallCard, lastSet);
 
-                Log.Debug($"{nameof(RebuildDetailedDatabase)} - Inserting cards now...");
                 MagicCards.InsertBulk(cardsToInsert);
                 cardsToInsert.Clear();
 
-                Log.Debug($"{nameof(RebuildDetailedDatabase)} - Updating index...");
                 EnsureMagicCardsIndex();
 
                 // Now handle differnet arts of the same card
-                Log.Debug($"{nameof(RebuildDetailedDatabase)} - Handling multiple arts of the same card ({nonUniqueCards.Count} total)...");
-                var grouped = nonUniqueCards.GroupBy(c => $"{c.Name}_{c.Set}");
-                foreach (var group in grouped)
+                if (nonUniqueCards.Any())
                 {
-                    var first = group.First();
+                    
+                    var grouped = nonUniqueCards.GroupBy(c => $"{c.Name}_{c.Set}");
+                    var remaining = grouped.Count();
 
-                    if (lastSet?.SetCodeScryfall != first.Set)
+                    foreach (var group in grouped)
                     {
-                        indexedSetData.TryGetValue(first.Set, out lastSet);
+                        --remaining;
+                        var first = group.First();
+
+                        // get all these cards from actual Scryfall local DB first
+                        var scryfallCards = ScryfallCards.Query().Where(c => c.Set == first.Set && c.Name == first.Name).OrderBy(c => c.CollectorNumber).ToArray();
+
+                        if (lastSet?.SetCodeScryfall != first.Set)
+                        {
+                            indexedSetData.TryGetValue(first.Set, out lastSet);
+                        }
+
+                        var existingCards = MagicCards.Query()
+                            .Where(c => c.NameEn == first.Name && c.SetCode == first.Set)
+                            .OrderBy(c => c.MkmMetaCardId)
+                            .ToArray();
+
+                        if (existingCards.Length != scryfallCards.Length)
+                        {
+                            Log.Debug($"{nameof(RebuildDetailedDatabase)} - {group.Key} different card count. MKM={existingCards.Length} Scryfall: {scryfallCards.Length}");
+                        }
+
+                        // TODO: Handle Oversized cards
+
+                        for (var index = 0; index < Math.Min(existingCards.Length, scryfallCards.Length); ++index)
+                        {
+                            existingCards[index].UpdateFromScryfall(scryfallCards[index], lastSet);
+                        }
+
+                        MagicCards.Update(existingCards);
                     }
 
-                    var existingCards = MagicCards.Query()
-                        .Where(c => c.NameEn == first.Name && c.SetCode == first.Set)
-                        .OrderBy(c => c.MkmMetaCardId)
-                        .ToArray();
-
-                    var scryfallCards = group.OrderBy(c => c.CollectorNumber).ToArray();
-
-                    if (existingCards.Length != scryfallCards.Length)
-                    {
-                        Log.Debug($"{nameof(RebuildDetailedDatabase)} - {group.Key} different card count. MKM={existingCards.Length} Scryfall: {scryfallCards.Length}");
-                    }
-
-                    for (var index = 0; index < Math.Min(existingCards.Length, scryfallCards.Length); ++index)
-                    {
-                        existingCards[index].UpdateFromScryfall(scryfallCards[index], lastSet);
-                    }
-
-                    MagicCards.Update(existingCards);
+                    nonUniqueCards.Clear();
                 }
 
-                Log.Debug($"{nameof(RebuildDetailedDatabase)} - Updating index...");
                 EnsureMagicCardsIndex();
             }
+
+            Log.Debug($"{nameof(RebuildDetailedDatabase)} - Done rebuilding Scryfall card data...");
+
         }
 
         internal Dictionary<string, DetailedSetInfo> RebuildSetData()

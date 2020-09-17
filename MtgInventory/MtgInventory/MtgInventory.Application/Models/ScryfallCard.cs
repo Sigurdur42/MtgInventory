@@ -39,7 +39,7 @@ namespace MtgInventory.Service.Models
             Legalities = scryfallCard.Legalities;
             Reserved = scryfallCard.Reserved;
             EdhrecRank = scryfallCard.EdhrecRank;
-            Set = scryfallCard.Set;
+            Set = scryfallCard.Set?.ToUpperInvariant();
             SetName = scryfallCard.SetName;
             CollectorNumber = scryfallCard.CollectorNumber;
             SetSearchUri = scryfallCard.SetSearchUri;
