@@ -36,10 +36,12 @@ namespace MtgInventory.Service
                 return new CardPrice();
             }
 
+            // TODO: Update immer ein ganzes set
+
             var latestPrice = GetLatestPrice(scryfallId);
 
             if (latestPrice == null
-                || latestPrice.UpdateDate.Value.AddDays(1) > DateTime.Now
+                || latestPrice.UpdateDate.Value.AddDays(1) < DateTime.Now
                 || (!latestPrice.ScryfallEur.HasValue && latestPrice.Source == CardPriceSource.Scryfall))
             {
                 Log.Information($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
@@ -55,7 +57,7 @@ namespace MtgInventory.Service
                     _cardDatabase.EnsureCardPriceIndex();
                 }
 
-                latestPrice = result.FirstOrDefault(c => c.Id == scryfallId);
+                latestPrice = result.FirstOrDefault(c => c.ScryfallId == scryfallId);
             }
 
             return latestPrice;
