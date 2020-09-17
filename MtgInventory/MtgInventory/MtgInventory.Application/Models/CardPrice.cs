@@ -38,24 +38,47 @@ namespace MtgInventory.Service.Models
         public Guid Id { get; set; }
 
         public string MkmId { get; set; }
+
         public Guid ScryfallId { get; set; }
 
         public decimal? ScryfallUsd { get; set; }
+
         public decimal? ScryfallUsdFoil { get; set; }
+
         public decimal? ScryfallEur { get; set; }
+
         public decimal? ScryfallEurFoil { get; set; }
+
         public decimal? ScryfallTix { get; set; }
 
         public decimal? MkmPriceSell { get; set; }
+
         public decimal? MkmPriceLow { get; set; }
+
         public decimal? MkmPriceLowEx { get; set; }
+
         public decimal? MkmPriceLowFoil { get; set; }
+
         public decimal? MkmPriceAverage { get; set; }
+
         public decimal? MkmPriceTrend { get; set; }
+
         public decimal? MkmPriceTrendFoil { get; set; }
 
         public DateTime? UpdateDate { get; set; }
 
         public CardPriceSource Source { get; set; }
+
+        public decimal? GetMarketPrice(bool isFoil)
+        {
+            switch (Source)
+            {
+                case CardPriceSource.Scryfall:
+                    return isFoil ? ScryfallEurFoil : ScryfallEur;
+
+                default:
+                    return isFoil ? MkmPriceTrendFoil : MkmPriceTrend;
+            }
+        }
     }
 }

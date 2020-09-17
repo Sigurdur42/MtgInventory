@@ -46,7 +46,7 @@ namespace MtgBinder.Domain.Scryfall
 
         public Card[] RetrieveCardsByCardNameAndSet(string cardName, string setCode, SearchOptions.RollupMode rollupMode)
         {
-            var query = $"!{cardName} e:{setCode}";
+            var query = $"!'{cardName}' e:{setCode}";
             return InternalSearch(query, rollupMode);
         }
 

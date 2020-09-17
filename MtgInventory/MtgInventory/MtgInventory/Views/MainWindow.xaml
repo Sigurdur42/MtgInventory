@@ -218,34 +218,34 @@
           <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentStock}" Grid.Row="1" Grid.ColumnSpan="3">
             <DataGrid.Columns>
               <DataGridTextColumn Header="Price"
-                               Binding="{Binding StockItem.Price}" />
+                               Binding="{Binding Price}" />
 
               <DataGridTextColumn Header="Quantity"
-                               Binding="{Binding StockItem.Amount}" />
+                               Binding="{Binding Amount}" />
               
               <DataGridTextColumn Header="Name"
-                   Binding="{Binding StockItem.EnglishName}" />
+                   Binding="{Binding EnglishName}" />
 
               <DataGridTextColumn Header="Language"
-                   Binding="{Binding StockItem.Language}" />
+                   Binding="{Binding Language}" />
 
                <DataGridTextColumn Header="Condition"
-                   Binding="{Binding StockItem.Condition}" />
+                   Binding="{Binding Condition}" />
 
               <DataGridTextColumn Header="Foil?"
-                  Binding="{Binding StockItem.Foil}" />
+                  Binding="{Binding Foil}" />
 
               <DataGridTextColumn Header="Playset?"
-                  Binding="{Binding StockItem.Playset}" />
+                  Binding="{Binding Playset}" />
 
               <DataGridTextColumn Header="Expansion Code"
-                   Binding="{Binding StockItem.SetCode}" />
+                   Binding="{Binding SetCode}" />
 
               <DataGridTextColumn Header="Expansion"
-                   Binding="{Binding StockItem.SetName}" />
+                   Binding="{Binding SetName}" />
 
               <DataGridTextColumn Header="Market Price"
-                   Binding="{Binding StockItem.MarketPrice}" />
+                   Binding="{Binding MarketPrice}" />
 
               <DataGridTextColumn Header="Price Date"
                    Binding="{Binding StockItem.MarketPriceDate}" />

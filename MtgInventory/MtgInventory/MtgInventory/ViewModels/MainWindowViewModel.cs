@@ -25,7 +25,7 @@ namespace MtgInventory.ViewModels
 
         private MkmApiCallStatistics _mkmApiCallStatistics;
 
-        private IEnumerable<MkmStockItemExtended> _currentStock;
+        private IEnumerable<MkmStockItemViewModel> _currentStock;
 
         private IEnumerable<DetailedSetInfo> _allSets;
 
@@ -86,7 +86,7 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _mkmApiCallStatistics, value);
         }
 
-        public IEnumerable<MkmStockItemExtended> CurrentStock
+        public IEnumerable<MkmStockItemViewModel> CurrentStock
         {
             get => _currentStock;
             set => this.RaiseAndSetIfChanged(ref _currentStock, value);
@@ -112,6 +112,7 @@ namespace MtgInventory.ViewModels
                 AllSets = MainService.AllSets.ToArray();
             });
         }
+
         public void OnDownloadScryfallSets()
         {
             Task.Factory.StartNew(() =>
@@ -121,6 +122,7 @@ namespace MtgInventory.ViewModels
                 AllSets = MainService.AllSets.ToArray();
             });
         }
+
         public void OnRebuildInternalDatabase()
         {
             Task.Factory.StartNew(() =>
@@ -146,7 +148,19 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                CurrentStock = MainService?.DownloadMkmStock();
+                var stock = MainService
+                    .DownloadMkmStock()
+                    .Select(i => new MkmStockItemViewModel(i))
+                    .ToArray();
+
+                CurrentStock = stock;
+                foreach (var item in stock)
+                {
+                    item.CardPrice = MainService.AutoScryfallService.AutoDownloadPrice(
+                        item.EnglishName,
+                        item.SetCode,
+                        item.ScryfallId);
+                }
             });
         }
 
@@ -159,11 +173,11 @@ namespace MtgInventory.ViewModels
             });
         }
 
-        public void OnOpenStockItemInMkmProductPage(MkmStockItemExtended stockItem)
+        public void OnOpenStockItemInMkmProductPage(MkmStockItemViewModel stockItem)
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.OpenMkmProductPage(stockItem?.StockItem.IdProduct);
+                MainService?.OpenMkmProductPage(stockItem?.IdProduct);
             });
         }
 

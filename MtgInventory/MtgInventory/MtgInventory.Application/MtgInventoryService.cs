@@ -27,7 +27,7 @@ namespace MtgInventory.Service
 
         private bool _isUpdatingDetailedCards;
         private MkmPriceService _mkmPriceService;
-        private AutoScryfallService _autoScryfallService;
+        private IAutoScryfallService _autoScryfallService;
 
         public MtgInventoryService()
         {
@@ -39,6 +39,7 @@ namespace MtgInventory.Service
             }, null, null));
         }
 
+        public IAutoScryfallService AutoScryfallService => _autoScryfallService;
         public SystemFolders SystemFolders { get; }
 
         public MkmAuthenticationData MkmAuthenticationData { get; private set; }
@@ -104,32 +105,6 @@ namespace MtgInventory.Service
 
             Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall expansions...");
             return scryfallSets;
-        }
-
-        internal Task DownloadScryfallData()
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                var scryfallSets = DownloadScryfallSets(false);
-
-                _cardDatabase.ClearScryfallCards();
-                var remainingSets = scryfallSets.Length;
-                foreach (var set in scryfallSets)
-                {
-                    Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
-                    var cards = _scryfallService.RetrieveCardsForSetCode(set.Code).Select(c => new ScryfallCard(c)).ToArray();
-                    _cardDatabase.InsertScryfallCards(cards);
-                    remainingSets--;
-
-                    // Insert prices from Scryfall
-                    var prices = cards.Select(c => new CardPrice(c));
-                    _cardDatabase.CardPrices.InsertBulk(prices);
-                }
-
-                _cardDatabase.EnsureCardPriceIndex();
-
-                Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
-            });
         }
 
         public void DownloadAllProducts()
@@ -300,20 +275,63 @@ namespace MtgInventory.Service
             }
         }
 
-        public IEnumerable<MkmStockItemExtended> DownloadMkmStock()
+        public IEnumerable<DetailedStockItem> DownloadMkmStock()
         {
             Log.Debug($"{nameof(DownloadMkmStock)} now...");
 
             var result = _mkmRequest
                 .GetStockAsCsv()
-                .Select(s => new MkmStockItemExtended(s))
+                .Select(s => new DetailedStockItem(s))
                 .ToArray();
 
             _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
 
+            // Now find the scryfall ids
+
+            var mkmIds = result.Select(r => r.IdProduct).ToArray();
+
+            var detailedCards = _cardDatabase.MagicCards.Query()
+                .Where(c => mkmIds.Contains(c.MkmId))
+                .ToArray();
+
+            foreach (var card in detailedCards)
+            {
+                var stock = result.Where(c => c.IdProduct == card.MkmId).ToArray();
+                foreach (var item in stock)
+                {
+                    item.ScryfallId = card.ScryfallId;
+                }
+            }
+
             Log.Debug($"{nameof(DownloadMkmStock)} loaded {result.Length} items");
 
             return result;
+        }
+
+        internal Task DownloadScryfallData()
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var scryfallSets = DownloadScryfallSets(false);
+
+                _cardDatabase.ClearScryfallCards();
+                var remainingSets = scryfallSets.Length;
+                foreach (var set in scryfallSets)
+                {
+                    Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
+                    var cards = _scryfallService.RetrieveCardsForSetCode(set.Code).Select(c => new ScryfallCard(c)).ToArray();
+                    _cardDatabase.InsertScryfallCards(cards);
+                    remainingSets--;
+
+                    // Insert prices from Scryfall
+                    var prices = cards.Select(c => new CardPrice(c));
+                    _cardDatabase.CardPrices.InsertBulk(prices);
+                }
+
+                _cardDatabase.EnsureCardPriceIndex();
+
+                Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
+            });
         }
 
         private void UpdateProductSummary()

@@ -7,7 +7,14 @@ using Serilog;
 
 namespace MtgInventory.Service
 {
-    public sealed class AutoScryfallService
+    public interface IAutoScryfallService
+    {
+        CardPrice AutoDownloadPrice(string name, string setCode, Guid scryfallId);
+
+        CardPrice GetLatestPrice(Guid scryfallId);
+    }
+
+    public sealed class AutoScryfallService : IAutoScryfallService
     {
         private readonly CardDatabase _cardDatabase;
         private readonly IScryfallService _scryfallApi;
@@ -20,19 +27,25 @@ namespace MtgInventory.Service
             _scryfallApi = scryfallService;
         }
 
-        public CardPrice AutoDownloadPrice(DetailedMagicCard card)
+        public CardPrice AutoDownloadPrice(string name, string setCode, Guid scryfallId)
         {
-            var latestPrice = GetLatestPrice(card.ScryfallId);
+            if (Guid.Empty  == scryfallId)
+            {
+                Log.Warning($"No valid scryfall id - skipping price download for {name}-{setCode}");
 
-            // TODO: Define how old the price shall be max
+                return new CardPrice();
+            }
+
+            var latestPrice = GetLatestPrice(scryfallId);
+
             if (latestPrice == null
                 || latestPrice.UpdateDate.Value.AddDays(1) > DateTime.Now
                 || (!latestPrice.ScryfallEur.HasValue && latestPrice.Source == CardPriceSource.Scryfall))
             {
-                Log.Information($"Price for scryfall {card.NameEn}-{card.SetCode} is outdated - downloading current one");
+                Log.Information($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
 
                 var result = _scryfallApi
-                    .RetrieveCardsByCardNameAndSet(card.NameEn, card.SetCode, ScryfallApi.Client.Models.SearchOptions.RollupMode.Prints)
+                    .RetrieveCardsByCardNameAndSet(name, setCode, ScryfallApi.Client.Models.SearchOptions.RollupMode.Prints)
                     .Select(c => new CardPrice(new ScryfallCard(c)))
                     .ToArray();
 
@@ -42,7 +55,7 @@ namespace MtgInventory.Service
                     _cardDatabase.EnsureCardPriceIndex();
                 }
 
-                latestPrice = result.FirstOrDefault(c => c.Id == card.ScryfallId);
+                latestPrice = result.FirstOrDefault(c => c.Id == scryfallId);
             }
 
             return latestPrice;
