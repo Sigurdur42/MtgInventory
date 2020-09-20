@@ -8,6 +8,7 @@ using MkmApi;
 using MkmApi.Entities;
 using MtgInventory.Service.Converter;
 using MtgInventory.Service.Models;
+using ScryfallApiServices;
 using Serilog;
 
 namespace MtgInventory.Service.Database
@@ -26,7 +27,8 @@ namespace MtgInventory.Service.Database
         public ILiteCollection<MkmProductInfo> MkmProductInfo { get; private set; }
 
         public ILiteCollection<Expansion> MkmExpansion { get; private set; }
-        public ILiteCollection<ApiCallStatistics> ApiCallStatistics { get; private set; }
+        public ILiteCollection<ApiCallStatistics> MkmApiCallStatistics { get; private set; }
+        public ILiteCollection<ScryfallApiCallStatistic> ScryfallApiCallStatistics { get; private set; }
         public ILiteCollection<MkmAdditionalCardInfo> MkmAdditionalInfo { get; private set; }
 
         public ILiteCollection<ScryfallCard> ScryfallCards { get; private set; }
@@ -56,7 +58,8 @@ namespace MtgInventory.Service.Database
 
             MkmProductInfo = _mkmDatabase.GetCollection<MkmProductInfo>();
             MkmExpansion = _mkmDatabase.GetCollection<Expansion>();
-            ApiCallStatistics = _mkmDatabase.GetCollection<ApiCallStatistics>();
+            MkmApiCallStatistics = _mkmDatabase.GetCollection<ApiCallStatistics>();
+            ScryfallApiCallStatistics = _mkmDatabase.GetCollection<ScryfallApiCallStatistic>();
             MkmAdditionalInfo = _mkmDatabase.GetCollection<MkmAdditionalCardInfo>();
             CardPrices = _priceDatabase.GetCollection<CardPrice>();
 
@@ -192,7 +195,7 @@ namespace MtgInventory.Service.Database
 
         public void UpdateMkmStatistics(IApiCallStatistic mkmStatistic)
         {
-            var found = ApiCallStatistics.Query().FirstOrDefault();
+            var found = MkmApiCallStatistics.Query().FirstOrDefault();
             if (found == null)
             {
                 var newRecord = new ApiCallStatistics
@@ -201,20 +204,42 @@ namespace MtgInventory.Service.Database
                     CountTotal = mkmStatistic.CountTotal,
                     Today = mkmStatistic.Today,
                 };
-                ApiCallStatistics.Insert(newRecord);
+                MkmApiCallStatistics.Insert(newRecord);
             }
             else
             {
                 found.CountToday = mkmStatistic.CountToday;
                 found.CountTotal = mkmStatistic.CountTotal;
                 found.Today = mkmStatistic.Today;
-                ApiCallStatistics.Update(found);
+                MkmApiCallStatistics.Update(found);
+            }
+        }
+
+        public void UpdateScryfallStatistics(IScryfallApiCallStatistic statistic)
+        {
+            var found = ScryfallApiCallStatistics.Query().FirstOrDefault();
+            if (found == null)
+            {
+                var newRecord = new ScryfallApiCallStatistic
+                {
+                    ScryfallCountToday = statistic.ScryfallCountToday,
+                    ScryfallCountTotal = statistic.ScryfallCountTotal,
+                    Today = statistic.Today,
+                };
+                ScryfallApiCallStatistics.Insert(newRecord);
+            }
+            else
+            {
+                found.ScryfallCountToday = statistic.ScryfallCountToday;
+                found.ScryfallCountTotal = statistic.ScryfallCountTotal;
+                found.Today = statistic.Today;
+                ScryfallApiCallStatistics.Update(found);
             }
         }
 
         public IApiCallStatistic GetMkmCallStatistic()
         {
-            var found = ApiCallStatistics.Query().FirstOrDefault();
+            var found = MkmApiCallStatistics.Query().FirstOrDefault();
             if (found == null)
             {
                 found = new ApiCallStatistics
@@ -223,7 +248,24 @@ namespace MtgInventory.Service.Database
                     CountTotal = 0,
                     Today = DateTime.Now.Date,
                 };
-                ApiCallStatistics.Insert(found);
+                MkmApiCallStatistics.Insert(found);
+            }
+
+            return found;
+        }
+
+        public IScryfallApiCallStatistic GetScryfallApiStatistics()
+        {
+            var found = ScryfallApiCallStatistics.Query().FirstOrDefault();
+            if (found == null)
+            {
+                found = new ScryfallApiCallStatistic
+                {
+                    ScryfallCountToday = 0,
+                    ScryfallCountTotal = 0,
+                    Today = DateTime.Now.Date,
+                };
+                ScryfallApiCallStatistics.Insert(found);
             }
 
             return found;

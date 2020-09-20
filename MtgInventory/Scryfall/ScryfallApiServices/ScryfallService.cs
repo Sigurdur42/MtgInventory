@@ -1,21 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
+using ScryfallApiServices;
 
 namespace MtgBinder.Domain.Scryfall
 {
     public class ScryfallService : IScryfallService
     {
         private readonly ScryfallApiClient _apiClient;
-
+        private readonly IScryfallApiCallStatistic _apiCallStatistic;
         private readonly GoodCiticenAutoSleep _autoSleep = new GoodCiticenAutoSleep();
 
         public ScryfallService(
-            ScryfallApiClient apiClient)
+            ScryfallApiClient apiClient,
+            IScryfallApiCallStatistic scryfallApiCallStatistic)
         {
             _apiClient = apiClient;
+            _apiCallStatistic = scryfallApiCallStatistic;
         }
 
         public IEnumerable<Set> RetrieveSets()
@@ -23,6 +27,7 @@ namespace MtgBinder.Domain.Scryfall
             _autoSleep.AutoSleep();
 
             var sets = _apiClient.Sets.Get().Result;
+            IncrementCallStatistic();
             var result = sets.Data.ToArray();
             foreach (var item in result)
             {
@@ -70,6 +75,7 @@ namespace MtgBinder.Domain.Scryfall
             {
                 _autoSleep.AutoSleep();
                 cards = _apiClient.Cards.Search(lookupPattern, page, searchOptions).Result;
+                IncrementCallStatistic();
 
                 if (page == 1 && cards.HasMore)
                 {
@@ -90,6 +96,22 @@ namespace MtgBinder.Domain.Scryfall
             return result.ToArray();
         }
 
-      
+        private void IncrementCallStatistic()
+        {
+            if (_apiCallStatistic == null)
+            {
+                return;
+            }
+
+            var today = DateTime.Now.Date;
+            if (_apiCallStatistic.Today != today)
+            {
+                _apiCallStatistic.Today = today;
+                _apiCallStatistic.ScryfallCountToday = 0;
+            }
+
+            _apiCallStatistic.ScryfallCountToday += 1;
+            _apiCallStatistic.ScryfallCountTotal += 1;
+        }
     }
 }

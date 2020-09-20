@@ -32,7 +32,6 @@ namespace MtgInventory.ViewModels
 
         private QueryCardOptions _queryCardOptions = new QueryCardOptions();
 
-
         public MainWindowViewModel()
         {
             MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly().GetName().Version;
@@ -40,7 +39,7 @@ namespace MtgInventory.ViewModels
             Task.Factory.StartNew(() =>
             {
                 MkmApiCallStatistics = new MkmApiCallStatistics();
-                MainService.Initialize(MkmApiCallStatistics);
+                MainService.Initialize(MkmApiCallStatistics, MkmApiCallStatistics);
 
                 UpdateProductSummary();
 
@@ -79,8 +78,6 @@ namespace MtgInventory.ViewModels
             get => _setFilter;
             set => this.RaiseAndSetIfChanged(ref _setFilter, value);
         }
-
-  
 
         public string MkmProductsSummary
         {
@@ -154,7 +151,11 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                var cards = MainService?.FindDetailedCardsByName(_queryCardOptions).Select(c => new DetailedCardViewModel(c)).ToArray();
+                var cards = MainService
+                    .FindDetailedCardsByName(_queryCardOptions)
+                    .Select(c => new DetailedCardViewModel(c))
+                    .ToArray();
+
                 MkmProductsFound = cards;
 
                 foreach (var item in cards)
@@ -164,6 +165,8 @@ namespace MtgInventory.ViewModels
                         item.Card.SetCode,
                         item.Card.ScryfallId);
                 }
+
+                MainService.UpdateCallStatistics();
             });
         }
 
@@ -184,6 +187,8 @@ namespace MtgInventory.ViewModels
                         item.SetCode,
                         item.ScryfallId);
                 }
+
+                MainService.UpdateCallStatistics();
             });
         }
 
@@ -238,7 +243,7 @@ namespace MtgInventory.ViewModels
             setsToFilter.Insert(0, "All Sets");
             SetFilter = setsToFilter;
 
-            _queryCardOptions.SetName = setsToFilter.FirstOrDefault();            
+            _queryCardOptions.SetName = setsToFilter.FirstOrDefault();
         }
 
         private void UpdateProductSummary()

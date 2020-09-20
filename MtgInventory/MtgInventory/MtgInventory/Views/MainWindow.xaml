@@ -47,6 +47,14 @@
         <TextBlock >)</TextBlock>
       </StackPanel>
 
+      <TextBlock Grid.Row="1">Scryfall Calls Today</TextBlock>
+      <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="1">
+        <TextBlock Margin="5,0,0,0"  Text="{Binding MkmApiCallStatistics.ScryfallCountToday}"></TextBlock>
+        <TextBlock Margin="5,0,0,0">(Total: </TextBlock>
+        <TextBlock Text="{Binding MkmApiCallStatistics.ScryfallCountTotal}"></TextBlock>
+        <TextBlock >)</TextBlock>
+      </StackPanel>
+
     </Grid>
 
     <!-- Logging Panel -->

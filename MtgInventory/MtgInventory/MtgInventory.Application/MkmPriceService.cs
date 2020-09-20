@@ -18,6 +18,7 @@ namespace MtgInventory.Service
             _cardDatabase = cardDatabase;
             _mkmRequest = mkmRequest;
         }
+      
 
         public CardPrice AutoDownloadMkmPrice(string mkmId, Guid scryfallId)
         {

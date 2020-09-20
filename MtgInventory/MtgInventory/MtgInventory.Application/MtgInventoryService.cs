@@ -10,6 +10,7 @@ using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
 using ScryfallApi.Client;
+using ScryfallApiServices;
 using Serilog;
 
 namespace MtgInventory.Service
@@ -33,10 +34,6 @@ namespace MtgInventory.Service
         {
             SystemFolders = new SystemFolders();
             _cardDatabase = new CardDatabase();
-            _scryfallService = new ScryfallService(new ScryfallApiClient(new System.Net.Http.HttpClient()
-            {
-                BaseAddress = new Uri("https://api.scryfall.com/")
-            }, null, null));
         }
 
         public IAutoScryfallService AutoScryfallService => _autoScryfallService;
@@ -49,6 +46,7 @@ namespace MtgInventory.Service
         public string InternalProductsSummary { get; private set; }
 
         public IApiCallStatistic MkmApiCallStatistic { get; private set; }
+        public IScryfallApiCallStatistic ScryfallApiCallStatistic { get; private set; }
 
         public IEnumerable<DetailedSetInfo> AllSets => _cardDatabase.MagicSets.FindAll();
 
@@ -57,7 +55,7 @@ namespace MtgInventory.Service
             ShutDown();
         }
 
-        public void Initialize(IApiCallStatistic mkmApiCallStatistic)
+        public void Initialize(IApiCallStatistic mkmApiCallStatistic, IScryfallApiCallStatistic scryfallApiCallStatistic)
         {
             Log.Information($"{nameof(Initialize)}: Initializing application service");
 
@@ -70,12 +68,27 @@ namespace MtgInventory.Service
 
             _cardDatabase.Initialize(SystemFolders.BaseFolder);
 
+            // TODO: Handle date change here
+
             MkmApiCallStatistic = mkmApiCallStatistic;
             var fromDatabase = _cardDatabase.GetMkmCallStatistic();
             mkmApiCallStatistic.CountToday = fromDatabase.CountToday;
             mkmApiCallStatistic.CountTotal = fromDatabase.CountTotal;
             mkmApiCallStatistic.Today = fromDatabase.Today;
             mkmApiCallStatistic.Id = fromDatabase.Id;
+
+            ScryfallApiCallStatistic = scryfallApiCallStatistic;
+            var fromDatabaseScryfall = _cardDatabase.GetScryfallApiStatistics();
+            ScryfallApiCallStatistic.ScryfallCountToday = fromDatabaseScryfall.ScryfallCountToday;
+            ScryfallApiCallStatistic.ScryfallCountTotal = fromDatabaseScryfall.ScryfallCountTotal;
+            ScryfallApiCallStatistic.Today = fromDatabaseScryfall.Today;
+            ScryfallApiCallStatistic.Id = fromDatabaseScryfall.Id;
+
+            _scryfallService = new ScryfallService(new ScryfallApiClient(new System.Net.Http.HttpClient()
+            {
+                BaseAddress = new Uri("https://api.scryfall.com/")
+            }, null, null),
+            ScryfallApiCallStatistic);
 
             UpdateProductSummary();
 
@@ -129,6 +142,7 @@ namespace MtgInventory.Service
                 _cardDatabase.InsertProductInfo(products.Products, expansions);
 
                 _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+                _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
             });
 
             mkmTask.Wait();
@@ -212,7 +226,7 @@ namespace MtgInventory.Service
                 url = _mkmRequest.GetProductData(product.MkmId)?.WebSite;
                 _cardDatabase.UpdateMkmAdditionalInfo(product.MkmId, url);
 
-                _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+                UpdateCallStatistics();
             }
 
             // Now open a browser with the url
@@ -280,6 +294,12 @@ namespace MtgInventory.Service
             }
         }
 
+        public void UpdateCallStatistics()
+        {
+            _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+            _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
+        }
+
         public IEnumerable<DetailedStockItem> DownloadMkmStock()
         {
             Log.Debug($"{nameof(DownloadMkmStock)} now...");
@@ -289,7 +309,7 @@ namespace MtgInventory.Service
                 .Select(s => new DetailedStockItem(s))
                 .ToArray();
 
-            _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+            UpdateCallStatistics();
 
             // Now find the scryfall ids
 
