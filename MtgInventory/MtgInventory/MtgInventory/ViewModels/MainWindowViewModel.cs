@@ -19,7 +19,7 @@ namespace MtgInventory.ViewModels
     {
         private string _mkmProductsSummary;
 
-        private IEnumerable<DetailedMagicCard> _mkmProductsFound;
+        private IEnumerable<DetailedCardViewModel> _mkmProductsFound;
 
         private DeckListItemViewModel[] _currentDeckList;
 
@@ -106,7 +106,7 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _currentStock, value);
         }
 
-        public IEnumerable<DetailedMagicCard> MkmProductsFound
+        public IEnumerable<DetailedCardViewModel> MkmProductsFound
         {
             get => _mkmProductsFound;
             set => this.RaiseAndSetIfChanged(ref _mkmProductsFound, value);
@@ -154,7 +154,16 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MkmProductsFound = MainService?.FindDetailedCardsByName(_queryCardOptions);
+                var cards = MainService?.FindDetailedCardsByName(_queryCardOptions).Select(c => new DetailedCardViewModel(c)).ToArray();
+                MkmProductsFound = cards;
+
+                foreach (var item in cards)
+                {
+                    item.CardPrice = MainService.AutoScryfallService.AutoDownloadPrice(
+                        item.Card.NameEn,
+                        item.Card.SetCode,
+                        item.Card.ScryfallId);
+                }
             });
         }
 
@@ -178,11 +187,11 @@ namespace MtgInventory.ViewModels
             });
         }
 
-        public void OnOpenMkmProductPage(DetailedMagicCard info)
+        public void OnOpenMkmProductPage(DetailedCardViewModel info)
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.OpenMkmProductPage(info?.MkmId);
+                MainService?.OpenMkmProductPage(info?.Card?.MkmId);
                 UpdateProductSummary();
             });
         }

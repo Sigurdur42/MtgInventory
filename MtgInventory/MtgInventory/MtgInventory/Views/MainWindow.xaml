@@ -122,22 +122,22 @@
             <DataGrid.Columns>
             
               <DataGridTextColumn Header="Name"
-                   Binding="{Binding NameEn}"
+                   Binding="{Binding Card.NameEn}"
                               />
               <!--<DataGridTextColumn Header="Category"
                    Binding="{Binding Category}" />-->
               
               <DataGridTextColumn Header="Expansion Name"
-                   Binding="{Binding SetName}"
+                   Binding="{Binding Card.SetName}"
                               />
               <DataGridTextColumn Header="Expansion Code"
-                   Binding="{Binding SetCode}" />
+                   Binding="{Binding Card.SetCode}" />
 
               <DataGridTextColumn Header="Type"
-                Binding="{Binding TypeLine}" />
+                Binding="{Binding Card.TypeLine}" />
 
               <DataGridTextColumn Header="Price"
-             Binding="{Binding Price}" />
+             Binding="{Binding MarketPrice}" />
 
               <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
                 <DataGridTemplateColumn.CellTemplate>

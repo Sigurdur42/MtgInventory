@@ -41,8 +41,7 @@ namespace MtgInventory.Service
             var latestPrice = GetLatestPrice(scryfallId);
 
             if (latestPrice == null
-                || latestPrice.UpdateDate.Value.AddDays(1) < DateTime.Now
-                || (!latestPrice.ScryfallEur.HasValue && latestPrice.Source == CardPriceSource.Scryfall))
+                || latestPrice.UpdateDate.Value.AddDays(1) < DateTime.Now)
             {
                 Log.Information($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
 
