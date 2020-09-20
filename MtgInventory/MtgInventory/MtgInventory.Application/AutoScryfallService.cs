@@ -29,7 +29,7 @@ namespace MtgInventory.Service
 
         public CardPrice AutoDownloadPrice(string name, string setCode, Guid scryfallId)
         {
-            if (Guid.Empty  == scryfallId)
+            if (Guid.Empty == scryfallId)
             {
                 Log.Warning($"No valid scryfall id - skipping price download for {name}-{setCode}");
 
@@ -68,7 +68,7 @@ namespace MtgInventory.Service
             CardPrice result = null;
             var query = _cardDatabase.CardPrices.Query();
 
-            result = query.Where(c => c.ScryfallId == scryfallId).FirstOrDefault();
+            result = query.Where(c => c.ScryfallId == scryfallId).OrderByDescending(p => p.UpdateDate).FirstOrDefault();
 
             return result;
         }
