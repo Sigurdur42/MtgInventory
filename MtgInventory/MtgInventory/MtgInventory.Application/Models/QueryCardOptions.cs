@@ -8,6 +8,10 @@ namespace MtgInventory.Service.Models
         public bool IsBasicLand { get; set; }
         public bool IsToken { get; set; }
 
+        public string SetName { get; set; }
+
+        public bool IsSetName => !string.IsNullOrWhiteSpace(SetName) && !"AllSets".Equals(SetName);
+
         public override string ToString()
         {
             var result = new StringBuilder();
@@ -22,6 +26,11 @@ namespace MtgInventory.Service.Models
             if (IsToken)
             {
                 result.Append(", Token=true");
+            }
+
+            if (IsSetName)
+            {
+                result.Append($", SetCode={SetName}");
             }
 
             return result.ToString();

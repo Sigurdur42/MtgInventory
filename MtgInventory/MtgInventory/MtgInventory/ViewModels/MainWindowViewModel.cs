@@ -28,8 +28,10 @@ namespace MtgInventory.ViewModels
         private IEnumerable<MkmStockItemViewModel> _currentStock;
 
         private IEnumerable<DetailedSetInfo> _allSets;
+        private IEnumerable<string> _setFilter;
 
         private QueryCardOptions _queryCardOptions = new QueryCardOptions();
+
 
         public MainWindowViewModel()
         {
@@ -65,8 +67,20 @@ namespace MtgInventory.ViewModels
         public IEnumerable<DetailedSetInfo> AllSets
         {
             get => _allSets;
-            set => this.RaiseAndSetIfChanged(ref _allSets, value);
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _allSets, value);
+                RebuildSetFilter();
+            }
         }
+
+        public IEnumerable<string> SetFilter
+        {
+            get => _setFilter;
+            set => this.RaiseAndSetIfChanged(ref _setFilter, value);
+        }
+
+  
 
         public string MkmProductsSummary
         {
@@ -207,6 +221,15 @@ namespace MtgInventory.ViewModels
                 MainService.EnrichDeckListWithDetails(loaded.Deck);
                 CurrentDeckList = loaded.Deck.Mainboard.Select(c => new DeckListItemViewModel(c)).ToArray();
             }
+        }
+
+        private void RebuildSetFilter()
+        {
+            var setsToFilter = _allSets?.Select(s => s.SetName)?.OrderBy(s => s)?.ToList() ?? new List<string>();
+            setsToFilter.Insert(0, "All Sets");
+            SetFilter = setsToFilter;
+
+            _queryCardOptions.SetName = setsToFilter.FirstOrDefault();            
         }
 
         private void UpdateProductSummary()

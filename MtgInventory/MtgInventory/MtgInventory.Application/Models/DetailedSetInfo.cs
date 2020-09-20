@@ -22,6 +22,7 @@ namespace MtgInventory.Service.Models
         public string IsReleased { get; set; }
 
         public DateTime LastUpdated { get; set; }
+        public string SetName { get; set; }
 
         internal void UpdateFromMkm(Expansion mkm)
         {
@@ -31,6 +32,8 @@ namespace MtgInventory.Service.Models
             ReleaseDateParsed = mkm.ReleaseDateParsed;
             IsReleased = mkm.IsReleased;
             LastUpdated = DateTime.Now;
+
+            SetName = SetNameMkm;
         }
 
         internal void UpdateFromScryfall(ScryfallSet scryfall)
@@ -38,6 +41,8 @@ namespace MtgInventory.Service.Models
             SetCodeScryfall = scryfall.Code?.ToUpperInvariant();
             SetNameScryfall = scryfall.Name;
             LastUpdated = DateTime.Now;
+
+            SetName = SetNameScryfall;
         }
     }
 }

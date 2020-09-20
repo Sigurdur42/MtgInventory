@@ -242,6 +242,11 @@ namespace MtgInventory.Service
                 databaseQuery = databaseQuery.Where(q => q.IsToken);
             }
 
+            if (query.IsSetName)
+            {
+                databaseQuery = databaseQuery.Where(q => q.SetName == query.SetName);
+            }
+
             return
                 databaseQuery
                 .ToList()

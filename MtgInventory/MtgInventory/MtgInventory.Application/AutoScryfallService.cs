@@ -47,7 +47,7 @@ namespace MtgInventory.Service
                 Log.Information($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
 
                 var result = _scryfallApi
-                    .RetrieveCardsByCardNameAndSet(name, setCode, ScryfallApi.Client.Models.SearchOptions.RollupMode.Prints)
+                    .RetrieveCardsForSetCode(setCode)
                     .Select(c => new CardPrice(new ScryfallCard(c)))
                     .ToArray();
 
