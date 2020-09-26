@@ -105,7 +105,7 @@ namespace MtgInventory.Service
             _cardDatabase.Dispose();
         }
 
-        public ScryfallSet[] DownloadScryfallSets(bool rebuildDetailedSetInfo)
+        public ScryfallSet[] DownloadScryfallSetsData(bool rebuildDetailedSetInfo)
         {
             Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall expansions...");
             var scryfallSets = _scryfallService.RetrieveSets().OrderByDescending(s => s.Name).Select(s => new ScryfallSet(s)).ToArray();
@@ -115,9 +115,26 @@ namespace MtgInventory.Service
             {
                 _cardDatabase.RebuildSetData();
             }
+            _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
 
             Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall expansions...");
             return scryfallSets;
+        }
+
+        public void DownloadMkmSetsAndProducts()
+        {
+            Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM expansions...");
+
+            var expansions = _mkmRequest.GetExpansions(1);
+            _cardDatabase.InsertExpansions(expansions);
+
+            Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM products...");
+            using var products = _mkmRequest.GetProductsAsCsv();
+
+            Log.Debug($"{nameof(DownloadAllProducts)}: Inserting products into database...");
+            _cardDatabase.InsertProductInfo(products.Products, expansions);
+
+            _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
         }
 
         public void DownloadAllProducts()
@@ -128,22 +145,9 @@ namespace MtgInventory.Service
 
             var scryfallCardDownload = DownloadScryfallData();
 
-            var mkmTask = Task.Factory.StartNew(() =>
-            {
-                Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM expansions...");
+            var mkmTask = Task.Factory.StartNew(DownloadMkmSetsAndProducts);
 
-                var expansions = _mkmRequest.GetExpansions(1);
-                _cardDatabase.InsertExpansions(expansions);
-
-                Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM products...");
-                using var products = _mkmRequest.GetProductsAsCsv();
-
-                Log.Debug($"{nameof(DownloadAllProducts)}: Inserting products into database...");
-                _cardDatabase.InsertProductInfo(products.Products, expansions);
-
-                _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
-                _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
-            });
+            _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
 
             mkmTask.Wait();
             scryfallCardDownload.Wait();
@@ -337,7 +341,7 @@ namespace MtgInventory.Service
         {
             return Task.Factory.StartNew(() =>
             {
-                var scryfallSets = DownloadScryfallSets(false);
+                var scryfallSets = DownloadScryfallSetsData(false);
 
                 _cardDatabase.ClearScryfallCards();
                 var remainingSets = scryfallSets.Length;
