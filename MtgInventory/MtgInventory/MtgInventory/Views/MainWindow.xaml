@@ -377,19 +377,18 @@
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
               <TextBlock  VerticalAlignment="Center" Width="100">MKM:</TextBlock>
-              <Button Margin="5,0,0,0" Command="{Binding OnDownloadMkmSets}">Download Sets</Button>
-              <Button Margin="5,0,0,0" Command="{Binding OnDownloadMkmCards}">Download Products</Button>
+              <Button Margin="5,0,0,0" Command="{Binding OnDownloadMkmSetsAndCards}">Download Sets And Cards</Button>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
               <TextBlock  VerticalAlignment="Center" Width="100">Scryfall:</TextBlock>
               <Button Margin="5,0,0,0" Command="{Binding OnDownloadScryfallSets}">Download Sets</Button>
-
+              <Button Margin="5,0,0,0" Command="{Binding OnDownloadScryfallCards}">Download Cards</Button>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
               <TextBlock  VerticalAlignment="Center" Width="100">Database:</TextBlock>
-              <Button Command="{Binding OnDownloadMkmProducts}">Download and Rebuild All</Button>
+              <Button Command="{Binding OnDownloadAndRebuildAll}">Download and Rebuild All</Button>
               <Button Margin="5,0,0,0" Command="{Binding OnRebuildInternalDatabase}">Rebuild Internal Database (No Download)</Button>
 
             </StackPanel>

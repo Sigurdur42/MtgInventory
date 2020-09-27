@@ -114,7 +114,7 @@ namespace MtgInventory.ViewModels
             MainService?.ShutDown();
         }
 
-        public void OnDownloadMkmProducts()
+        public void OnDownloadMkmSetsAndCards()
         {
             Task.Factory.StartNew(() =>
             {
@@ -129,6 +129,25 @@ namespace MtgInventory.ViewModels
             Task.Factory.StartNew(() =>
             {
                 MainService?.DownloadScryfallSetsData(true);
+                UpdateProductSummary();
+                AllSets = MainService.AllSets.ToArray();
+            });
+        }
+        public void OnDownloadScryfallCards()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.DownloadScryfallCardData();
+                UpdateProductSummary();
+                AllSets = MainService.AllSets.ToArray();
+            });
+        }
+
+        public void OnDownloadAndRebuildAll()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.DownloadAllProducts();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
             });
