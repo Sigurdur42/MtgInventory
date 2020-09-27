@@ -188,6 +188,22 @@ namespace MtgInventory.Service
             });
         }
 
+        public void RebuildSetData()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                Log.Information($"Starting set database rebuild");
+                _cardDatabase.RebuildSetData();
+                UpdateProductSummary();
+            }
+            finally
+            {
+                stopwatch.Stop();
+                Log.Information($"Rebuild set database done in {stopwatch.Elapsed}");
+            }
+        }
+
         public void OpenMkmProductPage(string mkmId)
         {
             if (string.IsNullOrEmpty(mkmId))

@@ -387,9 +387,18 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-              <TextBlock  VerticalAlignment="Center" Width="100">Database:</TextBlock>
-              <Button Command="{Binding OnDownloadAndRebuildAll}">Download and Rebuild All</Button>
-              <Button Margin="5,0,0,0" Command="{Binding OnRebuildInternalDatabase}">Rebuild Internal Database (No Download)</Button>
+              <TextBlock  VerticalAlignment="Center" Width="100">DB (No Download):</TextBlock>
+
+              <Button Margin="5,0,0,0" Command="{Binding OnRebuildSetData}">Rebuild Set DB</Button>
+              <Button Margin="5,0,0,0" Command="{Binding OnRebuildCardData}">Rebuild Card DB</Button>
+              <Button Margin="5,0,0,0" Command="{Binding OnRebuildInternalDatabase}">Rebuild Complete Internal DB </Button>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+              <TextBlock  VerticalAlignment="Center" Width="100">DB (with Download):</TextBlock>
+              <Button Margin="5,0,0,0" Command="{Binding OnDownloadAndRebuildAll}">Download and Rebuild All</Button>
+              
 
             </StackPanel>
 

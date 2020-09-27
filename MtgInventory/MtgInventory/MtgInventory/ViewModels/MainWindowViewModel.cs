@@ -143,6 +143,16 @@ namespace MtgInventory.ViewModels
             });
         }
 
+        public Task OnRebuildSetData()
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                MainService?.RebuildSetData();
+                UpdateProductSummary();
+                AllSets = MainService.AllSets.ToArray();
+            });
+        }
+
         public void OnDownloadAndRebuildAll()
         {
             Task.Factory.StartNew(() =>

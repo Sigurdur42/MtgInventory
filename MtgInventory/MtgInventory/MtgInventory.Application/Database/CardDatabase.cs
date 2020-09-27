@@ -22,6 +22,7 @@ namespace MtgInventory.Service.Database
         private LiteDatabase _mkmDatabase;
         private LiteDatabase _priceDatabase;
 
+        private DetailedDatabaseBuilder _detailedDatabaseBuilder;
         public bool IsInitialized { get; private set; }
 
         public ILiteCollection<MkmProductInfo> MkmProductInfo { get; private set; }
@@ -47,6 +48,7 @@ namespace MtgInventory.Service.Database
             DirectoryInfo folder)
         {
             _logger.Information($"{nameof(Initialize)}: Initializing database service...");
+            _detailedDatabaseBuilder = new DetailedDatabaseBuilder(this);
 
             folder.EnsureExists();
             var databaseFile = Path.Combine(folder.FullName, "CardDatabase.db");
@@ -273,11 +275,11 @@ namespace MtgInventory.Service.Database
 
         public void RebuildDetailedDatabase()
         {
-            var setData = RebuildSetData();
-            RebuildDetailedCardData(setData);
+            RebuildSetData();
+            RebuildDetailedCardData();
         }
 
-        internal void RebuildDetailedCardData(Dictionary<string, DetailedSetInfo> indexedSetData)
+        internal void RebuildDetailedCardData()
         {
             _cardDatabase.Pragma("CHECKPOINT", 10000);
             _scryfallDatabase.Pragma("CHECKPOINT", 10000);
@@ -285,6 +287,9 @@ namespace MtgInventory.Service.Database
 
             try
             {
+                // Define common set code
+                var indexedSetData = MagicSets.FindAll().ToDictionary(s => s.SetCodeMkm);
+
                 ClearDetailedCards();
 
                 var indexedCards = new Dictionary<string, DetailedMagicCard>();
@@ -453,55 +458,22 @@ namespace MtgInventory.Service.Database
             }
         }
 
-        internal Dictionary<string, DetailedSetInfo> RebuildSetData()
+        internal void RebuildSetData()
         {
             // Set data
             MagicSets.DeleteAll();
-            var indexedSets = new Dictionary<string, DetailedSetInfo>();
 
-            Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM Set data...");
-            foreach (var mkm in MkmExpansion.FindAll())
-            {
-                var key = mkm.Abbreviation.ToUpperInvariant();
-                if (indexedSets.TryGetValue(key, out var found))
-                {
-                    Log.Warning($"Duplicate MKM set found: {mkm}");
-                    continue;
-                }
+            _detailedDatabaseBuilder.BuildMkmSetData();
+            _detailedDatabaseBuilder.BuildScryfallSetData();
+        }
 
-                var set = new DetailedSetInfo();
-                set.UpdateFromMkm(mkm);
-                indexedSets.Add(key, set);
-            }
-
-            Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall Set data...");
-            foreach (var scryfall in ScryfallSets.FindAll())
-            {
-                if (scryfall.Code == null)
-                {
-                    continue;
-                }
-
-                var key = scryfall.Code?.ToUpperInvariant();
-                if (!indexedSets.TryGetValue(key, out var found))
-                {
-                    found = new DetailedSetInfo();
-                    indexedSets.Add(key, found);
-                }
-
-                found.UpdateFromScryfall(scryfall);
-            }
-
-            Log.Debug($"{nameof(RebuildDetailedDatabase)} - inserting sets now...");
-            MagicSets.InsertBulk(indexedSets.Values);
-
-            Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding set index...");
+        internal void EnsureSetIndex()
+        {
+            Log.Debug($"Rebuilding set index...");
             MagicSets.EnsureIndex(s => s.SetNameScryfall);
             MagicSets.EnsureIndex(s => s.SetNameMkm);
             MagicSets.EnsureIndex(s => s.SetCodeScryfall);
             MagicSets.EnsureIndex(s => s.SetCodeMkm);
-
-            return indexedSets;
         }
 
         internal void InsertExpansions(IEnumerable<Expansion> expansions)
