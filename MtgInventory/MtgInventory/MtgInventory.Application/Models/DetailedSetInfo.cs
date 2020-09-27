@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using MkmApi.Entities;
 
 namespace MtgInventory.Service.Models
 {
+    [DebuggerDisplay("{SetCode} {SetName}")]
     public class DetailedSetInfo
     {
         public Guid Id { get; set; }
+
+        public string SetCode { get; set; }
 
         public string SetCodeMkm { get; set; }
 
@@ -24,8 +28,14 @@ namespace MtgInventory.Service.Models
         public DateTime LastUpdated { get; set; }
         public string SetName { get; set; }
 
-        internal void UpdateFromMkm(Expansion mkm)
+        /// <summary>
+        /// Does this artifical set code only contains tokens?
+        /// </summary>
+        public bool IsTokenSet { get; set; }
+
+        internal void UpdateFromMkm(string normalizedSetCode, Expansion mkm)
         {
+            SetCode = normalizedSetCode;
             SetCodeMkm = mkm.Abbreviation?.ToUpperInvariant();
             SetNameMkm = mkm.EnName;
             ReleaseDate = mkm.ReleaseDate;
@@ -33,16 +43,27 @@ namespace MtgInventory.Service.Models
             IsReleased = mkm.IsReleased;
             LastUpdated = DateTime.Now;
 
-            SetName = SetNameMkm;
+            if (SetNameMkm.Contains("Token", StringComparison.InvariantCultureIgnoreCase))
+            {
+                IsTokenSet = true;
+            }
+
+            SetName ??= SetNameMkm;
         }
 
-        internal void UpdateFromScryfall(ScryfallSet scryfall)
+        internal void UpdateFromScryfall(string normalizedSetCode, ScryfallSet scryfall)
         {
+            SetCode = normalizedSetCode;
             SetCodeScryfall = scryfall.Code?.ToUpperInvariant();
             SetNameScryfall = scryfall.Name;
             LastUpdated = DateTime.Now;
 
-            SetName = SetNameScryfall;
+            SetName ??= SetNameScryfall;
+
+            if (scryfall.Name.Contains("Token", StringComparison.InvariantCultureIgnoreCase))
+            {
+                IsTokenSet = true;
+            }
         }
     }
 }

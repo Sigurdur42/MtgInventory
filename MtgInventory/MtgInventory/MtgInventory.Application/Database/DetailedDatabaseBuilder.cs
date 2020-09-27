@@ -23,14 +23,15 @@ namespace MtgInventory.Service.Database
         {
             var indexedSets = _database.MagicSets.FindAll().ToDictionary(s => s.SetCodeMkm);
             var setsToInsert = new List<DetailedSetInfo>();
+            var setsToUpdate = new List<DetailedSetInfo>();
 
             Log.Debug($"Rebuilding MKM Set data...");
             foreach (var mkm in _database.MkmExpansion.FindAll())
             {
-                var key = mkm.Abbreviation.ToUpperInvariant();
+                var key = GetMainSetCodeForMkm(mkm.Abbreviation.ToUpperInvariant());
                 if (indexedSets.TryGetValue(key, out var found))
                 {
-                    //// Log.Warning($"Duplicate MKM set found: {mkm}");
+                    setsToUpdate.Add(found);
                 }
                 else
                 {
@@ -38,13 +39,18 @@ namespace MtgInventory.Service.Database
                     setsToInsert.Add(found);
                 }
 
-                found.UpdateFromMkm(mkm);
+                found.UpdateFromMkm(key, mkm);
                 indexedSets.Add(key, found);
             }
 
             if (setsToInsert.Any())
             {
                 _database.MagicSets.InsertBulk(setsToInsert);
+            }
+
+            if (setsToUpdate.Any())
+            {
+                _database.MagicSets.Update(setsToUpdate);
             }
 
             _database.EnsureSetIndex();
@@ -54,7 +60,8 @@ namespace MtgInventory.Service.Database
         {
             var indexedSets = _database.MagicSets.FindAll().ToDictionary(s => s.SetCodeMkm);
             var setsToInsert = new List<DetailedSetInfo>();
-            
+            var setsToUpdate = new List<DetailedSetInfo>();
+
             Log.Debug($"Rebuilding Scryfall Set data...");
             foreach (var scryfall in _database.ScryfallSets.FindAll())
             {
@@ -63,15 +70,19 @@ namespace MtgInventory.Service.Database
                     continue;
                 }
 
-                var key = scryfall.Code?.ToUpperInvariant();
+                var key = GetMainSetCodeForScryfall(scryfall.Code?.ToUpperInvariant());
                 if (!indexedSets.TryGetValue(key, out var found))
                 {
                     found = new DetailedSetInfo();
                     indexedSets.Add(key, found);
                     setsToInsert.Add(found);
                 }
+                else
+                {
+                    setsToUpdate.Add(found);
+                }
 
-                found.UpdateFromScryfall(scryfall);
+                found.UpdateFromScryfall(key, scryfall);
             }
             
             if (setsToInsert.Any())
@@ -79,7 +90,47 @@ namespace MtgInventory.Service.Database
                 _database.MagicSets.InsertBulk(setsToInsert);
             }
 
+            if (setsToUpdate.Any())
+            {
+                _database.MagicSets.Update(setsToUpdate);
+            }
+
             _database.EnsureSetIndex();
         }
+
+        internal static string GetMainSetCodeForScryfall(string setCode)
+        {
+            switch (setCode?.ToUpperInvariant())
+            {
+                case "CST": return "CSPTD";
+                case "MP2": return "AKHI";
+                case "PCMP": return "CPR";
+                case "PEMN": return "EMNP";
+                case "PGPX": return "GPPR";
+                case "GUL": return "PGRU";
+                case "IBS": return "ITP";
+                case "PXLN": return "XLNP";
+                case "MPS": return "KLDS";
+                case "AMH1": return "XMH1";
+
+                // TODO: Handle oversized cards
+                    // Commander oversized
+                    ////case "OCMD": return "CMD";
+                    ////case "OC13": return "C13";
+                    ////case "OC14": return "C14";
+                    ////case "OC15": return "C15";
+                    ////case "OC16": return "C16";
+                    ////case "OC17": return "C17";
+                    ////case "OC18": return "C18";
+                    ////case "OC19": return "C19";
+            }
+            return setCode;
+        }
+
+        internal static string GetMainSetCodeForMkm(string setCode)
+        {
+            return setCode;
+        }
+
     }
 }
