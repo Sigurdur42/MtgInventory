@@ -118,7 +118,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.DownloadAllProducts();
+                MainService?.DownloadMkmSetsAndProducts();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
             });

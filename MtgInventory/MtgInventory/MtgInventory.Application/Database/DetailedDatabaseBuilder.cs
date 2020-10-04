@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MtgInventory.Service.Models;
 using Serilog;
@@ -84,7 +85,7 @@ namespace MtgInventory.Service.Database
 
                 found.UpdateFromScryfall(key, scryfall);
             }
-            
+
             if (setsToInsert.Any())
             {
                 _database.MagicSets.InsertBulk(setsToInsert);
@@ -113,7 +114,7 @@ namespace MtgInventory.Service.Database
                 case "MPS": return "KLDS";
                 case "AMH1": return "XMH1";
 
-                // TODO: Handle oversized cards
+                    // TODO: Handle oversized cards
                     // Commander oversized
                     ////case "OCMD": return "CMD";
                     ////case "OC13": return "C13";
@@ -132,5 +133,87 @@ namespace MtgInventory.Service.Database
             return setCode;
         }
 
+        internal void RebuildMkmCardsForSet(string mkmSetCode)
+        {
+
+            var lastSets = _database.MagicSets.Query().Where(s => s.SetCodeMkm == mkmSetCode).ToArray();
+            var lastSet = lastSets.FirstOrDefault();
+            var allSetCodes = lastSets.Select(s => s.SetCode).ToArray();
+
+            Log.Debug($"Rebuilding MKM card data for set code {mkmSetCode} {lastSet?.SetName} ({lastSets.Length} sets)...");
+
+            var indexedCards = _database.MagicCards
+                .Query()
+                .Where(c => allSetCodes.Contains(c.SetCode))
+                .ToArray()
+                .GroupBy(c => c.NameEn)
+                .ToDictionary(c => c.Key);
+
+            var allMkmCards = _database.MkmProductInfo
+                .Query()
+                .Where(c => c.CategoryId == 1 && c.ExpansionCode == mkmSetCode)
+                .OrderBy(c => c.MetacardId)
+                .ToArray()
+                .GroupBy(c => c.Name)
+                .ToArray();
+
+            var cardsToInsert = new List<DetailedMagicCard>();
+            var cardsToUpdate = new List<DetailedMagicCard>();
+
+            foreach (var mkm in allMkmCards)
+            {
+                if (indexedCards.TryGetValue(mkm.Key, out var indexed))
+                {
+                    // Found this group - update all cards
+                    if (indexed.Count() == mkm.Count())
+                    {
+                        // Easy path - card count matches. Simply update all
+                        var i = 0;
+                        foreach (var card in indexed.OrderBy(c => c.CollectorNumber))
+                        {
+                            card.UpdateFromMkm(mkm.ElementAt(i), lastSet);
+                            i++;
+                            cardsToUpdate.Add(card);
+                        }
+                    }
+                    else
+                    {
+                        // Something is off here - card count mismatch
+                        // TODO: Handle this specificly
+                        Log.Debug($"MKM different card count {mkm.Key}_{mkmSetCode}: MKM: {mkm.Count()}, internal: {indexed.Count()}...");
+
+                        var max = Math.Min(indexed.Count(), mkm.Count());
+
+                        var ordered = indexed.OrderBy(c => c.CollectorNumber).ToArray();
+                        for (var index = 0; index < max; ++index)
+                        {
+                            var card = ordered.ElementAt(index);
+                            card.UpdateFromMkm(mkm.ElementAt(index), lastSet);
+                            cardsToUpdate.Add(card);
+                        }
+                    }
+                }
+                else
+                {
+                    // The card does not exist - add it
+                    var cards = mkm
+                        .Select(c =>
+                        {
+                            var card = new DetailedMagicCard();
+                            card.UpdateFromMkm(c, lastSet);
+                            return card;
+                        })
+                        .ToArray();
+
+                    cardsToInsert.AddRange(cards);
+                }
+            }
+
+
+            _database.MagicCards.InsertBulk(cardsToInsert);
+            _database.MagicCards.Update(cardsToUpdate);
+
+            _database.EnsureMagicCardsIndex();
+        }
     }
 }

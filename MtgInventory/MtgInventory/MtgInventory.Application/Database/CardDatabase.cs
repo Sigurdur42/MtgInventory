@@ -168,6 +168,8 @@ namespace MtgInventory.Service.Database
             var temp = new List<MkmProductInfo>();
             var total = 0;
 
+            const int pageSize = 5000;
+
             foreach (var p in products)
             {
                 var product = new MkmProductInfo(p);
@@ -179,7 +181,7 @@ namespace MtgInventory.Service.Database
 
                 temp.Add(product);
 
-                if (temp.Count >= 1000)
+                if (temp.Count >= pageSize)
                 {
                     total += temp.Count;
                     _logger.Information($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total})...");
@@ -288,43 +290,19 @@ namespace MtgInventory.Service.Database
             try
             {
                 // Define common set code
-                var indexedSetData = MagicSets.FindAll().ToDictionary(s => s.SetCodeMkm);
+                var indexedSetData = MagicSets.FindAll().Where(s=>!string.IsNullOrWhiteSpace(s.SetCodeMkm)).ToDictionary(s => s.SetCodeMkm);
 
                 ClearDetailedCards();
 
-                var indexedCards = new Dictionary<string, DetailedMagicCard>();
-
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM card data...");
-                DetailedSetInfo lastSet = null;
 
-                foreach (var mkm in MkmProductInfo.Query().Where(c => c.CategoryId == 1).ToArray().OrderBy(c => c.ExpansionCode))
+                foreach (var mkm in MkmExpansion.FindAll().ToArray().OrderBy(c => c.Abbreviation))
                 {
-                    if (lastSet?.SetCodeMkm != mkm.ExpansionCode)
-                    {
-                        indexedSetData.TryGetValue(mkm.ExpansionCode, out lastSet);
-                    }
-
-                    var key = $"{mkm.ExpansionCode}_{mkm.Name}".ToUpperInvariant();
-                    if (indexedCards.TryGetValue(key, out var found))
-                    {
-                        // Add it anyway but extend the key
-                        key += "_" + mkm.Id;
-                    }
-
-                    var card = new DetailedMagicCard();
-                    card.UpdateFromMkm(mkm, lastSet);
-                    indexedCards.Add(key, card);
+                    _detailedDatabaseBuilder.RebuildMkmCardsForSet(mkm.Abbreviation);
                 }
 
-                Log.Debug($"{nameof(RebuildDetailedDatabase)} - Inserting cards now...");
-                MagicCards.InsertBulk(indexedCards.Values);
-
-                Log.Debug($"{nameof(RebuildDetailedDatabase)} - Updating index...");
-                EnsureMagicCardsIndex();
-
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall card data...");
-                indexedCards.Clear();
-
+                DetailedSetInfo lastSet = null;
                 var cardsToInsert = new List<DetailedMagicCard>();
                 var nonUniqueCards = new List<ScryfallCard>();
 
@@ -491,7 +469,7 @@ namespace MtgInventory.Service.Database
             MkmExpansion.EnsureIndex(e => e.IdGame);
         }
 
-        private void EnsureMagicCardsIndex()
+        internal void EnsureMagicCardsIndex()
         {
             MagicCards.EnsureIndex(c => c.MkmId);
             MagicCards.EnsureIndex(c => c.ScryfallId);
