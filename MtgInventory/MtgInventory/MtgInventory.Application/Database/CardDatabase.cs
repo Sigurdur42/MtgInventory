@@ -296,135 +296,141 @@ namespace MtgInventory.Service.Database
 
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM card data...");
 
-                foreach (var mkm in MkmExpansion.FindAll().ToArray().OrderBy(c => c.Abbreviation))
+                foreach (var mkm in MkmExpansion.FindAll().OrderBy(c => c.Abbreviation))
                 {
                     _detailedDatabaseBuilder.RebuildMkmCardsForSet(mkm.Abbreviation);
                 }
 
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall card data...");
-                DetailedSetInfo lastSet = null;
-                var cardsToInsert = new List<DetailedMagicCard>();
-                var nonUniqueCards = new List<ScryfallCard>();
-
-                var allScryfallCards = ScryfallCards.FindAll().ToArray().GroupBy(g => g.Set).ToArray();
-                var remaining = allScryfallCards.Length;
-
-                var cardsToUpdate = new List<DetailedMagicCard>();
-
-                var allExistingMagicCards = MagicCards.FindAll().GroupBy(c => c.SetCode).ToArray();
-
-                Log.Debug($"Updating Scryfall cards for {remaining} sets");
-                foreach (var scryfallCards in allScryfallCards)
+                foreach (var scryfall in ScryfallSets.FindAll().OrderBy(c => c.Code))
                 {
-                    var key = scryfallCards.Key;
-                    //// var foundMkmCards = MagicCards.Query().Where(c => c.SetCode == key).ToList();
-                    var foundMkmCards = allExistingMagicCards.FirstOrDefault(k => k.Key == key)?.ToArray() ?? new DetailedMagicCard[0];
-
-                    indexedSetData.TryGetValue(scryfallCards.Key, out lastSet);
-
-                    var setCardsByName = foundMkmCards.GroupBy(c => c.NameEn).ToArray();
-
-                    // Now go through all cards of that set
-                    foreach (var scryfallCard in scryfallCards)
-                    {
-                        var foundDetail = setCardsByName
-                            .FirstOrDefault(c => c.Key == scryfallCard.Name)
-                            ?.ToArray() ?? new DetailedMagicCard[0];
-
-                        DetailedMagicCard found = null;
-                        if (!foundDetail.Any())
-                        {
-                            found = new DetailedMagicCard();
-                            cardsToInsert.Add(found);
-                        }
-                        else if (foundMkmCards.Count() > 1)
-                        {
-                            // Select the correct one
-                            nonUniqueCards.Add(scryfallCard);
-
-                            continue;
-                        }
-                        else
-                        {
-                            found = foundDetail.First();
-                            cardsToUpdate.Add(found);
-                        }
-
-                        found?.UpdateFromScryfall(scryfallCard, lastSet);
-                    }
+                    _detailedDatabaseBuilder.RebuildScryfallCardsForSet(scryfall.Code);
                 }
 
-                Log.Debug($"Inserting {cardsToInsert.Count} new Scryfall cards");
-                MagicCards.InsertBulk(cardsToInsert);
 
-                Log.Debug($"Updating {cardsToUpdate.Count} changed Scryfall cards");
-                MagicCards.Update(cardsToUpdate);
+                ////DetailedSetInfo lastSet = null;
+                ////var cardsToInsert = new List<DetailedMagicCard>();
+                ////var nonUniqueCards = new List<ScryfallCard>();
 
-                cardsToUpdate.Clear();
-                cardsToInsert.Clear();
+                ////var allScryfallCards = ScryfallCards.FindAll().ToArray().GroupBy(g => g.Set).ToArray();
+                ////var remaining = allScryfallCards.Length;
 
-                EnsureMagicCardsIndex();
+                ////var cardsToUpdate = new List<DetailedMagicCard>();
+
+                ////var allExistingMagicCards = MagicCards.FindAll().GroupBy(c => c.SetCode).ToArray();
+
+                ////Log.Debug($"Updating Scryfall cards for {remaining} sets");
+                ////foreach (var scryfallCards in allScryfallCards)
+                ////{
+                ////    var key = scryfallCards.Key;
+                ////    //// var foundMkmCards = MagicCards.Query().Where(c => c.SetCode == key).ToList();
+                ////    var foundMkmCards = allExistingMagicCards.FirstOrDefault(k => k.Key == key)?.ToArray() ?? new DetailedMagicCard[0];
+
+                ////    indexedSetData.TryGetValue(scryfallCards.Key, out lastSet);
+
+                ////    var setCardsByName = foundMkmCards.GroupBy(c => c.NameEn).ToArray();
+
+                ////    // Now go through all cards of that set
+                ////    foreach (var scryfallCard in scryfallCards)
+                ////    {
+                ////        var foundDetail = setCardsByName
+                ////            .FirstOrDefault(c => c.Key == scryfallCard.Name)
+                ////            ?.ToArray() ?? new DetailedMagicCard[0];
+
+                ////        DetailedMagicCard found = null;
+                ////        if (!foundDetail.Any())
+                ////        {
+                ////            found = new DetailedMagicCard();
+                ////            cardsToInsert.Add(found);
+                ////        }
+                ////        else if (foundMkmCards.Count() > 1)
+                ////        {
+                ////            // Select the correct one
+                ////            nonUniqueCards.Add(scryfallCard);
+
+                ////            continue;
+                ////        }
+                ////        else
+                ////        {
+                ////            found = foundDetail.First();
+                ////            cardsToUpdate.Add(found);
+                ////        }
+
+                ////        found?.UpdateFromScryfall(scryfallCard, lastSet);
+                ////    }
+                ////}
+
+                ////Log.Debug($"Inserting {cardsToInsert.Count} new Scryfall cards");
+                ////MagicCards.InsertBulk(cardsToInsert);
+
+                ////Log.Debug($"Updating {cardsToUpdate.Count} changed Scryfall cards");
+                ////MagicCards.Update(cardsToUpdate);
+
+                ////cardsToUpdate.Clear();
+                ////cardsToInsert.Clear();
+
+                ////EnsureMagicCardsIndex();
 
                 // Now handle differnet arts of the same card
-                if (nonUniqueCards.Any())
-                {
-                    var grouped = nonUniqueCards.GroupBy(c => $"{c.Set}_{c.Name}");
-                    remaining = grouped.Count();
+                ////if (nonUniqueCards.Any())
+                ////{
+                ////    var grouped = nonUniqueCards.GroupBy(c => $"{c.Set}_{c.Name}");
+                ////    remaining = grouped.Count();
 
-                    var allScryfallCardsByKey = ScryfallCards.FindAll()
-                        .GroupBy(c => $"{c.Set}_{c.Name}")
-                        .ToArray();
+                ////    var allScryfallCardsByKey = ScryfallCards.FindAll()
+                ////        .GroupBy(c => $"{c.Set}_{c.Name}")
+                ////        .ToArray();
 
-                    var allCardsBySet = MagicCards.FindAll().GroupBy(c => c.SetCode).ToArray();
+                ////    var allCardsBySet = MagicCards.FindAll().GroupBy(c => c.SetCode).ToArray();
 
-                    DetailedMagicCard[] setCards = null;
-                    cardsToUpdate = new List<DetailedMagicCard>();
+                ////    DetailedMagicCard[] setCards = null;
+                ////    cardsToUpdate = new List<DetailedMagicCard>();
 
-                    foreach (var group in grouped)
-                    {
-                        --remaining;
-                        var first = group.First();
+                ////    foreach (var group in grouped)
+                ////    {
+                ////        --remaining;
+                ////        var first = group.First();
 
-                        // get all these cards from actual Scryfall local DB first
-                        ////var scryfallCards = ScryfallCards.Query().Where(c => c.Set == first.Set && c.Name == first.Name).OrderBy(c => c.CollectorNumber).ToArray();
-                        var key = $"{first.Set}_{first.Name}";
-                        var scryfallCards = allScryfallCardsByKey.FirstOrDefault(f => f.Key == key).ToArray();
+                ////        // get all these cards from actual Scryfall local DB first
+                ////        ////var scryfallCards = ScryfallCards.Query().Where(c => c.Set == first.Set && c.Name == first.Name).OrderBy(c => c.CollectorNumber).ToArray();
+                ////        var key = $"{first.Set}_{first.Name}";
+                ////        var scryfallCards = allScryfallCardsByKey.FirstOrDefault(f => f.Key == key).ToArray();
 
-                        if (lastSet?.SetCodeScryfall != first.Set)
-                        {
-                            setCards = allCardsBySet
-                                .FirstOrDefault(k => k.Key == first.Set)
-                                ?.Select(c => c)
-                                ?.ToArray() ?? new DetailedMagicCard[0];
+                ////        if (lastSet?.SetCodeScryfall != first.Set)
+                ////        {
+                ////            setCards = allCardsBySet
+                ////                .FirstOrDefault(k => k.Key == first.Set)
+                ////                ?.Select(c => c)
+                ////                ?.ToArray() ?? new DetailedMagicCard[0];
 
-                            indexedSetData.TryGetValue(first.Set, out lastSet);
-                        }
+                ////            indexedSetData.TryGetValue(first.Set, out lastSet);
+                ////        }
 
-                        var existingCards = setCards
-                            .Where(c => c.NameEn == first.Name)
-                            .OrderBy(c => c.MkmMetaCardId)
-                            .ToArray();
+                ////        var existingCards = setCards
+                ////            .Where(c => c.NameEn == first.Name)
+                ////            .OrderBy(c => c.MkmMetaCardId)
+                ////            .ToArray();
 
-                        if (existingCards.Length != scryfallCards.Length)
-                        {
-                            Log.Debug($"{nameof(RebuildDetailedDatabase)} - {group.Key} different card count. MKM={existingCards.Length} Scryfall: {scryfallCards.Length}");
-                        }
+                ////        if (existingCards.Length != scryfallCards.Length)
+                ////        {
+                ////            Log.Debug($"{nameof(RebuildDetailedDatabase)} - {group.Key} different card count. MKM={existingCards.Length} Scryfall: {scryfallCards.Length}");
+                ////        }
 
-                        // TODO: Handle Oversized cards
+                ////        // TODO: Handle Oversized cards
 
-                        for (var index = 0; index < Math.Min(existingCards.Length, scryfallCards.Length); ++index)
-                        {
-                            existingCards[index].UpdateFromScryfall(scryfallCards[index], lastSet);
-                        }
+                ////        for (var index = 0; index < Math.Min(existingCards.Length, scryfallCards.Length); ++index)
+                ////        {
+                ////            existingCards[index].UpdateFromScryfall(scryfallCards[index], lastSet);
+                ////        }
 
-                        cardsToUpdate.AddRange(existingCards);
-                    }
+                ////        cardsToUpdate.AddRange(existingCards);
+                ////    }
 
-                    nonUniqueCards.Clear();
-                    MagicCards.Update(cardsToUpdate);
+                ////    nonUniqueCards.Clear();
+                ////    MagicCards.Update(cardsToUpdate);
 
-                    EnsureMagicCardsIndex();
-                }
+                ////    EnsureMagicCardsIndex();
+                ////}
 
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - Done rebuilding Scryfall card data...");
             }

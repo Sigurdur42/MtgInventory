@@ -135,7 +135,6 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildMkmCardsForSet(string mkmSetCode)
         {
-
             var lastSets = _database.MagicSets.Query().Where(s => s.SetCodeMkm == mkmSetCode).ToArray();
             var lastSet = lastSets.FirstOrDefault();
             var allSetCodes = lastSets.Select(s => s.SetCode).ToArray();
@@ -209,10 +208,85 @@ namespace MtgInventory.Service.Database
                 }
             }
 
-
             _database.MagicCards.InsertBulk(cardsToInsert);
             _database.MagicCards.Update(cardsToUpdate);
 
+            _database.EnsureMagicCardsIndex();
+        }
+
+        internal void RebuildScryfallCardsForSet(string scryfallSetId)
+        {
+            var lastSets = _database.MagicSets.Query().Where(s => s.SetCodeScryfall == scryfallSetId).ToArray();
+            var lastSet = lastSets.FirstOrDefault();
+            var allSetCodes = lastSets.Select(s => s.SetCode).ToArray();
+
+            Log.Debug($"Rebuilding Scryfall card data for set code {scryfallSetId} {lastSet?.SetName} ({lastSets.Length} sets)...");
+
+            var indexedCards = _database.MagicCards
+                .Query()
+                .Where(c => allSetCodes.Contains(c.SetCode))
+                .ToArray()
+                .GroupBy(c => c.NameEn)
+                .ToDictionary(c => c.Key);
+
+            var allScryfallCards = _database.ScryfallCards
+                .Query()
+                .Where(c => c.Set == scryfallSetId)
+                .OrderBy(c => c.CollectorNumber)
+                .ToArray()
+                .GroupBy(c => c.Name)
+                .ToArray();
+
+            var cardsToInsert = new List<DetailedMagicCard>();
+            var cardsToUpdate = new List<DetailedMagicCard>();
+
+            foreach (var scryfall in allScryfallCards)
+            {
+                if (indexedCards.TryGetValue(scryfall.Key, out var indexed))
+                {
+                    // Found this group - update all cards
+                    if (indexed.Count() == scryfall.Count())
+                    {
+                        // Easy path - card count matches. Simply update all
+                        var i = 0;
+                        foreach (var card in indexed.OrderBy(c => c.CollectorNumber))
+                        {
+                            card.UpdateFromScryfall(scryfall.ElementAt(i), lastSet);
+                            i++;
+                            cardsToUpdate.Add(card);
+                        }
+                    }
+                    else
+                    {
+                        // Something is off here - card count mismatch
+                        // TODO: Handle this specificly
+                        Log.Debug($"Scryfall different card count {scryfall.Key}_{scryfallSetId}: MKM: {scryfall.Count()}, internal: {indexed.Count()}...");
+                        var max = Math.Min(indexed.Count(), scryfall.Count());
+                        var ordered = indexed.OrderBy(c => c.CollectorNumber).ToArray();
+                        for (var index = 0; index < max; ++index)
+                        {
+                            var card = ordered.ElementAt(index);
+                            card.UpdateFromScryfall(scryfall.ElementAt(index), lastSet);
+                            cardsToUpdate.Add(card);
+                        }
+                    }
+                }
+                else
+                {
+                    // The card does not exist - add it
+                    var cards = scryfall
+                        .Select(c =>
+                        {
+                            var card = new DetailedMagicCard();
+                            card.UpdateFromScryfall(c, lastSet);
+                            return card;
+                        })
+                        .ToArray();
+                    cardsToInsert.AddRange(cards);
+                }
+            }
+            _database.MagicCards.InsertBulk(cardsToInsert);
+            _database.MagicCards.Update(cardsToUpdate);
             _database.EnsureMagicCardsIndex();
         }
     }
