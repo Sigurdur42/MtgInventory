@@ -17,7 +17,14 @@ Write something fancy here
 # MKM API
 
 ## Open tasks
-
+- Use task scheduler for parallel work (See https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler?view=netcore-3.1)
+- Check Price download on stock
+- Auto download sets after startup
+- Auto update sets if 
+  * outdated
+  * cards are missing
+  * when downloading price data?
+- Add UI for MKM tokens
 - Handle MKM tokens (no typeline issue)
 - Handle duplicate lands with different arts
   * handle difference in old cards between MKM and Scryfall
