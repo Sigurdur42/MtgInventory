@@ -8,7 +8,7 @@ namespace MtgInventory.Logging
     {
         public static LoggerConfiguration PanelLogSink(
                   this LoggerSinkConfiguration loggerConfiguration,
-                  IFormatProvider formatProvider = null)
+                  IFormatProvider formatProvider)
         {
             return loggerConfiguration.Sink(new PanelLogSink(formatProvider));
         }

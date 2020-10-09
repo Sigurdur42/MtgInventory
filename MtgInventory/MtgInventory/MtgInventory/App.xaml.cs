@@ -8,6 +8,7 @@ using MtgInventory.ViewModels;
 using MtgInventory.Views;
 using Serilog;
 using System;
+using System.Globalization;
 
 namespace MtgInventory
 {
@@ -21,7 +22,7 @@ namespace MtgInventory
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.PanelLogSink()
+                .WriteTo.PanelLogSink(CultureInfo.InvariantCulture)
                 .WriteTo.File(System.IO.Path.Combine(folder, "MtgInventory.log"), rollingInterval: RollingInterval.Minute)
                 .CreateLogger();
 

@@ -128,7 +128,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.DownloadScryfallSetsData(true);
+                MainService.DownloadScryfallSetsData(true);
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
             });
@@ -137,7 +137,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.DownloadScryfallCardData();
+                MainService.DownloadScryfallCardData();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
             });

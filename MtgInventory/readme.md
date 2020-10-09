@@ -18,8 +18,13 @@ Write something fancy here
 
 ## Open tasks
 - Use task scheduler for parallel work (See https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler?view=netcore-3.1)
+- Store app settings in database
+  * MKM Api Key
+  * After how much days auto reload all sets
+  * After how much days auto reload cards of a set
+
 - Check Price download on stock
-- Auto download sets after startup
+- Auto download sets after startup -> Do this once a week (configurable)
 - Auto update sets if 
   * outdated
   * cards are missing

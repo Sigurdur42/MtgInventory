@@ -36,7 +36,7 @@ namespace MtgInventory.Service.Models
         internal void UpdateFromMkm(string normalizedSetCode, Expansion mkm)
         {
             SetCode = normalizedSetCode;
-            SetCodeMkm = mkm.Abbreviation?.ToUpperInvariant();
+            SetCodeMkm = mkm.Abbreviation?.ToUpperInvariant() ?? "";
             SetNameMkm = mkm.EnName;
             ReleaseDate = mkm.ReleaseDate;
             ReleaseDateParsed = mkm.ReleaseDateParsed;
@@ -54,7 +54,7 @@ namespace MtgInventory.Service.Models
         internal void UpdateFromScryfall(string normalizedSetCode, ScryfallSet scryfall)
         {
             SetCode = normalizedSetCode;
-            SetCodeScryfall = scryfall.Code?.ToUpperInvariant();
+            SetCodeScryfall = scryfall.Code?.ToUpperInvariant() ?? "";
             SetNameScryfall = scryfall.Name;
             LastUpdated = DateTime.Now;
 
