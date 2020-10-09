@@ -11,20 +11,18 @@ Write something fancy here
 # Required packages / infrastructure
 
 - .net core 3.1
-- MatBlazor (nuget)
 - LiteDb (nuget)
 
 # MKM API
 
 ## Open tasks
 - Use task scheduler for parallel work (See https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler?view=netcore-3.1)
-- Store app settings in database
-  * MKM Api Key
-  * After how much days auto reload all sets
-  * After how much days auto reload cards of a set
 
-- Check Price download on stock
 - Auto download sets after startup -> Do this once a week (configurable)
+
+
+- Specific message when MKM API is not configured. Also avoid accessing the API in that case. This must be centralized
+- Check Price download on stock
 - Auto update sets if 
   * outdated
   * cards are missing

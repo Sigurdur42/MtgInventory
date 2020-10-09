@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MkmApi;
@@ -9,6 +8,7 @@ using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
+using MtgInventory.Service.Settings;
 using ScryfallApi.Client;
 using ScryfallApiServices;
 using Serilog;
@@ -21,9 +21,8 @@ namespace MtgInventory.Service
     public sealed class MtgInventoryService : IDisposable
     {
         private readonly CardDatabase _cardDatabase;
+        private readonly SettingsService _settingsService = new SettingsService();
         private MkmRequest _mkmRequest;
-        private FileInfo _mkmAuthenticationDataFile;
-
         private IScryfallService _scryfallService;
 
         private bool _isUpdatingDetailedCards;
@@ -39,7 +38,7 @@ namespace MtgInventory.Service
         public IAutoScryfallService AutoScryfallService => _autoScryfallService;
         public SystemFolders SystemFolders { get; }
 
-        public MkmAuthenticationData MkmAuthenticationData { get; private set; }
+        public MkmAuthenticationData MkmAuthenticationData => _settingsService.Settings.MkmAuthentication;
 
         public string MkmProductsSummary { get; private set; }
         public string ScryfallProductsSummary { get; private set; }
@@ -47,6 +46,8 @@ namespace MtgInventory.Service
 
         public IApiCallStatistic MkmApiCallStatistic { get; private set; }
         public IScryfallApiCallStatistic ScryfallApiCallStatistic { get; private set; }
+
+        public MtgInventorySettings Settings => _settingsService.Settings;
 
         public IEnumerable<DetailedSetInfo> AllSets => _cardDatabase.MagicSets.FindAll();
 
@@ -59,16 +60,13 @@ namespace MtgInventory.Service
         {
             Log.Information($"{nameof(Initialize)}: Initializing application service");
 
-            var reader = new AuthenticationReader();
+            ////var reader = new AuthenticationReader();
+            ////_mkmAuthenticationDataFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, ".mkmAuthenticationData"));
+            ////Log.Debug($"{nameof(Initialize)}: Loading MKM authentication data from '{_mkmAuthenticationDataFile.FullName}'...");
+            ////MkmAuthenticationData = reader.ReadFromYaml(_mkmAuthenticationDataFile);
 
-            _mkmAuthenticationDataFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, ".mkmAuthenticationData"));
-            Log.Debug($"{nameof(Initialize)}: Loading MKM authentication data from '{_mkmAuthenticationDataFile.FullName}'...");
-
-            MkmAuthenticationData = reader.ReadFromYaml(_mkmAuthenticationDataFile);
-
+            _settingsService.Initialize(SystemFolders.BaseFolder);
             _cardDatabase.Initialize(SystemFolders.BaseFolder);
-
-            // TODO: Handle date change here
 
             MkmApiCallStatistic = mkmApiCallStatistic;
             var fromDatabase = _cardDatabase.GetMkmCallStatistic();
@@ -92,18 +90,25 @@ namespace MtgInventory.Service
 
             UpdateProductSummary();
 
-            _mkmRequest = new MkmRequest(MkmAuthenticationData, MkmApiCallStatistic);
+            _mkmRequest = new MkmRequest(MkmApiCallStatistic);
 
             _mkmPriceService = new MkmPriceService(_cardDatabase, _mkmRequest);
-            _autoScryfallService = new AutoScryfallService(_cardDatabase, _scryfallService);
+            _autoScryfallService = new AutoScryfallService(
+                _cardDatabase, 
+                _scryfallService,
+                _settingsService);
         }
 
         public void ShutDown()
         {
             Log.Information($"{nameof(ShutDown)}: Shutting down application service");
 
+            _settingsService.SaveSettings();
+            _settingsService.Dispose();
             _cardDatabase.Dispose();
         }
+
+        public void SaveSettings() => _settingsService.SaveSettings();
 
         public ScryfallSet[] DownloadScryfallSetsData(bool rebuildDetailedSetInfo)
         {
@@ -123,13 +128,19 @@ namespace MtgInventory.Service
 
         public void DownloadMkmSetsAndProducts()
         {
+            if (!_settingsService.Settings.MkmAuthentication.IsValid())
+            {
+                Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
+                return;
+            }
+
             Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM expansions...");
 
-            var expansions = _mkmRequest.GetExpansions(1);
+            var expansions = _mkmRequest.GetExpansions(MkmAuthenticationData, 1);
             _cardDatabase.InsertExpansions(expansions);
 
             Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM products...");
-            using var products = _mkmRequest.GetProductsAsCsv();
+            using var products = _mkmRequest.GetProductsAsCsv(MkmAuthenticationData);
 
             Log.Debug($"{nameof(DownloadAllProducts)}: Inserting products into database...");
             _cardDatabase.InsertProductInfo(products.Products, expansions);
@@ -242,7 +253,14 @@ namespace MtgInventory.Service
                     Log.Warning($"Card {product} does not exist on MKM. ");
                     return;
                 }
-                url = _mkmRequest.GetProductData(product.MkmId)?.WebSite;
+
+                if (!_settingsService.Settings.MkmAuthentication.IsValid())
+                {
+                    Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
+                    return;
+                }
+
+                url = _mkmRequest.GetProductData(MkmAuthenticationData, product.MkmId)?.WebSite;
                 _cardDatabase.UpdateMkmAdditionalInfo(product.MkmId, url);
 
                 UpdateCallStatistics();
@@ -322,9 +340,14 @@ namespace MtgInventory.Service
         public IEnumerable<DetailedStockItem> DownloadMkmStock()
         {
             Log.Debug($"{nameof(DownloadMkmStock)} now...");
+            if (!_settingsService.Settings.MkmAuthentication.IsValid())
+            {
+                Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
+                return new DetailedStockItem[0];
+            }
 
             var result = _mkmRequest
-                .GetStockAsCsv()
+                .GetStockAsCsv(MkmAuthenticationData)
                 .Select(s => new DetailedStockItem(s))
                 .ToArray();
 

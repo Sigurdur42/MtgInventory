@@ -3,6 +3,7 @@ using System.Linq;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Models;
+using MtgInventory.Service.Settings;
 using Serilog;
 
 namespace MtgInventory.Service
@@ -18,16 +19,22 @@ namespace MtgInventory.Service
     {
         private readonly CardDatabase _cardDatabase;
         private readonly IScryfallService _scryfallApi;
+        private readonly ISettingsService _settingService;
 
         public AutoScryfallService(
             CardDatabase cardDatabase,
-            IScryfallService scryfallService)
+            IScryfallService scryfallService,
+            ISettingsService settingService)
         {
             _cardDatabase = cardDatabase;
             _scryfallApi = scryfallService;
+            _settingService = settingService;
         }
 
-        public CardPrice AutoDownloadPrice(string name, string setCode, Guid scryfallId)
+        public CardPrice AutoDownloadPrice(
+            string name, 
+            string setCode, 
+            Guid scryfallId)
         {
             if (Guid.Empty == scryfallId)
             {
@@ -36,12 +43,10 @@ namespace MtgInventory.Service
                 return new CardPrice();
             }
 
-            // TODO: Update immer ein ganzes set
-
             var latestPrice = GetLatestPrice(scryfallId);
 
             if (latestPrice == null
-                || latestPrice.UpdateDate.Value.AddDays(1) < DateTime.Now)
+                || latestPrice.UpdateDate.Value.AddDays(_settingService.Settings.RefreshPriceAfterDays) < DateTime.Now)
             {
                 Log.Information($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
 

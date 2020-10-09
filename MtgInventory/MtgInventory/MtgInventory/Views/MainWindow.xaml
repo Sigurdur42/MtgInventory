@@ -406,6 +406,55 @@
 
         </Grid>
       </TabItem>
+      <TabItem Header="Settings">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+
+
+          <TextBlock VerticalAlignment="Center" FontWeight="Bold" Grid.ColumnSpan="2">Configure your basic settings here. Do not forget to use the Save button</TextBlock>
+          <Button Command="{Binding OnSaveSettings}" Grid.Column="2">Save Settings</Button>
+          
+          <TextBlock Margin="0,20,0,0" VerticalAlignment="Center" Grid.Row="1" FontWeight="Bold" Grid.ColumnSpan="2">MKM Authentication</TextBlock>
+
+          <TextBlock VerticalAlignment="Center" Grid.Row="2" >App Token</TextBlock>
+          <TextBox VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AppToken}"  />
+
+          <TextBlock VerticalAlignment="Center" Grid.Row="3" >App Secret</TextBlock>
+          <TextBox VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AppSecret}"  />
+
+          <TextBlock VerticalAlignment="Center" Grid.Row="4" >Access Token</TextBlock>
+          <TextBox VerticalAlignment="Center" Grid.Row="4" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AccessToken}"  />
+
+          <TextBlock VerticalAlignment="Center" Grid.Row="5" >Access Secret</TextBlock>
+          <TextBox VerticalAlignment="Center" Grid.Row="5" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AccessSecret}"  />
+
+          <TextBlock Margin="0,20,0,0" VerticalAlignment="Center" Grid.Row="6" FontWeight="Bold" Grid.ColumnSpan="2">Other</TextBlock>
+
+          <TextBlock VerticalAlignment="Center" Grid.Row="7" >Auto Download Price after (days)</TextBlock>
+          <NumericUpDown VerticalAlignment="Center" Grid.Row="7" Grid.Column="1" Value="{Binding Settings.MkmAuthentication.RefreshPriceAfterDays}"></NumericUpDown>
+
+          <TextBlock VerticalAlignment="Center" Grid.Row="8" >Auto Refresh Sets after (days)</TextBlock>
+          <NumericUpDown VerticalAlignment="Center" Grid.Row="8" Grid.Column="1" Value="{Binding Settings.MkmAuthentication.RefreshSetDataAfterDays}"></NumericUpDown>
+
+        </Grid>
+      </TabItem>
 
     </TabControl>
   </Grid>

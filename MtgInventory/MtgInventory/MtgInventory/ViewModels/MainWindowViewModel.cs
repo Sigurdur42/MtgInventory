@@ -10,6 +10,7 @@ using MtgInventory.Models;
 using MtgInventory.Service;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
+using MtgInventory.Service.Settings;
 using MtgInventory.Views;
 using ReactiveUI;
 
@@ -32,14 +33,18 @@ namespace MtgInventory.ViewModels
 
         private QueryCardOptions _queryCardOptions = new QueryCardOptions();
 
+        private MtgInventorySettings _settings = new MtgInventorySettings();
+
         public MainWindowViewModel()
         {
-            MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly().GetName().Version;
+            MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly()?.GetName()?.Version;
 
             Task.Factory.StartNew(() =>
             {
                 MkmApiCallStatistics = new MkmApiCallStatistics();
                 MainService.Initialize(MkmApiCallStatistics, MkmApiCallStatistics);
+
+                Settings = MainService.Settings;
 
                 UpdateProductSummary();
 
@@ -49,7 +54,7 @@ namespace MtgInventory.ViewModels
             LogSink = PanelLogSink.Instance;
         }
 
-        public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName;
+        public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName ?? "";
 
         public string MainTitle { get; private set; }
 
@@ -61,6 +66,16 @@ namespace MtgInventory.ViewModels
         {
             get => _currentDeckList;
             set => this.RaiseAndSetIfChanged(ref _currentDeckList, value);
+        }
+
+        public MtgInventorySettings Settings
+        {
+            get => _settings;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _settings, value);
+                RebuildSetFilter();
+            }
         }
 
         public IEnumerable<DetailedSetInfo> AllSets
@@ -133,6 +148,7 @@ namespace MtgInventory.ViewModels
                 AllSets = MainService.AllSets.ToArray();
             });
         }
+
         public void OnDownloadScryfallCards()
         {
             Task.Factory.StartNew(() =>
@@ -235,6 +251,14 @@ namespace MtgInventory.ViewModels
             Task.Factory.StartNew(() =>
             {
                 MainService?.OpenMkmProductPage(stockItem?.IdProduct);
+            });
+        }
+
+        public void OnSaveSettings()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.SaveSettings();
             });
         }
 

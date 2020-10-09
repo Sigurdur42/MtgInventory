@@ -20,25 +20,30 @@ namespace MtgInventory.Service
         }
       
 
-        public CardPrice AutoDownloadMkmPrice(string mkmId, Guid scryfallId)
-        {
-            var latestPrice = GetLatestPrice(mkmId, scryfallId);
+        ////public CardPrice AutoDownloadMkmPrice(MkmAuthenticationData authenticationData, string mkmId, Guid scryfallId)
+        ////{
+        ////    var latestPrice = GetLatestPrice(mkmId, scryfallId);
 
-            // TODO: Define how old the price shall be max
-            if (latestPrice == null
-                || latestPrice.UpdateDate.Value.AddDays(1) > DateTime.Now
-                || (!latestPrice.ScryfallEur.HasValue && latestPrice.Source == CardPriceSource.Scryfall))
-            {
-                Log.Information($"Price for mkm id {mkmId} is outdated - downloading current one");
+        ////    if (latestPrice == null
+        ////        || latestPrice.UpdateDate.Value.AddDays(1) > DateTime.Now
+        ////        || (!latestPrice.ScryfallEur.HasValue && latestPrice.Source == CardPriceSource.Scryfall))
+        ////    {
+        ////        Log.Information($"Price for mkm id {mkmId} is outdated - downloading current one");
 
-                var result = _mkmRequest.GetProductData(mkmId);
-                latestPrice = new CardPrice(result);
-                _cardDatabase.CardPrices.Insert(latestPrice);
-                _cardDatabase.EnsureCardPriceIndex();
-            }
+        ////        if (!authenticationData.IsValid())
+        ////        {
+        ////            Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
+        ////            return latestPrice ?? new CardPrice();
+        ////        }
 
-            return latestPrice;
-        }
+        ////        var result = _mkmRequest.GetProductData(authenticationData, mkmId);
+        ////        latestPrice = new CardPrice(result);
+        ////        _cardDatabase.CardPrices.Insert(latestPrice);
+        ////        _cardDatabase.EnsureCardPriceIndex();
+        ////    }
+
+        ////    return latestPrice;
+        ////}
 
         public CardPrice GetLatestPrice(string mkmId, Guid scryfallId)
         {

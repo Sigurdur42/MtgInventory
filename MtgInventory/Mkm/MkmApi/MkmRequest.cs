@@ -15,18 +15,16 @@ namespace MkmApi
 {
     public class MkmRequest
     {
-        private readonly MkmAuthenticationData _authenticationData;
         private readonly IApiCallStatistic _apiCallStatistic;
 
         public MkmRequest(
-            MkmAuthenticationData authenticationData,
             IApiCallStatistic apiCallStatistic)
         {
-            _authenticationData = authenticationData;
             _apiCallStatistic = apiCallStatistic;
         }
 
         public IEnumerable<Article> GetArticles(
+            MkmAuthenticationData authenticationData,
             string productId,
             bool commercialOnly,
             IEnumerable<QueryParameter> queryParameters)
@@ -42,6 +40,7 @@ namespace MkmApi
             }
 
             var response = MakeRequest(
+                authenticationData,
                 $"articles/{productId}", parameters);
 
             var doc = XDocument.Parse(response);
@@ -69,9 +68,10 @@ namespace MkmApi
             ////};
         }
 
-        public IEnumerable<Game> GetGames()
+        public IEnumerable<Game> GetGames(MkmAuthenticationData authenticationData)
         {
             var response = MakeRequest(
+                authenticationData,
                 $"games",
                 null);
 
@@ -82,9 +82,10 @@ namespace MkmApi
                 .ToArray();
         }
 
-        public IEnumerable<Expansion> GetExpansions(int gameId)
+        public IEnumerable<Expansion> GetExpansions(MkmAuthenticationData authenticationData, int gameId)
         {
             var response = MakeRequest(
+                authenticationData,
                 $"games/{gameId}/expansions",
                 null);
 
@@ -95,9 +96,10 @@ namespace MkmApi
                 .ToArray();
         }
 
-        public Product GetProductData(string productId)
+        public Product GetProductData(MkmAuthenticationData authenticationData, string productId)
         {
             var response = MakeRequest(
+                authenticationData,
                 $"products/{productId}",
                 null);
 
@@ -109,18 +111,20 @@ namespace MkmApi
             return result;
         }
 
-        public ProductCsvData GetProductsAsCsv()
+        public ProductCsvData GetProductsAsCsv(MkmAuthenticationData authenticationData)
         {
             var response = MakeRequest(
+                authenticationData,
                 "productlist",
                 null);
 
             return new ProductCsvData(response);
         }
 
-        public IEnumerable<MkmStockItem> GetStockAsCsv()
+        public IEnumerable<MkmStockItem> GetStockAsCsv(MkmAuthenticationData authenticationData)
         {
             var response = MakeRequest(
+                authenticationData,
                 "stock/file",
                 null);
 
@@ -145,9 +149,15 @@ namespace MkmApi
         }
 
         internal string MakeRequest(
+            MkmAuthenticationData authenticationData,
             string urlCommand,
             List<QueryParameter> parameters)
         {
+            if (!authenticationData.IsValid())
+            {
+                throw new InvalidOperationException($"MKM authentication data is not set. Please configure MKM data before calling the API functions.");
+            }
+
             parameters = parameters?.OrderBy(p => p.Name)?.ToList() ?? new List<QueryParameter>();
 
             IncrementCallStatistic();
@@ -156,7 +166,7 @@ namespace MkmApi
             var url = $"https://api.cardmarket.com/ws/v2.0/{urlCommand}";
 
             var request = WebRequest.CreateHttp(url + parameters?.GenerateQueryString()) as HttpWebRequest;
-            var header = new OAuthHeader(_authenticationData);
+            var header = new OAuthHeader(authenticationData);
             request.Headers.Add(HttpRequestHeader.Authorization, header.GetAuthorizationHeader(method, url, parameters));
             request.Method = method;
 
