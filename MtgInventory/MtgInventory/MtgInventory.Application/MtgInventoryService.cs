@@ -56,7 +56,9 @@ namespace MtgInventory.Service
             ShutDown();
         }
 
-        public void Initialize(IApiCallStatistic mkmApiCallStatistic, IScryfallApiCallStatistic scryfallApiCallStatistic)
+        public void Initialize(
+            IApiCallStatistic mkmApiCallStatistic,
+            IScryfallApiCallStatistic scryfallApiCallStatistic)
         {
             Log.Information($"{nameof(Initialize)}: Initializing application service");
 
@@ -97,12 +99,23 @@ namespace MtgInventory.Service
                 _cardDatabase, 
                 _scryfallService,
                 _settingsService);
+
+            _autoDownloadCardsAndSets = new AutoDownloadCardsAndSets(
+                _settingsService,
+                _cardDatabase,
+                MkmApiCallStatistic,
+                ScryfallApiCallStatistic,
+                _scryfallService);
+            _autoDownloadCardsAndSets.Start();
         }
+
+        private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
 
         public void ShutDown()
         {
             Log.Information($"{nameof(ShutDown)}: Shutting down application service");
 
+            _autoDownloadCardsAndSets.Stop();
             _settingsService.SaveSettings();
             _settingsService.Dispose();
             _cardDatabase.Dispose();
@@ -112,40 +125,12 @@ namespace MtgInventory.Service
 
         public ScryfallSet[] DownloadScryfallSetsData(bool rebuildDetailedSetInfo)
         {
-            Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall expansions...");
-            var scryfallSets = _scryfallService.RetrieveSets().OrderByDescending(s => s.Name).Select(s => new ScryfallSet(s)).ToArray();
-            _cardDatabase.InsertScryfallSets(scryfallSets);
-
-            if (rebuildDetailedSetInfo)
-            {
-                _cardDatabase.RebuildSetData();
-            }
-            _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
-
-            Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall expansions...");
-            return scryfallSets;
+            return _autoDownloadCardsAndSets.DownloadScryfallSetsData(rebuildDetailedSetInfo);
         }
 
         public void DownloadMkmSetsAndProducts()
         {
-            if (!_settingsService.Settings.MkmAuthentication.IsValid())
-            {
-                Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
-                return;
-            }
-
-            Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM expansions...");
-
-            var expansions = _mkmRequest.GetExpansions(MkmAuthenticationData, 1);
-            _cardDatabase.InsertExpansions(expansions);
-
-            Log.Debug($"{nameof(DownloadAllProducts)}: Loading MKM products...");
-            using var products = _mkmRequest.GetProductsAsCsv(MkmAuthenticationData);
-
-            Log.Debug($"{nameof(DownloadAllProducts)}: Inserting products into database...");
-            _cardDatabase.InsertProductInfo(products.Products, expansions);
-
-            _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
+            _autoDownloadCardsAndSets.DownloadMkmSetsAndProducts();
         }
 
         public void DownloadAllProducts()
@@ -234,11 +219,6 @@ namespace MtgInventory.Service
 
         public void OpenMkmProductPage(DetailedMagicCard product)
         {
-            if (product == null)
-            {
-                return;
-            }
-
             var prefix = $"{nameof(OpenMkmProductPage)}({product.Id} {product.NameEn} {product.SetCode})";
 
             var url = _cardDatabase.FindAdditionalMkmInfo(product.MkmId)?.MkmWebSite;
