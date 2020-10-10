@@ -25,8 +25,10 @@ namespace MtgInventory.Service.Models
 
         public string IsReleased { get; set; }
 
-        public DateTime LastUpdated { get; set; }
-        public string SetName { get; set; }
+        public DateTime LastUpdated { get; set; } = DateTime.Now.AddDays(-1000);
+        public DateTime CardsLastUpdated { get; set; } = DateTime.Now.AddDays(-1000);
+
+        public string SetName { get; set; } = "";
 
         /// <summary>
         /// Does this artifical set code only contains tokens?

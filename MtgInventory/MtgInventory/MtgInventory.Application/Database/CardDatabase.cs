@@ -281,6 +281,13 @@ namespace MtgInventory.Service.Database
             RebuildDetailedCardData();
         }
 
+        internal void RebuildCardsForSet(DetailedSetInfo set)
+        {
+            _detailedDatabaseBuilder.RebuildMkmCardsForSet(set.SetCodeMkm);
+            _detailedDatabaseBuilder.RebuildScryfallCardsForSet(set.SetCodeScryfall);
+
+        }
+
         internal void RebuildDetailedCardData()
         {
             _cardDatabase.Pragma("CHECKPOINT", 10000);
@@ -321,6 +328,7 @@ namespace MtgInventory.Service.Database
 
             _detailedDatabaseBuilder.BuildMkmSetData();
             _detailedDatabaseBuilder.BuildScryfallSetData();
+            EnsureSetIndex();
         }
 
         internal void EnsureSetIndex()

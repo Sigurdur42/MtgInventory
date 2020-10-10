@@ -110,6 +110,11 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildMkmCardsForSet(string mkmSetCode)
         {
+            if (string.IsNullOrWhiteSpace(mkmSetCode))
+            {
+                return;
+            }
+
             var lastSets = _database.MagicSets.Query().Where(s => s.SetCodeMkm == mkmSetCode).ToArray();
             var lastSet = lastSets.FirstOrDefault();
             var allSetCodes = lastSets.Select(s => s.SetCode).ToArray();
@@ -190,6 +195,11 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildScryfallCardsForSet(string scryfallSetId)
         {
+            if (string.IsNullOrWhiteSpace(scryfallSetId))
+            {
+                return;
+            }
+
             var lastSets = _database.MagicSets.Query().Where(s => s.SetCodeScryfall == scryfallSetId).ToArray();
             var lastSet = lastSets.FirstOrDefault();
             var allSetCodes = lastSets.Select(s => s.SetCode).ToArray();

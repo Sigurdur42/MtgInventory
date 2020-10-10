@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -102,19 +103,97 @@ namespace MtgInventory.Service
             Log.Information($"{_logPrefix} Starting auto download");
             try
             {
-                // Step 1: Check MKM sets and cards
-                // Step 2: Check Scryfall sets
+                // Sets are always updated as a whole
+                var lastUpdated = _cardDatabase.MagicSets
+                    .Query()
+                    .OrderBy(s => s.LastUpdated)
+                    .FirstOrDefault() ?? new DetailedSetInfo()
+                    {
+                        LastUpdated = DateTime.Now.AddDays(-1000)
+                    };
 
-                // Step 3: For each set: Check date and download 
+                // Check set updates - mkm and Scryfall are done in one go
+                if (lastUpdated.LastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date)
+                {
+                    // Sets are too old - update
+                    Log.Information($"{_logPrefix} Sets are too old - will update now");
 
-            // TODO: Implement this
+                    DownloadMkmSetsAndProducts();
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    DownloadScryfallSetsData(true);
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    _cardDatabase.RebuildSetData();
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    Log.Debug($"{_logPrefix} Set informations are up to date");
+                }
+
+                var allSets = _cardDatabase.MagicSets.FindAll().OrderBy(s => s.ReleaseDateParsed).ToArray();
+                foreach (var detailedSetInfo in allSets)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    if (lastUpdated.CardsLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date > DateTime.Now.Date)
+                    {
+                        continue;
+                    }
+
+                    // Cards need to be updated
+
+                    DownloadScryfallCardsForSet(detailedSetInfo);
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    _cardDatabase.RebuildCardsForSet(detailedSetInfo);
+                    detailedSetInfo.CardsLastUpdated = DateTime.Now;
+                    _cardDatabase.MagicSets.Update(detailedSetInfo);
+                }
             }
             finally
             {
                 stopwatch.Stop();
                 Log.Information($"{_logPrefix} Finished auto download in {stopwatch.Elapsed}");
             }
+        }
 
+        private void DownloadScryfallCardsForSet(DetailedSetInfo set)
+        {
+            if (string.IsNullOrWhiteSpace(set.SetCodeScryfall))
+            {
+                // This is a MKM only set
+                return;
+            }
+
+            // Delete Scryfall cards for this set
+            _cardDatabase.ScryfallCards.DeleteMany(c => c.Set == set.SetCodeScryfall);
+
+            // Download new cards
+            var cards = _scryfallService.RetrieveCardsForSetCode(set.SetCodeScryfall)
+                .Select(c => new ScryfallCard(c))
+                .ToArray();
+            _cardDatabase.InsertScryfallCards(cards);
+
+            var prices = cards.Select(c => new CardPrice(c));
+            _cardDatabase.CardPrices.InsertBulk(prices);
+            _cardDatabase.EnsureCardPriceIndex();
         }
     }
 }
