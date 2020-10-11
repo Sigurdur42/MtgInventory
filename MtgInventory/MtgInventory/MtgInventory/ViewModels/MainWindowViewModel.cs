@@ -241,7 +241,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.OpenMkmProductPage(info?.Card?.MkmId);
+                MainService?.OpenMkmProductPage(info?.Card?.MkmId ?? "");
                 UpdateProductSummary();
             });
         }
@@ -250,7 +250,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.OpenMkmProductPage(stockItem?.IdProduct);
+                MainService?.OpenMkmProductPage(stockItem?.IdProduct ?? "");
             });
         }
 

@@ -29,6 +29,8 @@ namespace MtgInventory.Service
         private MkmPriceService _mkmPriceService;
         private IAutoScryfallService _autoScryfallService;
 
+        private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
+
         public MtgInventoryService()
         {
             SystemFolders = new SystemFolders();
@@ -96,7 +98,7 @@ namespace MtgInventory.Service
 
             _mkmPriceService = new MkmPriceService(_cardDatabase, _mkmRequest);
             _autoScryfallService = new AutoScryfallService(
-                _cardDatabase, 
+                _cardDatabase,
                 _scryfallService,
                 _settingsService);
 
@@ -106,10 +108,15 @@ namespace MtgInventory.Service
                 MkmApiCallStatistic,
                 ScryfallApiCallStatistic,
                 _scryfallService);
+
+            _autoDownloadCardsAndSets.CardsUpdated += (sender, args) =>
+            {
+                UpdateProductSummary();
+                UpdateCallStatistics();
+            };
+
             _autoDownloadCardsAndSets.Start();
         }
-
-        private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
 
         public void ShutDown()
         {
@@ -171,8 +178,18 @@ namespace MtgInventory.Service
                     var stopwatch = Stopwatch.StartNew();
                     Log.Information($"{nameof(RebuildInternalDatabase)}: Starting database rebuild");
 
-                    _cardDatabase.RebuildDetailedDatabase();
-                    UpdateProductSummary();
+                    _autoDownloadCardsAndSets.Stop();
+
+                    var allSets = _cardDatabase.MagicSets.FindAll().ToArray();
+                    foreach (var set in allSets)
+                    {
+                        set.SetLastUpdated = DateTime.Now.AddDays(-1000);
+                        set.CardsLastUpdated = DateTime.Now.AddDays(-1000);
+                    }
+
+                    _cardDatabase.MagicSets.Update(allSets);
+
+                    _autoDownloadCardsAndSets.Start();
 
                     stopwatch.Stop();
                     Log.Information($"{nameof(RebuildInternalDatabase)}: Rebuild done in {stopwatch.Elapsed}");
@@ -189,6 +206,7 @@ namespace MtgInventory.Service
             var stopwatch = Stopwatch.StartNew();
             try
             {
+                // TODO: Do this in Auto service
                 Log.Information($"Starting set database rebuild");
                 _cardDatabase.RebuildSetData();
                 UpdateProductSummary();
@@ -221,7 +239,7 @@ namespace MtgInventory.Service
         {
             var prefix = $"{nameof(OpenMkmProductPage)}({product.Id} {product.NameEn} {product.SetCode})";
 
-            var url = _cardDatabase.FindAdditionalMkmInfo(product.MkmId)?.MkmWebSite;
+            var url = _cardDatabase.FindAdditionalMkmInfo(product.MkmId)?.MkmWebSite ?? "";
 
             if (string.IsNullOrEmpty(url))
             {
@@ -240,7 +258,7 @@ namespace MtgInventory.Service
                     return;
                 }
 
-                url = _mkmRequest.GetProductData(MkmAuthenticationData, product.MkmId)?.WebSite;
+                url = _mkmRequest.GetProductData(MkmAuthenticationData, product.MkmId)?.WebSite ?? "";
                 _cardDatabase.UpdateMkmAdditionalInfo(product.MkmId, url);
 
                 UpdateCallStatistics();
@@ -255,8 +273,7 @@ namespace MtgInventory.Service
         {
             Log.Debug($"{nameof(FindDetailedCardsByName)}: {query}");
 
-            var databaseQuery = _cardDatabase.MagicCards
-                .Query();
+            var databaseQuery = _cardDatabase.MagicCards.Query();
 
             if (!string.IsNullOrEmpty(query.Name))
             {

@@ -25,8 +25,9 @@ namespace MtgInventory.Service.Models
 
         public string IsReleased { get; set; }
 
-        public DateTime LastUpdated { get; set; } = DateTime.Now.AddDays(-1000);
+        public DateTime SetLastUpdated { get; set; } = DateTime.Now.AddDays(-1000);
         public DateTime CardsLastUpdated { get; set; } = DateTime.Now.AddDays(-1000);
+        public DateTime CardsLastDownloaded { get; set; } = DateTime.Now.AddDays(-1000);
 
         public string SetName { get; set; } = "";
 
@@ -43,14 +44,14 @@ namespace MtgInventory.Service.Models
             ReleaseDate = mkm.ReleaseDate;
             ReleaseDateParsed = mkm.ReleaseDateParsed;
             IsReleased = mkm.IsReleased;
-            LastUpdated = DateTime.Now;
+            SetLastUpdated = DateTime.Now;
 
             if (SetNameMkm.Contains("Token", StringComparison.InvariantCultureIgnoreCase))
             {
                 IsTokenSet = true;
             }
 
-            SetName ??= SetNameMkm;
+            SetName = string.IsNullOrWhiteSpace(SetName) ? SetNameMkm: SetName;
         }
 
         internal void UpdateFromScryfall(string normalizedSetCode, ScryfallSet scryfall)
@@ -58,9 +59,9 @@ namespace MtgInventory.Service.Models
             SetCode = normalizedSetCode;
             SetCodeScryfall = scryfall.Code?.ToUpperInvariant() ?? "";
             SetNameScryfall = scryfall.Name;
-            LastUpdated = DateTime.Now;
+            SetLastUpdated = DateTime.Now;
 
-            SetName ??= SetNameScryfall;
+            SetName = string.IsNullOrWhiteSpace(SetName) ? SetCodeScryfall : SetName;
 
             if (scryfall.Name.Contains("Token", StringComparison.InvariantCultureIgnoreCase))
             {

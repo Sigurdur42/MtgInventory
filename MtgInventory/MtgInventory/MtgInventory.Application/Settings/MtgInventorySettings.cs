@@ -11,5 +11,23 @@ namespace MtgInventory.Service.Settings
         public int RefreshPriceAfterDays { get; set; } = 5;
         
         public int RefreshSetDataAfterDays { get; set; } = 28;
+
+        public bool EnsureValidSettings()
+        {
+            var result = false;
+            if (RefreshPriceAfterDays <= 0)
+            {
+                RefreshPriceAfterDays = 5;
+                result = true;
+            }
+
+            if (RefreshSetDataAfterDays <= 0)
+            {
+                RefreshSetDataAfterDays = 14;
+                result = true;
+            }
+
+            return result;
+        }
     }
 }

@@ -22,7 +22,7 @@ namespace MtgInventory.Service
         private readonly IScryfallApiCallStatistic _scryfallApiCallStatistic;
         private readonly IScryfallService _scryfallService;
 
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Task? _runningTask;
 
         public AutoDownloadCardsAndSets(
@@ -39,8 +39,11 @@ namespace MtgInventory.Service
             _scryfallService = scryfallService;
         }
 
+        public event EventHandler CardsUpdated;
+
         public void Start()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
             _runningTask = Task.Factory.StartNew(
                 () => RunAutoDownload(_cancellationTokenSource.Token),
                 _cancellationTokenSource.Token);
@@ -72,6 +75,9 @@ namespace MtgInventory.Service
             _cardDatabase.UpdateScryfallStatistics(_scryfallApiCallStatistic);
 
             Log.Debug($"{_logPrefix}Done loading Scryfall expansions...");
+
+            CardsUpdated?.Invoke(this, EventArgs.Empty);
+
             return scryfallSets;
         }
 
@@ -96,6 +102,8 @@ namespace MtgInventory.Service
             _cardDatabase.InsertProductInfo(products.Products, expansions);
 
             _cardDatabase.UpdateMkmStatistics(_mkmApiCallStatistic);
+
+            CardsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         private void RunAutoDownload(CancellationToken cancellationToken)
@@ -107,14 +115,14 @@ namespace MtgInventory.Service
                 // Sets are always updated as a whole
                 var lastUpdated = _cardDatabase.MagicSets
                     .Query()
-                    .OrderBy(s => s.LastUpdated)
+                    .OrderBy(s => s.SetLastUpdated)
                     .FirstOrDefault() ?? new DetailedSetInfo()
                     {
-                        LastUpdated = DateTime.Now.AddDays(-1000)
+                        SetLastUpdated = DateTime.Now.AddDays(-1000)
                     };
 
                 // Check set updates - mkm and Scryfall are done in one go
-                if (lastUpdated.LastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date)
+                if (lastUpdated.SetLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date)
                 {
                     // Sets are too old - update
                     Log.Information($"{_logPrefix} Sets are too old - will update now");
@@ -150,22 +158,30 @@ namespace MtgInventory.Service
                         return;
                     }
 
-                    if (lastUpdated.CardsLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date > DateTime.Now.Date)
+                    var cardsDownloadOutdated = lastUpdated.CardsLastDownloaded.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
+                    var cardsUpdatedOutdated = cardsDownloadOutdated || lastUpdated.CardsLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
+
+                    if (cardsDownloadOutdated)
                     {
-                        continue;
+                        // Cards need to be downloaded again
+                        DownloadScryfallCardsForSet(detailedSetInfo);
+                        detailedSetInfo.CardsLastDownloaded = DateTime.Now;
+
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            return;
+                        }
                     }
 
-                    // Cards need to be updated
-
-                    DownloadScryfallCardsForSet(detailedSetInfo);
-                    if (cancellationToken.IsCancellationRequested)
+                    if (cardsUpdatedOutdated)
                     {
-                        return;
+                        _cardDatabase.RebuildCardsForSet(detailedSetInfo);
+                        detailedSetInfo.CardsLastUpdated = DateTime.Now;
                     }
 
-                    _cardDatabase.RebuildCardsForSet(detailedSetInfo);
-                    detailedSetInfo.CardsLastUpdated = DateTime.Now;
                     _cardDatabase.MagicSets.Update(detailedSetInfo);
+
+                    CardsUpdated?.Invoke(this, EventArgs.Empty);
                 }
             }
             finally
@@ -195,6 +211,8 @@ namespace MtgInventory.Service
             var prices = cards.Select(c => new CardPrice(c));
             _cardDatabase.CardPrices.InsertBulk(prices);
             _cardDatabase.EnsureCardPriceIndex();
+
+            CardsUpdated?.Invoke(this, EventArgs.Empty);
         }
     }
 }

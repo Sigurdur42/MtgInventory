@@ -448,10 +448,10 @@
           <TextBlock Margin="0,20,0,0" VerticalAlignment="Center" Grid.Row="6" FontWeight="Bold" Grid.ColumnSpan="2">Other</TextBlock>
 
           <TextBlock VerticalAlignment="Center" Grid.Row="7" >Auto Download Price after (days)</TextBlock>
-          <NumericUpDown VerticalAlignment="Center" Grid.Row="7" Grid.Column="1" Value="{Binding Settings.MkmAuthentication.RefreshPriceAfterDays}"></NumericUpDown>
+          <NumericUpDown VerticalAlignment="Center" Grid.Row="7" Grid.Column="1" Value="{Binding Settings.RefreshPriceAfterDays}"></NumericUpDown>
 
           <TextBlock VerticalAlignment="Center" Grid.Row="8" >Auto Refresh Sets after (days)</TextBlock>
-          <NumericUpDown VerticalAlignment="Center" Grid.Row="8" Grid.Column="1" Value="{Binding Settings.MkmAuthentication.RefreshSetDataAfterDays}"></NumericUpDown>
+          <NumericUpDown VerticalAlignment="Center" Grid.Row="8" Grid.Column="1" Value="{Binding Settings.RefreshSetDataAfterDays}"></NumericUpDown>
 
         </Grid>
       </TabItem>

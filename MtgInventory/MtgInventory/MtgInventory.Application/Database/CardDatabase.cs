@@ -288,6 +288,18 @@ namespace MtgInventory.Service.Database
 
         }
 
+        internal void ResetCardAndSetUpdateDate()
+        {
+            var allSets = MagicSets.FindAll().ToArray();
+            foreach (var detailedSetInfo in allSets)
+            {
+                detailedSetInfo.CardsLastUpdated = DateTime.Now.AddDays(-1000);
+                detailedSetInfo.CardsLastUpdated = DateTime.Now.AddDays(-1000);
+            }
+
+            MagicSets.Update(allSets);
+        }
+
         internal void RebuildDetailedCardData()
         {
             _cardDatabase.Pragma("CHECKPOINT", 10000);

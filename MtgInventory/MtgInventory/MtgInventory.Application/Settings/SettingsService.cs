@@ -48,6 +48,11 @@ namespace MtgInventory.Service.Settings
                 _settingsCollection.Insert(found);
             }
 
+            if (found.EnsureValidSettings())
+            {
+                _settingsCollection.Update(found);
+            }
+
             Settings = found;
         }
 
