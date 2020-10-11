@@ -51,6 +51,7 @@ namespace MtgInventory.Service
             if (_runningTask != null && _runningTask.Status == TaskStatus.Running)
             {
                 _cancellationTokenSource.Cancel(false);
+                _runningTask.Wait();
             }
         }
 
