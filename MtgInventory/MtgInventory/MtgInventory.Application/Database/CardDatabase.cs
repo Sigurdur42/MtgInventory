@@ -106,7 +106,7 @@ namespace MtgInventory.Service.Database
 
         public void InsertScryfallCards(IEnumerable<ScryfallCard> cards)
         {
-            _logger.Information($"{nameof(InsertScryfallCards)}: Inserting new scryfall cards...");
+            _logger.Information($"Inserting {cards.Count()} new scryfall cards...");
             ScryfallCards.InsertBulk(cards);
 
             ScryfallCards.EnsureIndex(e => e.Set);

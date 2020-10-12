@@ -92,7 +92,7 @@ namespace MtgInventory.Service
             Log.Debug($"{_logPrefix}Loading MKM expansions...");
 
             var mkmRequest = new MkmRequest(_mkmApiCallStatistic);
-            var expansions = mkmRequest.GetExpansions(_settingsService.Settings.MkmAuthentication, 1);
+            var expansions = mkmRequest.GetExpansions(_settingsService.Settings.MkmAuthentication, 1).ToArray();
             _cardDatabase.InsertExpansions(expansions);
 
             Log.Debug($"{_logPrefix}Loading MKM products...");
@@ -113,16 +113,22 @@ namespace MtgInventory.Service
             try
             {
                 // Sets are always updated as a whole
-                var lastUpdated = _cardDatabase.MagicSets
+                var knownSets = _cardDatabase.MagicSets
                     .Query()
                     .OrderBy(s => s.SetLastUpdated)
-                    .FirstOrDefault() ?? new DetailedSetInfo()
-                    {
-                        SetLastUpdated = DateTime.Now.AddDays(-1000)
-                    };
+                    .ToArray();
+
+                var lastDownloaded = knownSets
+                    .OrderBy(s => s.SetLastDownloaded).FirstOrDefault() ?? new DetailedSetInfo();
+
+                var lastUpdated = knownSets
+                    .FirstOrDefault() ?? new DetailedSetInfo();
+
+                var isSetDataDownloadRequired = lastDownloaded.SetLastDownloaded.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
+                var isSetDataOutdated = isSetDataDownloadRequired || lastUpdated.SetLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
 
                 // Check set updates - mkm and Scryfall are done in one go
-                if (lastUpdated.SetLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date)
+                if (isSetDataDownloadRequired)
                 {
                     // Sets are too old - update
                     Log.Information($"{_logPrefix} Sets are too old - will update now");
@@ -138,7 +144,14 @@ namespace MtgInventory.Service
                     {
                         return;
                     }
+                }
+                else
+                {
+                    Log.Debug($"{_logPrefix} Set informations do not need to be downloaded");
+                }
 
+                if (isSetDataOutdated)
+                {
                     _cardDatabase.RebuildSetData();
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -158,11 +171,13 @@ namespace MtgInventory.Service
                         return;
                     }
 
-                    var cardsDownloadOutdated = lastUpdated.CardsLastDownloaded.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
-                    var cardsUpdatedOutdated = cardsDownloadOutdated || lastUpdated.CardsLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
+                    var cardsDownloadOutdated = detailedSetInfo.CardsLastDownloaded.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
+                    var cardsUpdatedOutdated = cardsDownloadOutdated || detailedSetInfo.CardsLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
 
                     if (cardsDownloadOutdated)
                     {
+                        Log.Debug($"{_logPrefix} Downloading cards for set {detailedSetInfo.SetCode}...");
+
                         // Cards need to be downloaded again
                         DownloadScryfallCardsForSet(detailedSetInfo);
                         detailedSetInfo.CardsLastDownloaded = DateTime.Now;
@@ -175,13 +190,17 @@ namespace MtgInventory.Service
 
                     if (cardsUpdatedOutdated)
                     {
+                        Log.Debug($"{_logPrefix} Rebuilding cards for set {detailedSetInfo.SetCode}...");
+
                         _cardDatabase.RebuildCardsForSet(detailedSetInfo);
                         detailedSetInfo.CardsLastUpdated = DateTime.Now;
                     }
 
-                    _cardDatabase.MagicSets.Update(detailedSetInfo);
-
-                    CardsUpdated?.Invoke(this, EventArgs.Empty);
+                    if (cardsUpdatedOutdated)
+                    {
+                        _cardDatabase.MagicSets.Update(detailedSetInfo);
+                        CardsUpdated?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
             finally

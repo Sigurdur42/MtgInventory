@@ -206,10 +206,19 @@ namespace MtgInventory.Service
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                // TODO: Do this in Auto service
-                Log.Information($"Starting set database rebuild");
-                _cardDatabase.RebuildSetData();
-                UpdateProductSummary();
+                _autoDownloadCardsAndSets.Stop();
+
+                var knownSets = _cardDatabase.MagicSets
+                    .FindAll()
+                    .ToArray();
+
+                foreach (var detailedSetInfo in knownSets)
+                {
+                    detailedSetInfo.SetLastUpdated = DateTime.Now.AddDays(-1000);
+                }
+
+                _cardDatabase.MagicSets.Update(knownSets);
+                _autoDownloadCardsAndSets.Start();
             }
             finally
             {

@@ -44,9 +44,15 @@ namespace MtgInventory.Service.Database
                 indexedSets.Add(key, found);
             }
 
-            if (setsToInsert.Any()) _database.MagicSets.InsertBulk(setsToInsert);
+            if (setsToInsert.Any())
+            {
+                _database.MagicSets.InsertBulk(setsToInsert);
+            }
 
-            if (setsToUpdate.Any()) _database.MagicSets.Update(setsToUpdate);
+            if (setsToUpdate.Any())
+            {
+                _database.MagicSets.Update(setsToUpdate);
+            }
 
             _database.EnsureSetIndex();
         }
@@ -77,9 +83,15 @@ namespace MtgInventory.Service.Database
                 found.UpdateFromScryfall(key, scryfall);
             }
 
-            if (setsToInsert.Any()) _database.MagicSets.InsertBulk(setsToInsert);
+            if (setsToInsert.Any())
+            {
+                _database.MagicSets.InsertBulk(setsToInsert);
+            }
 
-            if (setsToUpdate.Any()) _database.MagicSets.Update(setsToUpdate);
+            if (setsToUpdate.Any())
+            {
+                _database.MagicSets.Update(setsToUpdate);
+            }
 
             _database.EnsureSetIndex();
         }
