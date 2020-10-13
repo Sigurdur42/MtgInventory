@@ -181,6 +181,7 @@ namespace MtgInventory.Service
                         // Cards need to be downloaded again
                         DownloadScryfallCardsForSet(detailedSetInfo);
                         detailedSetInfo.CardsLastDownloaded = DateTime.Now;
+                        _cardDatabase.MagicSets.Update(detailedSetInfo);
 
                         if (cancellationToken.IsCancellationRequested)
                         {
@@ -194,11 +195,11 @@ namespace MtgInventory.Service
 
                         _cardDatabase.RebuildCardsForSet(detailedSetInfo);
                         detailedSetInfo.CardsLastUpdated = DateTime.Now;
+                        _cardDatabase.MagicSets.Update(detailedSetInfo);
                     }
 
                     if (cardsUpdatedOutdated)
                     {
-                        _cardDatabase.MagicSets.Update(detailedSetInfo);
                         CardsUpdated?.Invoke(this, EventArgs.Empty);
                     }
                 }

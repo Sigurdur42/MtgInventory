@@ -45,14 +45,14 @@ namespace MtgInventory.Service.Models
             return $"{NameEn} {SetName} [{MkmId}, {ScryfallId}]";
         }
 
-        public void UpdateFromScryfall(ScryfallCard card, DetailedSetInfo setInfo)
+        public void UpdateFromScryfall(ScryfallCard card, DetailedSetInfo? setInfo)
         {
             NameEn = card.Name;
             ScryfallId = card.Id;
             SetCode = card.Set;
             SetName = card.SetName;
             TypeLine = card.TypeLine;
-            ScryfallCardSite = card.ScryfallUri?.ToString();
+            ScryfallCardSite = card.ScryfallUri?.ToString() ?? "";
             LastUpdateScryfall = DateTime.Now;
             CollectorNumber = card.CollectorNumber;
             MultiverseIds = card.MultiverseIds;

@@ -10,7 +10,7 @@ namespace MtgInventory.Service.Models
 
         public string SetName { get; set; }
 
-        public bool IsSetName => !string.IsNullOrWhiteSpace(SetName) && !"AllSets".Equals(SetName);
+        public bool IsSetName => !string.IsNullOrWhiteSpace(SetName) && !"All Sets".Equals(SetName);
 
         public override string ToString()
         {
