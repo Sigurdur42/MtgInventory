@@ -234,8 +234,22 @@
 
           <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentStock}" Grid.Row="1" Grid.ColumnSpan="3">
             <DataGrid.Columns>
+
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate >
+                    <StackPanel Orientation="Horizontal">
+                      <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInMkmProductPage}" CommandParameter="{Binding}"> MKM</Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              
               <DataGridTextColumn Header="Price"
                                Binding="{Binding Price}" />
+
+              <DataGridTextColumn Header="Market Price"
+               Binding="{Binding MarketPrice}" />
 
               <DataGridTextColumn Header="Quantity"
                                Binding="{Binding Amount}" />
@@ -261,21 +275,12 @@
               <DataGridTextColumn Header="Expansion"
                    Binding="{Binding SetName}" />
 
-              <DataGridTextColumn Header="Market Price"
-                   Binding="{Binding MarketPrice}" />
+          
 
               <DataGridTextColumn Header="Price Date"
                    Binding="{Binding StockItem.MarketPriceDate}" />
 
-              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
-                <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate >
-                    <StackPanel Orientation="Horizontal">
-                      <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInMkmProductPage}" CommandParameter="{Binding}"> MKM</Button>
-                    </StackPanel>
-                  </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-              </DataGridTemplateColumn>
+          
 
               <DataGridTemplateColumn Header="Open Scryfall" Width="Auto" >
                 <DataGridTemplateColumn.CellTemplate>
