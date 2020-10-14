@@ -129,11 +129,24 @@
           <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="2" Grid.ColumnSpan="3">
             <DataGrid.Columns>
 
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate >
+                    <StackPanel Orientation="Horizontal">
+                      <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+
               <DataGridTextColumn Header="Name"
                    Binding="{Binding Card.NameEn}"
                               />
               <!--<DataGridTextColumn Header="Category"
                    Binding="{Binding Category}" />-->
+
+              <DataGridTextColumn Header="Price"
+      Binding="{Binding MarketPrice}" />
 
               <DataGridTextColumn Header="Expansion Name"
                    Binding="{Binding Card.SetName}"
@@ -144,18 +157,9 @@
               <DataGridTextColumn Header="Type"
                 Binding="{Binding Card.TypeLine}" />
 
-              <DataGridTextColumn Header="Price"
-             Binding="{Binding MarketPrice}" />
 
-              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
-                <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate >
-                    <StackPanel Orientation="Horizontal">
-                      <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
-                    </StackPanel>
-                  </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-              </DataGridTemplateColumn>
+
+
 
             </DataGrid.Columns>
           </DataGrid>
@@ -244,7 +248,7 @@
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
               </DataGridTemplateColumn>
-              
+
               <DataGridTextColumn Header="Price"
                                Binding="{Binding Price}" />
 
@@ -275,12 +279,12 @@
               <DataGridTextColumn Header="Expansion"
                    Binding="{Binding SetName}" />
 
-          
+
 
               <DataGridTextColumn Header="Price Date"
                    Binding="{Binding StockItem.MarketPriceDate}" />
 
-          
+
 
               <DataGridTemplateColumn Header="Open Scryfall" Width="Auto" >
                 <DataGridTemplateColumn.CellTemplate>
@@ -403,7 +407,7 @@
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
               <TextBlock  VerticalAlignment="Center" Width="100">DB (with Download):</TextBlock>
               <Button Margin="5,0,0,0" Command="{Binding OnDownloadAndRebuildAll}">Download and Rebuild All</Button>
-              
+
 
             </StackPanel>
 
@@ -435,7 +439,7 @@
 
           <TextBlock VerticalAlignment="Center" FontWeight="Bold" Grid.ColumnSpan="2">Configure your basic settings here. Do not forget to use the Save button</TextBlock>
           <Button Command="{Binding OnSaveSettings}" Grid.Column="2">Save Settings</Button>
-          
+
           <TextBlock Margin="0,20,0,0" VerticalAlignment="Center" Grid.Row="1" FontWeight="Bold" Grid.ColumnSpan="2">MKM Authentication</TextBlock>
 
           <TextBlock VerticalAlignment="Center" Grid.Row="2" >App Token</TextBlock>
