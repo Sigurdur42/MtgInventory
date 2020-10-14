@@ -1,8 +1,8 @@
-﻿using ReactiveUI;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using ReactiveUI;
 using static System.Environment;
 
 namespace MkmApi.TestUI.ViewModels
@@ -11,11 +11,19 @@ namespace MkmApi.TestUI.ViewModels
     {
         private string _output = "Initial value";
 
-        private ApiCallStatistics _apiCallStatistics = new ApiCallStatistics();
+        private readonly ApiCallStatistics _apiCallStatistics = new ApiCallStatistics();
+
+        private string _productName = "cancel";
 
         public MainWindowViewModel()
         {
             GenerateMkmTokenFile();
+        }
+
+        public string ProductName
+        {
+            get => _productName;
+            set => this.RaiseAndSetIfChanged(ref _productName, value);
         }
 
         public MkmAuthenticationData AuthenticationData { get; set; }
@@ -25,6 +33,34 @@ namespace MkmApi.TestUI.ViewModels
             get => _output;
 
             set => this.RaiseAndSetIfChanged(ref _output, value);
+        }
+
+        public void OnSearchProduct()
+        {
+            if (string.IsNullOrWhiteSpace(_productName))
+            {
+                return;
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            var request = new MkmRequest(_apiCallStatistics);
+
+            var index = 0;
+            var result = request.FindProducts(AuthenticationData, _productName, true);
+
+            ////using (var products = request.GetProductsAsCsv(AuthenticationData))
+            ////{
+            ////    foreach (var p in products.Products)
+            ////    {
+            ////        ++index;
+            ////        Console.WriteLine($"have read product line: {p.Name}");
+            ////    }
+            ////};
+
+            stopwatch.Stop();
+
+            var dump = $"Reading {index} took {stopwatch.Elapsed}";
+            DisplayResult(dump);
         }
 
         public void OnDownloadAllCards()

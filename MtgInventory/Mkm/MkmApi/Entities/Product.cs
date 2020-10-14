@@ -36,16 +36,17 @@
         ////        ]
         ////          */
 
-        public string IdProduct { get; set; }
-       
-        public string IdMetaproduct { get; set; }
+        public string IdProduct { get; set; } = "";
 
-        public string NameEn { get; set; }
-        
-        public string WebSite { get; set; }
+        public string IdMetaproduct { get; set; } = "";
+
+        public string NameEn { get; set; } = "";
+
+        public string WebSite { get; set; } = "";
+        public string Image { get; set; } = "";
 
         public int CountReprints { get; set; }
 
-        public PriceGuide PriceGuide { get; set; }
+        public PriceGuide PriceGuide { get; set; } = new PriceGuide();
     }
 }

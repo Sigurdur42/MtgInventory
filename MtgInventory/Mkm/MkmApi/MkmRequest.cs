@@ -68,12 +68,13 @@ namespace MkmApi
             ////};
         }
 
+        private readonly List<QueryParameter> _emptyParameters = new List<QueryParameter>();
         public IEnumerable<Game> GetGames(MkmAuthenticationData authenticationData)
         {
             var response = MakeRequest(
                 authenticationData,
                 $"games",
-                null);
+                _emptyParameters);
 
             var doc = XDocument.Parse(response);
             return doc.Root
@@ -82,12 +83,39 @@ namespace MkmApi
                 .ToArray();
         }
 
+        public IEnumerable<Product> FindProducts(
+            MkmAuthenticationData authenticationData,
+            string productName,
+            bool searchExact)
+        {
+            var queryParameters = new List<QueryParameter>();
+            queryParameters.Add(new QueryParameter("search", productName));
+            queryParameters.Add(new QueryParameter("idGame", "1"));
+            queryParameters.Add(new QueryParameter("idLanguage", "1"));
+
+            if (searchExact)
+            {
+                queryParameters.Add(new QueryParameter("exact", "true"));
+            }
+
+            var response = MakeRequest(
+                authenticationData,
+                $"products/find",
+                queryParameters);
+
+            var doc = XDocument.Parse(response);
+            return doc.Root
+                .Elements("product")
+                .Select(g => g.ReadProduct())
+                .ToArray();
+        }
+
         public IEnumerable<Expansion> GetExpansions(MkmAuthenticationData authenticationData, int gameId)
         {
             var response = MakeRequest(
                 authenticationData,
                 $"games/{gameId}/expansions",
-                null);
+                _emptyParameters);
 
             var doc = XDocument.Parse(response);
             return doc.Root
@@ -101,7 +129,7 @@ namespace MkmApi
             var response = MakeRequest(
                 authenticationData,
                 $"products/{productId}",
-                null);
+                _emptyParameters);
 
             var doc = XDocument.Parse(response);
             var product = doc.Root.Element("product");
@@ -116,7 +144,7 @@ namespace MkmApi
             var response = MakeRequest(
                 authenticationData,
                 "productlist",
-                null);
+                _emptyParameters);
 
             return new ProductCsvData(response);
         }
@@ -126,7 +154,7 @@ namespace MkmApi
             var response = MakeRequest(
                 authenticationData,
                 "stock/file",
-                null);
+                _emptyParameters);
 
             var doc = XDocument.Parse(response);
             var stockNode = doc.Root.Element("stock");

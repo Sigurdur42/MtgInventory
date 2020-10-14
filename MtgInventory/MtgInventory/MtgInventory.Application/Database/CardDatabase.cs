@@ -133,27 +133,28 @@ namespace MtgInventory.Service.Database
             CardPrices.EnsureIndex(c => c.UpdateDate);
         }
 
-        public void UpdateMkmAdditionalInfo(
-            string mkmId,
-            string mkmWebSite)
+        public MkmAdditionalCardInfo UpdateMkmAdditionalInfo(
+            Product product)
         {
-            var found = FindAdditionalMkmInfo(mkmId);
+            var found = FindAdditionalMkmInfo(product.IdProduct);
             if (found == null)
             {
                 found = new MkmAdditionalCardInfo
                 {
-                    MkmId = mkmId,
+                    MkmId = product.IdProduct,
                 };
 
                 MkmAdditionalInfo.Insert(found);
             }
 
-            found.MkmWebSite = mkmWebSite;
+            found.UpdateFromProduct(product);
             MkmAdditionalInfo.Update(found);
             MkmAdditionalInfo.EnsureIndex(c => c.MkmId);
+
+            return found;
         }
 
-        public MkmAdditionalCardInfo FindAdditionalMkmInfo(string mkmId)
+        public MkmAdditionalCardInfo? FindAdditionalMkmInfo(string mkmId)
             => MkmAdditionalInfo.Query().Where(c => c.MkmId == mkmId).FirstOrDefault();
 
         public void InsertProductInfo(
@@ -285,7 +286,6 @@ namespace MtgInventory.Service.Database
         {
             _detailedDatabaseBuilder.RebuildMkmCardsForSet(set.SetCodeMkm);
             _detailedDatabaseBuilder.RebuildScryfallCardsForSet(set.SetCodeScryfall);
-
         }
 
         internal void ResetCardAndSetUpdateDate()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ScryfallApi.Client.Models;
 
 namespace MtgInventory.Service.Models
@@ -66,8 +67,16 @@ namespace MtgInventory.Service.Models
             RetailerUris = scryfallCard.RetailerUris;
             Object = scryfallCard.Object;
 
+            Images = scryfallCard.ImageUris.Select(i => new ImageLinkUri()
+            {
+                Category = i.Key,
+                Uri = i.Value.ToString(),
+            }).ToArray();
+
             UpdateDateUtc = DateTime.Now;
         }
+
+        public ImageLinkUri[] Images { get; set; } = new ImageLinkUri[0];
 
         public DateTime UpdateDateUtc { get; set; }
     }

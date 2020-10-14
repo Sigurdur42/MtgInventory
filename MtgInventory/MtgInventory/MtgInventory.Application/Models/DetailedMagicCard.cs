@@ -15,7 +15,7 @@ namespace MtgInventory.Service.Models
         public string CollectorNumber { get; set; }
         public Guid ScryfallId { get; set; }
 
-        public string NameEn { get; set; }
+        public string NameEn { get; set; } = "";
         public string SetCode { get; set; }
         public string SetName { get; set; }
         public string TypeLine { get; set; }
@@ -38,7 +38,12 @@ namespace MtgInventory.Service.Models
         public bool IsToken { get; set; }
 
         public int PrimaryMultiverseId { get; set; }
-        public int[] MultiverseIds { get; set; }
+
+        public int[] MultiverseIds { get; set; } = new int[0];
+
+        public ImageLinkUri[] ScryfallImages { get; set; } = new ImageLinkUri[0];
+
+        public ImageLinkUri[] MkmImages { get; set; } = new ImageLinkUri[0];
 
         public override string ToString()
         {
@@ -57,6 +62,7 @@ namespace MtgInventory.Service.Models
             CollectorNumber = card.CollectorNumber;
             MultiverseIds = card.MultiverseIds;
             PrimaryMultiverseId = card.MultiverseIds.FirstOrDefault();
+            ScryfallImages = card.Images;
 
             UpdateFromTypeLine(card.TypeLine);
 

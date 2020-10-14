@@ -21,6 +21,12 @@
       <Button Command="{Binding OnDownloadStock}">Download Stock Items</Button>
       <Button Command="{Binding OnDownloadWithParameters}">Download Article with Paramaters</Button>
       <Button Command="{Binding OnDownloadSingleProduct}">Download SingleProduct</Button>
+
+      <StackPanel Orientation="Horizontal">
+        <TextBox Text="{Binding ProductName}" Width="200"></TextBox>
+       <Button Command="{Binding OnSearchProduct}">Search Product</Button>
+       
+      </StackPanel>
     </StackPanel>
 
     <TextBlock Grid.Row="1" Text="{Binding Output}" />

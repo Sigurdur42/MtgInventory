@@ -1,6 +1,6 @@
-﻿using MkmApi;
+﻿using System;
+using MkmApi;
 using MkmApi.Entities;
-using System;
 
 namespace MtgInventory.Service.Models
 {
@@ -21,27 +21,28 @@ namespace MtgInventory.Service.Models
             DateAdded = info.DateAdded;
         }
 
-        public string Id { get; set; }
+        public string Id { get; set; } = "";
 
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         public int CategoryId { get; set; }
 
-        public string Category { get; set; }
+        public string Category { get; set; } = "";
 
-        public string ExpansionId { get; set; }
+        public string ExpansionId { get; set; } = "";
 
-        public string MetacardId { get; set; }
+        public string MetacardId { get; set; } = "";
 
-        public string DateAdded { get; set; }
+        public string DateAdded { get; set; } = "";
 
-        public string ExpansionName { get; set; }
+        public string ExpansionName { get; set; } = "";
 
-        public string ExpansionCode { get; set; }
+        public string ExpansionCode { get; set; } = "";
 
         public DateTime? LastDetailUpdate { get; set; }
 
-        public string MkmProductUrl { get; set; }
+        public string MkmProductUrl { get; set; } = "";
+        public string MkmImage { get; set; } = "";
 
         public void UpdateFromProduct(Product rhs)
         {

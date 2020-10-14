@@ -112,13 +112,14 @@ namespace MkmApi.EntityReader
         {
             return new Product()
             {
-                IdProduct = product?.Element("idProduct")?.Value,
-                IdMetaproduct = product?.Element("idMetaproduct")?.Value,
-                NameEn = product?.Element("enName")?.Value,
-                WebSite = product?.Element("website")?.Value,
-                CountReprints = product.GetContentInt("countReprints"),
+                IdProduct = product?.Element("idProduct")?.Value ?? "",
+                IdMetaproduct = product?.Element("idMetaproduct")?.Value ?? "",
+                NameEn = product?.Element("enName")?.Value ?? "",
+                WebSite = product?.Element("website")?.Value ?? "",
+                Image = product?.Element("image")?.Value ?? "",
+                CountReprints = product?.GetContentInt("countReprints") ?? 0,
 
-                PriceGuide = product.Element("priceGuide").ReadPriceGuide(),
+                PriceGuide = product?.Element("priceGuide")?.ReadPriceGuide() ?? new PriceGuide(),
             };
         }
 
