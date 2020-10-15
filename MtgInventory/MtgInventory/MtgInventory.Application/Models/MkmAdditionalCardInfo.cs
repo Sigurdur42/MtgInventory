@@ -21,8 +21,8 @@ namespace MtgInventory.Service.Models
         public void UpdateFromProduct(Product product)
         {
             MkmId = product.IdProduct;
-            MkmImage = product.Image;
-            MkmWebSite = product.WebSite;
+            MkmImage = "http:" + product.Image;
+            MkmWebSite = "www.cardmarket.com" + product.WebSite;
         }
     }
 }

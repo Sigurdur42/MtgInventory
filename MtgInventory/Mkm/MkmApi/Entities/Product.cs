@@ -1,8 +1,11 @@
-﻿namespace MkmApi.Entities
+﻿using System.Diagnostics;
+
+namespace MkmApi.Entities
 {
     /// <summary>
     /// See https://api.cardmarket.com/ws/documentation/API_2.0:Entities:Product
     /// </summary>
+   [DebuggerDisplay("{IdProduct} {NameEn}")]
     public class Product
     {
         ////        /*

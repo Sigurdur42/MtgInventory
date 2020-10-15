@@ -19,7 +19,9 @@ namespace MtgInventory.Service.Models
         public string SetName { get; set; }
         public string TypeLine { get; set; }
 
-        public string ScryfallCardSite { get; set; }
+        public string ScryfallCardSite { get; set; } = "";
+
+        public string MkmWebSite { get; set; } = "";
 
         public int CountReprints { get; set; }
 
@@ -43,6 +45,8 @@ namespace MtgInventory.Service.Models
         public ImageLinkUri[] ScryfallImages { get; set; } = new ImageLinkUri[0];
 
         public ImageLinkUri[] MkmImages { get; set; } = new ImageLinkUri[0];
+
+        public bool MkmDetailsRequired => !string.IsNullOrWhiteSpace(MkmId) && string.IsNullOrWhiteSpace(MkmWebSite);
 
         public override string ToString()
         {
@@ -105,6 +109,7 @@ namespace MtgInventory.Service.Models
 
         internal void UpdateFromMkm(Product product)
         {
+            MkmWebSite = "http://www.cardmarket.com" + product.WebSite;
             MkmImages = new[]
             {
                 new ImageLinkUri()

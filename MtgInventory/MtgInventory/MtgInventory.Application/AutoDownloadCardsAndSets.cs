@@ -15,12 +15,13 @@ namespace MtgInventory.Service
 {
     public class AutoDownloadCardsAndSets
     {
-        private const string _logPrefix = "[ADL]";
+        private const string _logPrefix = "[ADL] ";
         private readonly ISettingsService _settingsService;
         private readonly CardDatabase _cardDatabase;
         private readonly IApiCallStatistic _mkmApiCallStatistic;
         private readonly IScryfallApiCallStatistic _scryfallApiCallStatistic;
         private readonly IScryfallService _scryfallService;
+        private readonly MkmRequest _mkmRequest;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Task? _runningTask;
@@ -30,13 +31,17 @@ namespace MtgInventory.Service
             CardDatabase cardDatabase,
             IApiCallStatistic mkmApiCallStatistic,
             IScryfallApiCallStatistic scryfallApiCallStatistic,
-            IScryfallService scryfallService)
+            IScryfallService scryfallService,
+            MkmRequest mkmRequest)
         {
             _settingsService = settingsService;
             _cardDatabase = cardDatabase;
             _mkmApiCallStatistic = mkmApiCallStatistic;
             _scryfallApiCallStatistic = scryfallApiCallStatistic;
             _scryfallService = scryfallService;
+            _mkmRequest = mkmRequest;
+
+            CardsUpdated += (sender, e) => { };
         }
 
         public event EventHandler CardsUpdated;
@@ -104,6 +109,84 @@ namespace MtgInventory.Service
             _cardDatabase.UpdateMkmStatistics(_mkmApiCallStatistic);
 
             CardsUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void AutoDownloadMkmDetails(
+            MkmAuthenticationData authenticationData,
+            DetailedMagicCard[] cards,
+            string queryName)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                // TODO: Cancellation
+                foreach (var card in cards.Where(c=>!string.IsNullOrWhiteSpace(c.MkmId)))
+                {
+                    if (!card.MkmDetailsRequired)
+                    {
+                        // All details do exist
+                        continue;
+                    }
+
+                    // refresh to ensure that a previous call did not update this
+                    var refreshed = _cardDatabase.MagicCards.Find(c => c.Id == card.Id).First();
+                    if (!refreshed.MkmDetailsRequired)
+                    {
+                        continue;
+                    }
+
+                    // Now download all details for this card:
+                    if (string.IsNullOrWhiteSpace(queryName))
+                    {
+                        DownloadMkmAdditionalData(authenticationData, card.NameEn);
+                    }
+                    else
+                    {
+                        DownloadMkmAdditionalData(authenticationData, queryName);
+                    }
+                }
+            });
+        }
+
+        public void DownloadMkmAdditionalData(
+            MkmAuthenticationData authenticationData,
+            string cardName)
+        {
+            Log.Information($"Downloading MKM data for '{cardName}'");
+            var productData = _mkmRequest.FindProducts(authenticationData, cardName, false).ToArray();
+            Log.Information($"{productData.Length} MKM data for '{cardName}' found");
+
+            var remaining = productData.Length;
+            foreach (var product in productData)
+            {
+                var details = _cardDatabase.MagicCards.Query()
+                    .Where(c => c.MkmId == product.IdProduct)
+                    .FirstOrDefault();
+
+                Log.Information($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
+
+                if (details != null)
+                {
+                    details.UpdateFromMkm(product);
+                    _cardDatabase.MagicCards.Update(details);
+                }
+
+                var additional = _cardDatabase.MkmAdditionalInfo
+                    .Query()
+                    .Where(c => c.MkmId == product.IdProduct)
+                    .FirstOrDefault();
+
+                if (additional == null)
+                {
+                    additional = new MkmAdditionalCardInfo()
+                    {
+                        MkmId = product.IdProduct
+                    };
+                    _cardDatabase.MkmAdditionalInfo.Insert(additional);
+                }
+
+                additional.UpdateFromProduct(product);
+                _cardDatabase.MkmAdditionalInfo.Update(additional);
+            }
         }
 
         private void RunAutoDownload(CancellationToken cancellationToken)

@@ -31,6 +31,8 @@ namespace MtgInventory.Service
 
         private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
 
+        private AutoDownloadImageCache _autoDownloadImageCache;
+
         public MtgInventoryService()
         {
             SystemFolders = new SystemFolders();
@@ -107,7 +109,8 @@ namespace MtgInventory.Service
                 _cardDatabase,
                 MkmApiCallStatistic,
                 ScryfallApiCallStatistic,
-                _scryfallService);
+                _scryfallService,
+                _mkmRequest);
 
             _autoDownloadCardsAndSets.CardsUpdated += (sender, args) =>
             {
@@ -119,8 +122,6 @@ namespace MtgInventory.Service
 
             _autoDownloadImageCache = new AutoDownloadImageCache(SystemFolders.BaseFolder);
         }
-
-        private AutoDownloadImageCache _autoDownloadImageCache;
 
         public void ShutDown()
         {
@@ -308,12 +309,15 @@ namespace MtgInventory.Service
                 databaseQuery = databaseQuery.Where(q => q.SetName == query.SetName);
             }
 
-            return
-                databaseQuery
+            var result = databaseQuery
                 .ToList()
                 .OrderBy(p => p.NameEn)
                 .ThenBy(p => p.SetName)
                 .ToList();
+
+            _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, result.ToArray(), query.Name);
+
+            return result;
         }
 
         public void EnrichDeckListWithDetails(DeckList deckList)
