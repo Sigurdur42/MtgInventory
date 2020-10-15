@@ -8,5 +8,7 @@ namespace MtgInventory.Service.Models
     {
         public string Category { get; set; } = "";
         public string Uri { get; set; } = "";
+
+        public bool IsValid => !string.IsNullOrWhiteSpace(Uri);
     }
 }
