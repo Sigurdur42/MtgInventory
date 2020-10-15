@@ -147,6 +147,13 @@ namespace MtgInventory.Service.Database
                 MkmAdditionalInfo.Insert(found);
             }
 
+            var detailedCard = MagicCards.Query().Where(c => c.MkmId == product.IdProduct).FirstOrDefault();
+            if (detailedCard != null)
+            {
+                detailedCard.UpdateFromMkm(product);
+                MagicCards.Update(detailedCard);
+            }
+
             found.UpdateFromProduct(product);
             MkmAdditionalInfo.Update(found);
             MkmAdditionalInfo.EnsureIndex(c => c.MkmId);

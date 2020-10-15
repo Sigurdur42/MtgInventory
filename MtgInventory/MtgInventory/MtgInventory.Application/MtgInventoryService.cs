@@ -116,7 +116,11 @@ namespace MtgInventory.Service
             };
 
             _autoDownloadCardsAndSets.Start();
+
+            _autoDownloadImageCache = new AutoDownloadImageCache(SystemFolders.BaseFolder);
         }
+
+        private AutoDownloadImageCache _autoDownloadImageCache;
 
         public void ShutDown()
         {

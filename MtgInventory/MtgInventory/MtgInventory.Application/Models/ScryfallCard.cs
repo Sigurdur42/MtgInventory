@@ -67,11 +67,11 @@ namespace MtgInventory.Service.Models
             RetailerUris = scryfallCard.RetailerUris;
             Object = scryfallCard.Object;
 
-            Images = scryfallCard.ImageUris.Select(i => new ImageLinkUri()
+            Images = scryfallCard.ImageUris?.Select(i => new ImageLinkUri()
             {
-                Category = i.Key,
+                Category = i.Key ?? "",
                 Uri = i.Value.ToString(),
-            }).ToArray();
+            })?.ToArray() ?? new ImageLinkUri[0];
 
             UpdateDateUtc = DateTime.Now;
         }

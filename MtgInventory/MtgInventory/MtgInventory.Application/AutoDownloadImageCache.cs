@@ -15,7 +15,10 @@ namespace MtgInventory.Service
             DirectoryInfo baseFolder)
         {
             _baseFolder = new DirectoryInfo(Path.Combine(baseFolder.FullName, "ImageCache"));
+            Instance = this;
         }
+
+        public static AutoDownloadImageCache? Instance { get; private set; }
 
         public FileInfo? GetOrDownload(
             DetailedMagicCard card,
@@ -27,6 +30,7 @@ namespace MtgInventory.Service
                 return localFile;
             }
 
+            Log.Debug($"Downloading '{category}' image for {card.SetCode} {card.NameEn}");
             // Need to download it
             var uri = GetUrl(card, category);
             if (!uri.IsValid)
@@ -35,8 +39,15 @@ namespace MtgInventory.Service
                 return null;
             }
 
+            var exists = localFile.Directory?.Exists ?? false;
+            if (!exists)
+            {
+                localFile.Directory?.Create();
+            }
+
             DownloadRemoteImageFile(uri.Uri, localFile.FullName);
 
+            localFile.Refresh();
             if (localFile.Exists)
             {
                 return localFile;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MtgInventory.Service.Models
+﻿namespace MtgInventory.Service.Models
 {
     public class ImageLinkUri
     {

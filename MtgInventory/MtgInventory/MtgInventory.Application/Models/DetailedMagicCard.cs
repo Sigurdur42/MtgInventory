@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using MkmApi.Entities;
-using ScryfallApi.Client.Models;
 
 namespace MtgInventory.Service.Models
 {
@@ -104,11 +103,16 @@ namespace MtgInventory.Service.Models
             UpdateFromTypeLine(card.Name);
         }
 
-
-
-        internal void UpdateFromProduct(Product card)
+        internal void UpdateFromMkm(Product product)
         {
-            LastUpdateMkm = DateTime.Now;
+            MkmImages = new[]
+            {
+                new ImageLinkUri()
+                {
+                    Category="",
+                    Uri = "http:" + product.Image,
+                }
+            };
         }
     }
 }

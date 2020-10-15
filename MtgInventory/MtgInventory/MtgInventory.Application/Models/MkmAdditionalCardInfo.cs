@@ -22,7 +22,7 @@ namespace MtgInventory.Service.Models
         {
             MkmId = product.IdProduct;
             MkmImage = product.Image;
-            MkmWebSite = "http://" + product.WebSite;
+            MkmWebSite = product.WebSite;
         }
     }
 }

@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:MtgInventory.ViewModels;assembly=MtgInventory"
+        xmlns:view="clr-namespace:MtgInventory.Views;assembly=MtgInventory"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -12,14 +13,18 @@
         Title="{Binding MainTitle}"
         x:Name="rootWindow">
 
+  <Window.Resources>
+    <view:StringToImageConverter x:Key="StringToImageConverter" />
+  </Window.Resources>
+  
   <Design.DataContext>
-    <vm:MainWindowViewModel/>
+    <vm:MainWindowViewModel />
   </Design.DataContext>
 
   <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="2*"/>
-      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="2*" />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
     <Grid.RowDefinitions>
@@ -30,8 +35,8 @@
     <!-- API Statistics-->
     <Grid Grid.Column="1">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto"/>
-        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
 
       <Grid.RowDefinitions>
@@ -54,35 +59,29 @@
         <TextBlock Text="{Binding MkmApiCallStatistics.ScryfallCountTotal}"></TextBlock>
         <TextBlock >)</TextBlock>
       </StackPanel>
-
     </Grid>
 
     <!-- Logging Panel -->
-    <DataGrid AutoGenerateColumns="False" Items="{Binding LogSink.LogMessages}" Grid.Column="1" Grid.Row="1"
-            >
+    <DataGrid AutoGenerateColumns="False" Items="{Binding LogSink.LogMessages}" Grid.Column="1" Grid.Row="1">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Level"
-                         Binding="{Binding LogLevel}"
-                              />
+                         Binding="{Binding LogLevel}" />
         <DataGridTextColumn Header="Message"
-             Binding="{Binding Message}"
-                              />
+             Binding="{Binding Message}" />
 
-
-        <!--<DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+        <!--<DataGridTemplateColumn Header="Open MKM" Width="Auto">
           <DataGridTemplateColumn.CellTemplate>
-            <DataTemplate >
+            <DataTemplate>
               <StackPanel Orientation="Horizontal">
                 <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
               </StackPanel>
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>-->
-
       </DataGrid.Columns>
     </DataGrid>
 
-    <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>-->
+    <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center" />-->
     <TabControl Grid.Row="0" Grid.RowSpan="2">
       <TabItem Header="Magic Cards">
         <Grid>
@@ -113,7 +112,6 @@
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
-
               </Grid.ColumnDefinitions>
 
               <CheckBox Grid.Row="0" Grid.Column="0" IsChecked="{Binding DetailedCardQueryOptions.IsBasicLand}">Basic Land</CheckBox>
@@ -129,9 +127,19 @@
           <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="2" Grid.ColumnSpan="3">
             <DataGrid.Columns>
 
-              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+              <DataGridTemplateColumn Header="Image" Width="Auto">
                 <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate >
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                      <Image Source="{Binding Image, Converter={StaticResource StringToImageConverter}}" Width="150" />
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                       <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
                     </StackPanel>
@@ -140,27 +148,16 @@
               </DataGridTemplateColumn>
 
               <DataGridTextColumn Header="Name"
-                   Binding="{Binding Card.NameEn}"
-                              />
+                   Binding="{Binding Card.NameEn}" />
               <!--<DataGridTextColumn Header="Category"
                    Binding="{Binding Category}" />-->
 
-              <DataGridTextColumn Header="Price"
-      Binding="{Binding MarketPrice}" />
+              <DataGridTextColumn Header="Price" Binding="{Binding MarketPrice}" />
 
-              <DataGridTextColumn Header="Expansion Name"
-                   Binding="{Binding Card.SetName}"
-                              />
-              <DataGridTextColumn Header="Expansion Code"
-                   Binding="{Binding Card.SetCode}" />
+              <DataGridTextColumn Header="Expansion Name" Binding="{Binding Card.SetName}" />
+              <DataGridTextColumn Header="Expansion Code" Binding="{Binding Card.SetCode}" />
 
-              <DataGridTextColumn Header="Type"
-                Binding="{Binding Card.TypeLine}" />
-
-
-
-
-
+              <DataGridTextColumn Header="Type" Binding="{Binding Card.TypeLine}" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -184,13 +181,11 @@
           <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>-->
 
           <DataGrid AutoGenerateColumns="False" Items="{Binding AllSets}" Grid.Row="1" Grid.ColumnSpan="3"
-                    SelectionMode="Single"
-                    >
+                    SelectionMode="Single">
             <DataGrid.Columns>
 
               <DataGridTextColumn Header="Name"
                    Binding="{Binding SetName}" />
-
 
               <DataGridTextColumn Header="Name (MKM)"
                    Binding="{Binding SetNameMkm}" />
@@ -205,17 +200,15 @@
               <DataGridTextColumn Header="Released"
                Binding="{Binding ReleaseDateParsed}" />
 
-
-              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto">
                 <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate >
+                  <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                       <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
                     </StackPanel>
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
               </DataGridTemplateColumn>
-
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -239,9 +232,9 @@
           <DataGrid AutoGenerateColumns="False" Items="{Binding CurrentStock}" Grid.Row="1" Grid.ColumnSpan="3">
             <DataGrid.Columns>
 
-              <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+              <DataGridTemplateColumn Header="Open MKM" Width="Auto">
                 <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate >
+                  <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                       <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInMkmProductPage}" CommandParameter="{Binding}"> MKM</Button>
                     </StackPanel>
@@ -279,23 +272,18 @@
               <DataGridTextColumn Header="Expansion"
                    Binding="{Binding SetName}" />
 
-
-
               <DataGridTextColumn Header="Price Date"
                    Binding="{Binding StockItem.MarketPriceDate}" />
 
-
-
-              <DataGridTemplateColumn Header="Open Scryfall" Width="Auto" >
+              <DataGridTemplateColumn Header="Open Scryfall" Width="Auto">
                 <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate >
+                  <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                       <Button Command="{Binding #rootWindow.DataContext.OnOpenStockItemInScryfall}" CommandParameter="{Binding}"> Scryfall</Button>
                     </StackPanel>
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
               </DataGridTemplateColumn>
-
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -338,22 +326,19 @@
 
               <!--
             <DataGridTextColumn Header="Expansion Name"
-                 Binding="{Binding ExpansionName}"
-                              />
+                 Binding="{Binding ExpansionName}" />
             <DataGridTextColumn Header="Expansion Code"
-                 Binding="{Binding ExpansionCode}"
-                              />
+                 Binding="{Binding ExpansionCode}" />
 
-            <DataGridTemplateColumn Header="Open MKM" Width="Auto" >
+            <DataGridTemplateColumn Header="Open MKM" Width="Auto">
               <DataGridTemplateColumn.CellTemplate>
-                <DataTemplate >
+                <DataTemplate>
                   <StackPanel Orientation="Horizontal">
                     <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
                   </StackPanel>
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>-->
-
             </DataGrid.Columns>
           </DataGrid>
         </Grid>
@@ -381,7 +366,7 @@
           <StackPanel Orientation="Vertical" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch">
             <StackPanel  Orientation="Horizontal">
               <TextBlock  VerticalAlignment="Center" Width="120">Products Statistics:</TextBlock>
-              <TextBlock Text="{Binding MkmProductsSummary}" VerticalAlignment="Center"/>
+              <TextBlock Text="{Binding MkmProductsSummary}" VerticalAlignment="Center" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
@@ -401,18 +386,13 @@
               <Button Margin="5,0,0,0" Command="{Binding OnRebuildSetData}">Rebuild Set DB</Button>
               <Button Margin="5,0,0,0" Command="{Binding OnRebuildCardData}">Rebuild Card DB</Button>
               <Button Margin="5,0,0,0" Command="{Binding OnRebuildInternalDatabase}">Rebuild Complete Internal DB </Button>
-
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
               <TextBlock  VerticalAlignment="Center" Width="100">DB (with Download):</TextBlock>
               <Button Margin="5,0,0,0" Command="{Binding OnDownloadAndRebuildAll}">Download and Rebuild All</Button>
-
-
             </StackPanel>
-
           </StackPanel>
-
         </Grid>
       </TabItem>
       <TabItem Header="Settings">
@@ -436,23 +416,22 @@
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
 
-
           <TextBlock VerticalAlignment="Center" FontWeight="Bold" Grid.ColumnSpan="2">Configure your basic settings here. Do not forget to use the Save button</TextBlock>
           <Button Command="{Binding OnSaveSettings}" Grid.Column="2">Save Settings</Button>
 
           <TextBlock Margin="0,20,0,0" VerticalAlignment="Center" Grid.Row="1" FontWeight="Bold" Grid.ColumnSpan="2">MKM Authentication</TextBlock>
 
           <TextBlock VerticalAlignment="Center" Grid.Row="2" >App Token</TextBlock>
-          <TextBox VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AppToken}"  />
+          <TextBox VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AppToken}" />
 
           <TextBlock VerticalAlignment="Center" Grid.Row="3" >App Secret</TextBlock>
-          <TextBox VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AppSecret}"  />
+          <TextBox VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AppSecret}" />
 
           <TextBlock VerticalAlignment="Center" Grid.Row="4" >Access Token</TextBlock>
-          <TextBox VerticalAlignment="Center" Grid.Row="4" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AccessToken}"  />
+          <TextBox VerticalAlignment="Center" Grid.Row="4" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AccessToken}" />
 
           <TextBlock VerticalAlignment="Center" Grid.Row="5" >Access Secret</TextBlock>
-          <TextBox VerticalAlignment="Center" Grid.Row="5" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AccessSecret}"  />
+          <TextBox VerticalAlignment="Center" Grid.Row="5" Grid.Column="1" Text="{Binding Settings.MkmAuthentication.AccessSecret}" />
 
           <TextBlock Margin="0,20,0,0" VerticalAlignment="Center" Grid.Row="6" FontWeight="Bold" Grid.ColumnSpan="2">Other</TextBlock>
 
@@ -461,10 +440,8 @@
 
           <TextBlock VerticalAlignment="Center" Grid.Row="8" >Auto Refresh Sets after (days)</TextBlock>
           <NumericUpDown VerticalAlignment="Center" Grid.Row="8" Grid.Column="1" Value="{Binding Settings.RefreshSetDataAfterDays}"></NumericUpDown>
-
         </Grid>
       </TabItem>
-
     </TabControl>
   </Grid>
 </Window>
