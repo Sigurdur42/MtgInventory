@@ -119,7 +119,7 @@ namespace MtgInventory.Service
             Task.Factory.StartNew(() =>
             {
                 // TODO: Cancellation
-                foreach (var card in cards.Where(c=>!string.IsNullOrWhiteSpace(c.MkmId)))
+                foreach (var card in cards.Where(c => !string.IsNullOrWhiteSpace(c.MkmId)))
                 {
                     if (!card.MkmDetailsRequired)
                     {
@@ -147,13 +147,18 @@ namespace MtgInventory.Service
             });
         }
 
-        public void DownloadMkmAdditionalData(
+        public bool DownloadMkmAdditionalData(
             MkmAuthenticationData authenticationData,
             string cardName)
         {
             Log.Information($"Downloading MKM data for '{cardName}'");
             var productData = _mkmRequest.FindProducts(authenticationData, cardName, false).ToArray();
             Log.Information($"{productData.Length} MKM data for '{cardName}' found");
+
+            if (productData.Length == 0)
+            {
+                return false;
+            }
 
             var remaining = productData.Length;
             foreach (var product in productData)
@@ -187,6 +192,8 @@ namespace MtgInventory.Service
                 additional.UpdateFromProduct(product);
                 _cardDatabase.MkmAdditionalInfo.Update(additional);
             }
+
+            return true;
         }
 
         private void RunAutoDownload(CancellationToken cancellationToken)

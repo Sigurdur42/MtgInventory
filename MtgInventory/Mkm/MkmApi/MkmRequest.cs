@@ -17,8 +17,11 @@ namespace MkmApi
     {
         private readonly IApiCallStatistic _apiCallStatistic;
 
-        public MkmRequest(
-            IApiCallStatistic apiCallStatistic)
+        private readonly List<QueryParameter> _emptyParameters = new List<QueryParameter>();
+
+        private readonly MkmGoodCiticenAutoSleep _autoSleep = new MkmGoodCiticenAutoSleep();
+
+        public MkmRequest(IApiCallStatistic apiCallStatistic)
         {
             _apiCallStatistic = apiCallStatistic;
         }
@@ -68,7 +71,6 @@ namespace MkmApi
             ////};
         }
 
-        private readonly List<QueryParameter> _emptyParameters = new List<QueryParameter>();
         public IEnumerable<Game> GetGames(MkmAuthenticationData authenticationData)
         {
             var response = MakeRequest(
@@ -92,6 +94,7 @@ namespace MkmApi
             queryParameters.Add(new QueryParameter("search", productName));
             queryParameters.Add(new QueryParameter("idGame", "1"));
             queryParameters.Add(new QueryParameter("idLanguage", "1"));
+            queryParameters.Add(new QueryParameter("maxResults", "10000"));
 
             if (searchExact)
             {
@@ -103,11 +106,20 @@ namespace MkmApi
                 $"products/find",
                 queryParameters);
 
-            var doc = XDocument.Parse(response);
-            return doc.Root
-                .Elements("product")
-                .Select(g => g.ReadProduct())
-                .ToArray();
+            try
+            {
+                var doc = XDocument.Parse(response);
+                return doc.Root
+                    .Elements("product")
+                    .Select(g => g.ReadProduct())
+                    .ToArray();
+            }
+            catch (Exception error)
+            {
+                Console.WriteLine(error);
+            }
+
+            return new List<Product>();
         }
 
         public IEnumerable<Expansion> GetExpansions(MkmAuthenticationData authenticationData, int gameId)
@@ -186,6 +198,8 @@ namespace MkmApi
                 throw new InvalidOperationException($"MKM authentication data is not set. Please configure MKM data before calling the API functions.");
             }
 
+            _autoSleep.AutoSleep();
+
             parameters = parameters?.OrderBy(p => p.Name)?.ToList() ?? new List<QueryParameter>();
 
             IncrementCallStatistic();
@@ -203,11 +217,10 @@ namespace MkmApi
                 Encoding.UTF8 :
                 Encoding.GetEncoding(response.CharacterSet);
 
-            using (var stream = response.GetResponseStream())
-            {
-                var reader = new StreamReader(stream, encoding);
-                return reader.ReadToEnd();
-            }
+            using var stream = response.GetResponseStream();
+
+            var reader = new StreamReader(stream, encoding);
+            return reader.ReadToEnd();
         }
 
         private void IncrementCallStatistic()

@@ -386,6 +386,11 @@ namespace MtgInventory.Service
 
             Log.Debug($"{nameof(DownloadMkmStock)} loaded {result.Length} items");
 
+            ////_autoDownloadCardsAndSets.AutoDownloadMkmDetails(
+            ////    MkmAuthenticationData,
+            ////    detailedCards,
+            ////    "");
+
             return result;
         }
 

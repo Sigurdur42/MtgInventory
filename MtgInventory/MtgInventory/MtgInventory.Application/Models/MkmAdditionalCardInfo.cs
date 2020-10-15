@@ -10,6 +10,7 @@ namespace MtgInventory.Service.Models
         public string MkmId { get; set; } = "";
 
         public string MkmWebSite { get; set; } = "";
+
         public string MkmImage { get; set; } = "";
 
         public bool IsValid()

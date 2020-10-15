@@ -42,6 +42,7 @@ namespace MtgInventory.Service.Models
         public DateTime? LastDetailUpdate { get; set; }
 
         public string MkmProductUrl { get; set; } = "";
+        
         public string MkmImage { get; set; } = "";
 
         public void UpdateFromProduct(Product rhs)
