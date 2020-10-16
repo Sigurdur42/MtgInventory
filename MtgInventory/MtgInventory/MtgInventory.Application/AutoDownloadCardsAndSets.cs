@@ -113,6 +113,18 @@ namespace MtgInventory.Service
 
         public void AutoDownloadMkmDetails(
             MkmAuthenticationData authenticationData,
+            DetailedSetInfo set)
+        {
+            var cardsOfSet = _cardDatabase?.MagicCards
+                ?.Query()
+                ?.Where(c => c.SetCode == set.SetCode)
+                ?.ToArray() ?? new DetailedMagicCard[0];
+
+            AutoDownloadMkmDetails(authenticationData, cardsOfSet, "");
+        }
+
+        public void AutoDownloadMkmDetails(
+            MkmAuthenticationData authenticationData,
             DetailedMagicCard[] cards,
             string queryName)
         {
@@ -137,22 +149,23 @@ namespace MtgInventory.Service
                     // Now download all details for this card:
                     if (string.IsNullOrWhiteSpace(queryName))
                     {
-                        DownloadMkmAdditionalData(authenticationData, card.NameEn);
+                        DownloadMkmAdditionalData(authenticationData, card.NameEn, true);
                     }
                     else
                     {
-                        DownloadMkmAdditionalData(authenticationData, queryName);
+                        DownloadMkmAdditionalData(authenticationData, queryName, false);
                     }
                 }
             });
         }
 
-        public bool DownloadMkmAdditionalData(
+        private bool DownloadMkmAdditionalData(
             MkmAuthenticationData authenticationData,
-            string cardName)
+            string cardName,
+            bool exactNameMatch)
         {
             Log.Information($"Downloading MKM data for '{cardName}'");
-            var productData = _mkmRequest.FindProducts(authenticationData, cardName, false).ToArray();
+            var productData = _mkmRequest.FindProducts(authenticationData, cardName, exactNameMatch).ToArray();
             Log.Information($"{productData.Length} MKM data for '{cardName}' found");
 
             if (productData.Length == 0)
@@ -163,22 +176,23 @@ namespace MtgInventory.Service
             var remaining = productData.Length;
             foreach (var product in productData)
             {
-                var details = _cardDatabase.MagicCards.Query()
-                    .Where(c => c.MkmId == product.IdProduct)
-                    .FirstOrDefault();
+                var details = _cardDatabase?.MagicCards
+                    ?.Query()
+                    ?.Where(c => c.MkmId == product.IdProduct)
+                    ?.FirstOrDefault();
 
                 Log.Information($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
 
                 if (details != null)
                 {
                     details.UpdateFromMkm(product);
-                    _cardDatabase.MagicCards.Update(details);
+                    _cardDatabase?.MagicCards?.Update(details);
                 }
 
-                var additional = _cardDatabase.MkmAdditionalInfo
-                    .Query()
-                    .Where(c => c.MkmId == product.IdProduct)
-                    .FirstOrDefault();
+                var additional = _cardDatabase?.MkmAdditionalInfo
+                    ?.Query()
+                    ?.Where(c => c.MkmId == product.IdProduct)
+                    ?.FirstOrDefault();
 
                 if (additional == null)
                 {
@@ -186,11 +200,11 @@ namespace MtgInventory.Service
                     {
                         MkmId = product.IdProduct
                     };
-                    _cardDatabase.MkmAdditionalInfo.Insert(additional);
+                    _cardDatabase?.MkmAdditionalInfo?.Insert(additional);
                 }
 
                 additional.UpdateFromProduct(product);
-                _cardDatabase.MkmAdditionalInfo.Update(additional);
+                _cardDatabase?.MkmAdditionalInfo?.Update(additional);
             }
 
             return true;

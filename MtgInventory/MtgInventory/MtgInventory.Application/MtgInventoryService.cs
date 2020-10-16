@@ -285,6 +285,11 @@ namespace MtgInventory.Service
 
         public IEnumerable<DetailedMagicCard> FindDetailedCardsByName(QueryCardOptions query)
         {
+            if (_cardDatabase?.MagicCards == null || !query.IsValid)
+            {
+                return new DetailedMagicCard[0];
+            }
+
             Log.Debug($"{nameof(FindDetailedCardsByName)}: {query}");
 
             var databaseQuery = _cardDatabase.MagicCards.Query();
@@ -319,6 +324,9 @@ namespace MtgInventory.Service
 
             return result;
         }
+
+        public void AutoDownloadCardDetailsForSet(DetailedSetInfo set)
+            => _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, set);
 
         public void EnrichDeckListWithDetails(DeckList deckList)
         {

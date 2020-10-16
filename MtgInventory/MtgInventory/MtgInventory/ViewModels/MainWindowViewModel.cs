@@ -18,6 +18,7 @@ namespace MtgInventory.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        private const string _allSetsName = "All Sets";
         private string _mkmProductsSummary = "";
 
         private IEnumerable<DetailedCardViewModel> _mkmProductsFound;
@@ -30,7 +31,6 @@ namespace MtgInventory.ViewModels
 
         private IEnumerable<DetailedSetInfo> _allSets;
         private IEnumerable<string> _setFilter;
-
         private QueryCardOptions _queryCardOptions = new QueryCardOptions();
 
         private MtgInventorySettings _settings = new MtgInventorySettings();
@@ -246,6 +246,15 @@ namespace MtgInventory.ViewModels
             });
         }
 
+        public void OnDownloadCardDetails(DetailedSetInfo info)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.AutoDownloadCardDetailsForSet(info);
+                UpdateProductSummary();
+            });
+        }
+
         public void OnOpenStockItemInMkmProductPage(MkmStockItemViewModel stockItem)
         {
             Task.Factory.StartNew(() =>
@@ -296,7 +305,7 @@ namespace MtgInventory.ViewModels
             setsToFilter.Insert(0, "All Sets");
             SetFilter = setsToFilter;
 
-            _queryCardOptions.SetName = setsToFilter.FirstOrDefault();
+            _queryCardOptions.SetName = _allSetsName;
         }
 
         private void UpdateProductSummary()

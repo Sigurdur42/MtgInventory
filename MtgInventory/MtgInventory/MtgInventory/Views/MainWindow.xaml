@@ -16,7 +16,7 @@
   <Window.Resources>
     <view:StringToImageConverter x:Key="StringToImageConverter" />
   </Window.Resources>
-  
+
   <Design.DataContext>
     <vm:MainWindowViewModel />
   </Design.DataContext>
@@ -118,9 +118,14 @@
               <CheckBox Grid.Row="1" Grid.Column="0" IsChecked="{Binding DetailedCardQueryOptions.IsToken}">Token</CheckBox>
 
               <TextBlock  Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left">Set filter:</TextBlock>
-              <ComboBox Grid.Row="1" Grid.Column="1" Width="300"
+              <!--<ComboBox Grid.Row="1" Grid.Column="1" Width="300"
                         HorizontalAlignment="Left"
-                        SelectedItem="{Binding DetailedCardQueryOptions.SetName}" Items="{Binding SetFilter}" />
+                        SelectedItem="{Binding DetailedCardQueryOptions.SetName}" Items="{Binding SetFilter}" />-->
+
+              <AutoCompleteBox Grid.Row="1" Grid.Column="1" Width="300"
+                HorizontalAlignment="Left"
+                                SelectedItem="{Binding DetailedCardQueryOptions.SetName, Mode=TwoWay}"
+                                Items="{Binding SetFilter}" />
             </Grid>
           </Expander>
 
@@ -184,31 +189,26 @@
                     SelectionMode="Single">
             <DataGrid.Columns>
 
-              <DataGridTextColumn Header="Name"
-                   Binding="{Binding SetName}" />
-
-              <DataGridTextColumn Header="Name (MKM)"
-                   Binding="{Binding SetNameMkm}" />
-              <DataGridTextColumn Header="Code (MKM)"
-                   Binding="{Binding SetCodeMkm}" />
-
-              <DataGridTextColumn Header="Name (Scryfall)"
-               Binding="{Binding SetNameScryfall}" />
-              <DataGridTextColumn Header="Code (Scryfall)"
-                   Binding="{Binding SetCodeScryfall}" />
-
-              <DataGridTextColumn Header="Released"
-               Binding="{Binding ReleaseDateParsed}" />
-
-              <DataGridTemplateColumn Header="Open MKM" Width="Auto">
+              <DataGridTemplateColumn Header="Details" Width="Auto">
                 <DataGridTemplateColumn.CellTemplate>
                   <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                      <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
+                      <Button Command="{Binding #rootWindow.DataContext.OnDownloadCardDetails}"
+                              CommandParameter="{Binding}">Get Card Details</Button>
                     </StackPanel>
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
               </DataGridTemplateColumn>
+
+              <DataGridTextColumn Header="Name" Binding="{Binding SetName}" />
+
+              <DataGridTextColumn Header="Name (MKM)" Binding="{Binding SetNameMkm}" />
+              <DataGridTextColumn Header="Code (MKM)" Binding="{Binding SetCodeMkm}" />
+
+              <DataGridTextColumn Header="Name (Scryfall)" Binding="{Binding SetNameScryfall}" />
+              <DataGridTextColumn Header="Code (Scryfall)" Binding="{Binding SetCodeScryfall}" />
+
+              <DataGridTextColumn Header="Released" Binding="{Binding ReleaseDateParsed}" />
             </DataGrid.Columns>
           </DataGrid>
         </Grid>

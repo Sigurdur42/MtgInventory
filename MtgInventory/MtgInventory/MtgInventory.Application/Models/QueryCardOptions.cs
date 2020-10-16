@@ -4,13 +4,19 @@ namespace MtgInventory.Service.Models
 {
     public class QueryCardOptions
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         public bool IsBasicLand { get; set; }
         public bool IsToken { get; set; }
 
-        public string SetName { get; set; }
+        public string SetName { get; set; } = "";
 
         public bool IsSetName => !string.IsNullOrWhiteSpace(SetName) && !"All Sets".Equals(SetName);
+
+        public bool IsValid =>
+            !string.IsNullOrWhiteSpace(Name)
+            || IsBasicLand
+            || IsToken
+            || IsSetName;
 
         public override string ToString()
         {

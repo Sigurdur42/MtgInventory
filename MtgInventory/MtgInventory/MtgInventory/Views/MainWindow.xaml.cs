@@ -11,7 +11,7 @@ namespace MtgInventory.Views
             InitializeComponent();
         }
 
-        public static MainWindow Instance { get; private set; }
+        public static MainWindow? Instance { get; private set; }
 
         private void InitializeComponent()
         {
