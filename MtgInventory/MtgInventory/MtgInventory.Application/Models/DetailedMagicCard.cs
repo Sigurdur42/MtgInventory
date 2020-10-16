@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MkmApi.Entities;
+using MtgInventory.Service.ReferenceData;
 
 namespace MtgInventory.Service.Models
 {
@@ -20,6 +21,9 @@ namespace MtgInventory.Service.Models
         public string TypeLine { get; set; }
 
         public string ScryfallCardSite { get; set; } = "";
+
+        public string SetCodeMkm { get; set; } = "";
+        public string SetNameMkm { get; set; } = "";
 
         public string MkmWebSite { get; set; } = "";
 
@@ -47,6 +51,8 @@ namespace MtgInventory.Service.Models
         public ImageLinkUri[] MkmImages { get; set; } = new ImageLinkUri[0];
 
         public bool MkmDetailsRequired => !string.IsNullOrWhiteSpace(MkmId) && string.IsNullOrWhiteSpace(MkmWebSite);
+       
+        public bool IsScryfallOnly => string.IsNullOrWhiteSpace(MkmId);
 
         public override string ToString()
         {
@@ -88,10 +94,27 @@ namespace MtgInventory.Service.Models
             IsToken = IsToken || typeLine.Contains("Token", StringComparison.InvariantCulture);
         }
 
+        internal CardReferenceData GenerateReferenceData()
+        {
+            return new CardReferenceData()
+            {
+                MkmId = MkmId,
+                Name = NameEn,
+                MkmWebSite = MkmWebSite,
+                ScryfallId = ScryfallId,
+                SetCodeMkm = SetCodeMkm,
+                Id = Id,
+                MkmImageUrl = MkmImages?.FirstOrDefault()?.Uri ?? "",
+            };
+        }
+
         internal void UpdateFromMkm(MkmProductInfo card, DetailedSetInfo setInfo)
         {
             SetCode = card.ExpansionCode;
             SetName = card.ExpansionName;
+
+            SetCodeMkm = card.ExpansionCode;
+            SetNameMkm = card.ExpansionName;
 
             NameEn = card.Name;
             MkmId = card.Id;

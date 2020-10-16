@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MkmApi;
@@ -8,10 +9,12 @@ using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
+using MtgInventory.Service.ReferenceData;
 using MtgInventory.Service.Settings;
 using ScryfallApi.Client;
 using ScryfallApiServices;
 using Serilog;
+using YamlDotNet.Serialization;
 
 namespace MtgInventory.Service
 {
@@ -143,6 +146,26 @@ namespace MtgInventory.Service
         public void DownloadMkmSetsAndProducts()
         {
             _autoDownloadCardsAndSets.DownloadMkmSetsAndProducts();
+        }
+
+        public void GenerateReferenceCardData()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            Log.Information($"Start generating card reference data...");
+
+            var allCards = _cardDatabase?.MagicCards?.FindAll()
+                ?.Where(c => !c.IsScryfallOnly && !c.MkmDetailsRequired)
+                ?.ToArray() ?? new DetailedMagicCard[0];
+
+            var result = allCards.Select(card => card.GenerateReferenceData()).ToList();
+
+            var reader = new CardReferenceDataReader();
+            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceData.yaml"));
+
+            reader.Write(targetFile, result.ToArray());
+
+            stopwatch.Stop();
+            Log.Information($"Done generating card reference data in {stopwatch.Elapsed}");
         }
 
         public void DownloadAllProducts()
@@ -419,6 +442,39 @@ namespace MtgInventory.Service
             }
             _cardDatabase.EnsureCardPriceIndex();
             Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
+        }
+
+        public void GenerateMissingSetData()
+        {
+            var unmatchedSets = _cardDatabase.MagicSets
+                ?.Query()
+                ?.Where(s => string.IsNullOrWhiteSpace(s.SetCodeMkm) || string.IsNullOrWhiteSpace(s.SetCodeScryfall))
+                ?.ToArray() ?? new DetailedSetInfo[0];
+
+            unmatchedSets = unmatchedSets
+                .Where(s => !s.IsKnownMkmOnlySet && !s.IsKnownScryfallOnlySet)
+                .OrderBy(s=>s.SetName)
+                .ToArray();
+
+            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "UnmatchedSets.yaml"));
+            if (!targetFile.Directory?.Exists ?? false)
+            {
+                targetFile.Directory?.Create();
+            }
+
+            var serializer = new SerializerBuilder()
+                ////.EnsureRoundtrip()
+                ////.WithTagMapping(nameof(CardReferenceData.MkmId), typeof(string))
+                ////.WithTagMapping(nameof(CardReferenceData.MkmWebSite), typeof(string))
+                ////.WithTagMapping(nameof(CardReferenceData.MkmImageUrl), typeof(string))
+                ////.WithTagMapping(nameof(CardReferenceData.SetCodeMkm), typeof(string))
+                ////.WithTagMapping(nameof(CardReferenceData.ScryfallId), typeof(Guid))
+                .Build();
+
+            var yaml = serializer.Serialize(unmatchedSets);
+            File.WriteAllText(targetFile.FullName, yaml);
+
+            Log.Information($"Wrote {unmatchedSets.Length} set infos to {targetFile.FullName}");
         }
 
         internal Task DownloadScryfallData()

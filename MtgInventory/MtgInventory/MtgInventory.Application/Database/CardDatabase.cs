@@ -71,10 +71,12 @@ namespace MtgInventory.Service.Database
             MagicSets = _cardDatabase.GetCollection<DetailedSetInfo>();
             MagicCards = _cardDatabase.GetCollection<DetailedMagicCard>();
 
-            ////var mapper = BsonMapper.Global;
+            var mapper = BsonMapper.Global;
 
-            ////mapper.Entity<DetailedMagicCard>()
-            ////    .Id(x => x.Id);
+            mapper.Entity<DetailedMagicCard>()
+                .Id(x => x.Id)
+                .Ignore(x => x.IsScryfallOnly)
+                .Ignore(x => x.MkmDetailsRequired);
 
             IsInitialized = true;
         }

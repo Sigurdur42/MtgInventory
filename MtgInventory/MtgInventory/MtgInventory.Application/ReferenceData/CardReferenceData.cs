@@ -8,17 +8,14 @@ namespace MtgInventory.Service.ReferenceData
 
         public string MkmId { get; set; } = "";
 
-        public bool IsMkmOnly { get; set; }
-
         public Guid ScryfallId { get; set; } = Guid.Empty;
-        
+
         public string Name { get; set; } = "";
-        
+
         public string SetCodeMkm { get; set; } = "";
 
         public string MkmWebSite { get; set; } = "";
 
         public string MkmImageUrl { get; set; } = "";
-
     }
 }

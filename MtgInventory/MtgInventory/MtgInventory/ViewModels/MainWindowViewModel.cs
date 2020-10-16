@@ -308,6 +308,14 @@ namespace MtgInventory.ViewModels
             _queryCardOptions.SetName = _allSetsName;
         }
 
+        internal void OnGenerateReferenceCardData() => MainService?.GenerateReferenceCardData();
+        internal void OnGenerateMissingSetData() => MainService?.GenerateMissingSetData();
+
+        internal void OnGenerateReferenceSetData()
+        {
+
+        }
+
         private void UpdateProductSummary()
                                                                                                                                                                     => MkmProductsSummary = "MKM: " + MainService?.MkmProductsSummary + Environment.NewLine + "Scryfall: " + MainService?.ScryfallProductsSummary + Environment.NewLine + "Internal: " + MainService?.InternalProductsSummary;
     }

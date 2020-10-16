@@ -38,6 +38,9 @@ namespace MtgInventory.Service.Models
         /// </summary>
         public bool IsTokenSet { get; set; }
 
+        public bool IsKnownScryfallOnlySet { get; set; }
+        public bool IsKnownMkmOnlySet { get; set; }
+
         internal void UpdateFromMkm(string normalizedSetCode, Expansion mkm)
         {
             SetCode = normalizedSetCode;
@@ -48,6 +51,7 @@ namespace MtgInventory.Service.Models
             IsReleased = mkm.IsReleased;
             SetLastUpdated = DateTime.Now;
             SetLastDownloaded = DateTime.Now;
+            IsKnownMkmOnlySet = mkm.IsMkmOnlySet;
 
             if (SetNameMkm.Contains("Token", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -64,6 +68,7 @@ namespace MtgInventory.Service.Models
             SetNameScryfall = scryfall.Name;
             SetLastUpdated = DateTime.Now;
             SetLastDownloaded = DateTime.Now;
+            IsKnownScryfallOnlySet = scryfall.IsScryfallOnlySet;
 
             SetName = string.IsNullOrWhiteSpace(SetName) ? SetNameScryfall : SetName;
 

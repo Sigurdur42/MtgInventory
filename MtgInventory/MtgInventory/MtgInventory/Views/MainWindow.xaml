@@ -394,12 +394,29 @@
               <TextBlock  VerticalAlignment="Center" Width="100">DB (with Download):</TextBlock>
               <Button Margin="5,0,0,0" Command="{Binding OnDownloadAndRebuildAll}">Download and Rebuild All</Button>
             </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+              <TextBlock  VerticalAlignment="Center" Width="100">Reference:</TextBlock>
+
+              <Button Margin="5,0,0,0" VerticalAlignment="Center" Content="Generate Reference Card Data"
+                      Command="{Binding OnGenerateReferenceCardData}" />
+
+              <Button Margin="5,0,0,0" VerticalAlignment="Center" Content="Generate Reference Set Data"
+        Command="{Binding OnGenerateReferenceSetData}" />
+              
+              <Button Margin="5,0,0,0" VerticalAlignment="Center" Content="Generate Missing Set Data"
+        Command="{Binding OnGenerateMissingSetData}" />
+
+            </StackPanel>
           </StackPanel>
         </Grid>
       </TabItem>
       <TabItem Header="Settings">
         <Grid>
           <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />

@@ -45,5 +45,18 @@ namespace MtgInventory.Service.Models
         public Uri SsearchUri { get; set; }
 
         public DateTime? UpdateDateUtc { get; set; }
+
+        public bool IsScryfallOnlySet
+        {
+            get
+            {
+                switch (Code)
+                {
+                    // TODO: Add only sets
+                    default:
+                        return false;
+                }
+            }
+        }
     }
 }

@@ -67,7 +67,10 @@ namespace MtgInventory.Service.Database
             Log.Debug("Rebuilding Scryfall Set data...");
             foreach (var scryfall in _database.ScryfallSets.FindAll())
             {
-                if (scryfall.Code == null) continue;
+                if (scryfall.Code == null)
+                {
+                    continue;
+                }
 
                 var key = GetMainSetCodeForScryfall(scryfall.Code?.ToUpperInvariant() ?? "");
                 if (!indexedSets.TryGetValue(key, out var found))
@@ -112,6 +115,33 @@ namespace MtgInventory.Service.Database
                 "PXLN" => "XLNP",
                 "MPS" => "KLDS",
                 "AMH1" => "XMH1",
+                "CON" => "CONF",
+                "PALP" => "APL",
+                "FBB" => "DTL",
+                "4BB" => "4EBB",
+                "PGRU" => "GUL",
+                "HHO" => "HHPR",
+                "PHJ" => "HJCC",
+                "CEI" => "IED",
+                "ITP" => "IBS",
+                "MGB" => "MUL",
+                "MB1" => "MYS",
+                "CMB1" => "MYSPT",
+                "PREL" => "REL",
+                "REN" => "RE",
+                "PRES" => "RSP",
+                "RIN" => "RI",
+                "PDSC" => "CC13",
+                "PD14" => "CC14",
+                "PD15" => "CC15",
+                "PD16" => "CC16",
+                "PD17" => "CC17",
+                "PD18" => "CC18",
+                "PD19" => "CC19",
+                "PLIST" => "ZNL",
+                "UGIN" => "UGFP",
+                "PUMA" => "XUMA",
+                "EXP" => "ZEX",
                 _ => setCode
             };
         }
