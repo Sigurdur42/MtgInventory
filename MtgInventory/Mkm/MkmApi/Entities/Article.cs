@@ -38,28 +38,28 @@
     }
          * */
 
-        public string IdArticle { get; set; }
-        public string IdProduct { get; set; }
+        public string IdArticle { get; set; } = "";
+        public string IdProduct { get; set; } = "";
 
-        public Language Language { get; set; }
-        public string Comments { get; set; }
-        public string Price { get; set; }
-        public string PriceEur { get; set; }
-        public string PriceGbp { get; set; }
-        public string Count { get; set; }
-        public string InShoppingCart { get; set; }
+        public Language Language { get; set; } = new Language();
+        public string Comments { get; set; } = "";
+        public string Price { get; set; } = "";
+        public string PriceEur { get; set; } = "";
+        public string PriceGbp { get; set; } = "";
+        public string Count { get; set; } = "";
+        public string InShoppingCart { get; set; } = "";
 
         // TODO: Product
 
-        public User Seller { get; set; }
+        public User Seller { get; set; } = new User();
 
-        public string LastEdited { get; set; }
-        public string Condition { get; set; }
-        public string IsFoil { get; set; }
-        public string IsSigned { get; set; }
-        public string IsAltered { get; set; }
-        public string IsPlayset { get; set; }
-        public string IsFirstEdition { get; set; }
+        public string LastEdited { get; set; } = "";
+        public string Condition { get; set; } = "";
+        public string IsFoil { get; set; } = "";
+        public string IsSigned { get; set; } = "";
+        public string IsAltered { get; set; } = "";
+        public string IsPlayset { get; set; } = "";
+        public string IsFirstEdition { get; set; } = "";
 
         // TODO: Links
     }

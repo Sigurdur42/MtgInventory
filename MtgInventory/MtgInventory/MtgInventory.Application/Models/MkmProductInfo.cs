@@ -45,11 +45,6 @@ namespace MtgInventory.Service.Models
         
         public string MkmImage { get; set; } = "";
 
-        public void UpdateFromProduct(Product rhs)
-        {
-            MkmProductUrl = "https://www.cardmarket.com" + rhs.WebSite;
-            LastDetailUpdate = DateTime.Now;
-        }
 
         public override string ToString()
         {

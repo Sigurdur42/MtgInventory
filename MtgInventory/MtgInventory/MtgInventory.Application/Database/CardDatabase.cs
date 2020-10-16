@@ -17,27 +17,27 @@ namespace MtgInventory.Service.Database
     {
         private readonly ILogger _logger = Log.ForContext<CardDatabase>();
 
-        private LiteDatabase _cardDatabase;
-        private LiteDatabase _scryfallDatabase;
-        private LiteDatabase _mkmDatabase;
-        private LiteDatabase _priceDatabase;
+        private LiteDatabase? _cardDatabase;
+        private LiteDatabase? _scryfallDatabase;
+        private LiteDatabase? _mkmDatabase;
+        private LiteDatabase? _priceDatabase;
 
-        private DetailedDatabaseBuilder _detailedDatabaseBuilder;
+        private DetailedDatabaseBuilder? _detailedDatabaseBuilder;
         public bool IsInitialized { get; private set; }
 
-        public ILiteCollection<MkmProductInfo> MkmProductInfo { get; private set; }
+        public ILiteCollection<MkmProductInfo>? MkmProductInfo { get; private set; }
 
-        public ILiteCollection<Expansion> MkmExpansion { get; private set; }
-        public ILiteCollection<ApiCallStatistics> MkmApiCallStatistics { get; private set; }
-        public ILiteCollection<ScryfallApiCallStatistic> ScryfallApiCallStatistics { get; private set; }
-        public ILiteCollection<MkmAdditionalCardInfo> MkmAdditionalInfo { get; private set; }
+        public ILiteCollection<Expansion>? MkmExpansion { get; private set; }
+        public ILiteCollection<ApiCallStatistics>? MkmApiCallStatistics { get; private set; }
+        public ILiteCollection<ScryfallApiCallStatistic>? ScryfallApiCallStatistics { get; private set; }
+        public ILiteCollection<MkmAdditionalCardInfo>? MkmAdditionalInfo { get; private set; }
 
-        public ILiteCollection<ScryfallCard> ScryfallCards { get; private set; }
-        public ILiteCollection<ScryfallSet> ScryfallSets { get; private set; }
+        public ILiteCollection<ScryfallCard>? ScryfallCards { get; private set; }
+        public ILiteCollection<ScryfallSet>? ScryfallSets { get; private set; }
 
-        public ILiteCollection<DetailedSetInfo> MagicSets { get; private set; }
-        public ILiteCollection<DetailedMagicCard> MagicCards { get; private set; }
-        public ILiteCollection<CardPrice> CardPrices { get; private set; }
+        public ILiteCollection<DetailedSetInfo>? MagicSets { get; private set; }
+        public ILiteCollection<DetailedMagicCard>? MagicCards { get; private set; }
+        public ILiteCollection<CardPrice>? CardPrices { get; private set; }
 
         public void Dispose()
         {
@@ -97,40 +97,40 @@ namespace MtgInventory.Service.Database
         public void InsertScryfallSets(IEnumerable<ScryfallSet> sets)
         {
             _logger.Information($"{nameof(InsertScryfallSets)}: Cleaning existing set info...");
-            ScryfallSets.DeleteAll();
-            ScryfallSets.InsertBulk(sets);
+            ScryfallSets?.DeleteAll();
+            ScryfallSets?.InsertBulk(sets);
 
-            ScryfallSets.EnsureIndex(e => e.Code);
-            ScryfallSets.EnsureIndex(e => e.Name);
+            ScryfallSets?.EnsureIndex(e => e.Code);
+            ScryfallSets?.EnsureIndex(e => e.Name);
         }
 
         public void InsertScryfallCards(IEnumerable<ScryfallCard> cards)
         {
             _logger.Information($"Inserting {cards.Count()} new scryfall cards...");
-            ScryfallCards.InsertBulk(cards);
+            ScryfallCards?.InsertBulk(cards);
 
-            ScryfallCards.EnsureIndex(e => e.Set);
-            ScryfallCards.EnsureIndex(e => e.Name);
+            ScryfallCards?.EnsureIndex(e => e.Set);
+            ScryfallCards?.EnsureIndex(e => e.Name);
         }
 
         public void ClearScryfallCards()
         {
             _logger.Information($"{nameof(ClearScryfallCards)}: Cleaning existing card info...");
-            ScryfallCards.DeleteAll();
+            ScryfallCards?.DeleteAll();
         }
 
         public void ClearDetailedCards()
         {
             _logger.Information($"{nameof(ClearDetailedCards)}: Cleaning existing detailed card info...");
-            MagicCards.DeleteAll();
+            MagicCards?.DeleteAll();
         }
 
         public void EnsureCardPriceIndex()
         {
-            CardPrices.EnsureIndex(c => c.MkmId);
-            CardPrices.EnsureIndex(c => c.ScryfallId);
-            CardPrices.EnsureIndex(c => c.Source);
-            CardPrices.EnsureIndex(c => c.UpdateDate);
+            CardPrices?.EnsureIndex(c => c.MkmId);
+            CardPrices?.EnsureIndex(c => c.ScryfallId);
+            CardPrices?.EnsureIndex(c => c.Source);
+            CardPrices?.EnsureIndex(c => c.UpdateDate);
         }
 
         public MkmAdditionalCardInfo UpdateMkmAdditionalInfo(
@@ -144,19 +144,19 @@ namespace MtgInventory.Service.Database
                     MkmId = product.IdProduct,
                 };
 
-                MkmAdditionalInfo.Insert(found);
+                MkmAdditionalInfo?.Insert(found);
             }
 
-            var detailedCard = MagicCards.Query().Where(c => c.MkmId == product.IdProduct).FirstOrDefault();
+            var detailedCard = MagicCards?.Query().Where(c => c.MkmId == product.IdProduct).FirstOrDefault();
             if (detailedCard != null)
             {
                 detailedCard.UpdateFromMkm(product);
-                MagicCards.Update(detailedCard);
+                MagicCards?.Update(detailedCard);
             }
 
             found.UpdateFromProduct(product);
-            MkmAdditionalInfo.Update(found);
-            MkmAdditionalInfo.EnsureIndex(c => c.MkmId);
+            MkmAdditionalInfo?.Update(found);
+            MkmAdditionalInfo?.EnsureIndex(c => c.MkmId);
 
             return found;
         }
@@ -169,7 +169,7 @@ namespace MtgInventory.Service.Database
             IEnumerable<Expansion> expansions)
         {
             _logger.Information($"{nameof(InsertProductInfo)}: Cleaning existing product info...");
-            MkmProductInfo.DeleteAll();
+            MkmProductInfo?.DeleteAll();
 
             var orderedExpansions = expansions.ToDictionary(_ => _.IdExpansion.ToString(CultureInfo.InvariantCulture) ?? "");
 
@@ -207,7 +207,7 @@ namespace MtgInventory.Service.Database
 
         public void UpdateMkmStatistics(IApiCallStatistic mkmStatistic)
         {
-            var found = MkmApiCallStatistics.Query().FirstOrDefault();
+            var found = MkmApiCallStatistics?.Query()?.FirstOrDefault();
             if (found == null)
             {
                 var newRecord = new ApiCallStatistics
@@ -216,14 +216,14 @@ namespace MtgInventory.Service.Database
                     CountTotal = mkmStatistic.CountTotal,
                     Today = mkmStatistic.Today,
                 };
-                MkmApiCallStatistics.Insert(newRecord);
+                MkmApiCallStatistics?.Insert(newRecord);
             }
             else
             {
                 found.CountToday = mkmStatistic.CountToday;
                 found.CountTotal = mkmStatistic.CountTotal;
                 found.Today = mkmStatistic.Today;
-                MkmApiCallStatistics.Update(found);
+                MkmApiCallStatistics?.Update(found);
             }
         }
 
@@ -251,7 +251,7 @@ namespace MtgInventory.Service.Database
 
         public IApiCallStatistic GetMkmCallStatistic()
         {
-            var found = MkmApiCallStatistics.Query().FirstOrDefault();
+            var found = MkmApiCallStatistics?.Query().FirstOrDefault();
             if (found == null)
             {
                 found = new ApiCallStatistics
@@ -260,7 +260,7 @@ namespace MtgInventory.Service.Database
                     CountTotal = 0,
                     Today = DateTime.Now.Date,
                 };
-                MkmApiCallStatistics.Insert(found);
+                MkmApiCallStatistics?.Insert(found);
             }
 
             return found;
@@ -291,27 +291,27 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildCardsForSet(DetailedSetInfo set)
         {
-            _detailedDatabaseBuilder.RebuildMkmCardsForSet(set.SetCodeMkm);
-            _detailedDatabaseBuilder.RebuildScryfallCardsForSet(set.SetCodeScryfall);
+            _detailedDatabaseBuilder?.RebuildMkmCardsForSet(set.SetCodeMkm);
+            _detailedDatabaseBuilder?.RebuildScryfallCardsForSet(set.SetCodeScryfall);
         }
 
         internal void ResetCardAndSetUpdateDate()
         {
-            var allSets = MagicSets.FindAll().ToArray();
+            var allSets = MagicSets?.FindAll().ToArray();
             foreach (var detailedSetInfo in allSets)
             {
                 detailedSetInfo.CardsLastUpdated = DateTime.Now.AddDays(-1000);
                 detailedSetInfo.CardsLastUpdated = DateTime.Now.AddDays(-1000);
             }
 
-            MagicSets.Update(allSets);
+            MagicSets?.Update(allSets);
         }
 
         internal void RebuildDetailedCardData()
         {
-            _cardDatabase.Pragma("CHECKPOINT", 10000);
-            _scryfallDatabase.Pragma("CHECKPOINT", 10000);
-            _mkmDatabase.Pragma("CHECKPOINT", 10000);
+            _cardDatabase?.Pragma("CHECKPOINT", 10000);
+            _scryfallDatabase?.Pragma("CHECKPOINT", 10000);
+            _mkmDatabase?.Pragma("CHECKPOINT", 10000);
 
             try
             {
@@ -319,44 +319,44 @@ namespace MtgInventory.Service.Database
 
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM card data...");
 
-                foreach (var mkm in MkmExpansion.FindAll().OrderBy(c => c.Abbreviation))
+                foreach (var mkm in MkmExpansion?.FindAll().OrderBy(c => c.Abbreviation))
                 {
-                    _detailedDatabaseBuilder.RebuildMkmCardsForSet(mkm.Abbreviation);
+                    _detailedDatabaseBuilder?.RebuildMkmCardsForSet(mkm.Abbreviation);
                 }
 
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall card data...");
-                foreach (var scryfall in ScryfallSets.FindAll().OrderBy(c => c.Code))
+                foreach (var scryfall in ScryfallSets?.FindAll()?.OrderBy(c => c.Code)?.ToArray() ?? new ScryfallSet[0])
                 {
-                    _detailedDatabaseBuilder.RebuildScryfallCardsForSet(scryfall.Code);
+                    _detailedDatabaseBuilder?.RebuildScryfallCardsForSet(scryfall.Code);
                 }
 
                 Log.Debug($"{nameof(RebuildDetailedDatabase)} - Done rebuilding Scryfall card data...");
             }
             finally
             {
-                _cardDatabase.Pragma("CHECKPOINT", 1000);
-                _scryfallDatabase.Pragma("CHECKPOINT", 1000);
-                _mkmDatabase.Pragma("CHECKPOINT", 1000);
+                _cardDatabase?.Pragma("CHECKPOINT", 1000);
+                _scryfallDatabase?.Pragma("CHECKPOINT", 1000);
+                _mkmDatabase?.Pragma("CHECKPOINT", 1000);
             }
         }
 
         internal void RebuildSetData()
         {
             // Set data
-            MagicSets.DeleteAll();
+            MagicSets?.DeleteAll();
 
-            _detailedDatabaseBuilder.BuildMkmSetData();
-            _detailedDatabaseBuilder.BuildScryfallSetData();
+            _detailedDatabaseBuilder?.BuildMkmSetData();
+            _detailedDatabaseBuilder?.BuildScryfallSetData();
             EnsureSetIndex();
         }
 
         internal void EnsureSetIndex()
         {
             Log.Debug($"Rebuilding set index...");
-            MagicSets.EnsureIndex(s => s.SetNameScryfall);
-            MagicSets.EnsureIndex(s => s.SetNameMkm);
-            MagicSets.EnsureIndex(s => s.SetCodeScryfall);
-            MagicSets.EnsureIndex(s => s.SetCodeMkm);
+            MagicSets?.EnsureIndex(s => s.SetNameScryfall);
+            MagicSets?.EnsureIndex(s => s.SetNameMkm);
+            MagicSets?.EnsureIndex(s => s.SetCodeScryfall);
+            MagicSets?.EnsureIndex(s => s.SetCodeMkm);
         }
 
         internal void InsertExpansions(IEnumerable<Expansion> expansions)
@@ -366,30 +366,30 @@ namespace MtgInventory.Service.Database
                 exp.ReleaseDateParsed = exp.ReleaseDate.ParseDateTime();
             }
 
-            MkmExpansion.DeleteAll();
-            MkmExpansion.InsertBulk(expansions);
+            MkmExpansion?.DeleteAll();
+            MkmExpansion?.InsertBulk(expansions);
 
-            MkmExpansion.EnsureIndex(e => e.EnName);
-            MkmExpansion.EnsureIndex(e => e.IdExpansion);
-            MkmExpansion.EnsureIndex(e => e.IdGame);
+            MkmExpansion?.EnsureIndex(e => e.EnName);
+            MkmExpansion?.EnsureIndex(e => e.IdExpansion);
+            MkmExpansion?.EnsureIndex(e => e.IdGame);
         }
 
         internal void EnsureMagicCardsIndex()
         {
-            MagicCards.EnsureIndex(c => c.MkmId);
-            MagicCards.EnsureIndex(c => c.ScryfallId);
-            MagicCards.EnsureIndex(c => c.NameEn);
-            MagicCards.EnsureIndex(c => c.SetCode);
-            MagicCards.EnsureIndex(c => c.SetName);
-            MagicCards.EnsureIndex(c => c.IsBasicLand);
-            MagicCards.EnsureIndex(c => c.IsToken);
+            MagicCards?.EnsureIndex(c => c.MkmId);
+            MagicCards?.EnsureIndex(c => c.ScryfallId);
+            MagicCards?.EnsureIndex(c => c.NameEn);
+            MagicCards?.EnsureIndex(c => c.SetCode);
+            MagicCards?.EnsureIndex(c => c.SetName);
+            MagicCards?.EnsureIndex(c => c.IsBasicLand);
+            MagicCards?.EnsureIndex(c => c.IsToken);
         }
 
         private void BulkInsertProductInfo(IList<MkmProductInfo> products)
         {
-            MkmProductInfo.InsertBulk(products);
-            MkmProductInfo.EnsureIndex(p => p.Name);
-            MkmProductInfo.EnsureIndex(p => p.CategoryId);
+            MkmProductInfo?.InsertBulk(products);
+            MkmProductInfo?.EnsureIndex(p => p.Name);
+            MkmProductInfo?.EnsureIndex(p => p.CategoryId);
         }
     }
 }

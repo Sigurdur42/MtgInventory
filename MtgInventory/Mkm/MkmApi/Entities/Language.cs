@@ -6,8 +6,8 @@
         ////    idLanguage:                     // Language ID
         ////    languageName:                   // Language's name in English
         ///
-        public string Id { get; set; }
+        public string Id { get; set; } = "";
 
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
     }
 }

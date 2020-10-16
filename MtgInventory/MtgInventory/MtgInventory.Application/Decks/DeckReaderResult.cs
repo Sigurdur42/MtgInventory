@@ -2,8 +2,8 @@
 {
     public class DeckReaderResult
     {
-        public DeckList Deck { get; set; }
+        public DeckList Deck { get; set; } = new DeckList();
 
-        public string[] UnreadLines { get; set; }
+        public string[] UnreadLines { get; set; } = new string[0];
     }
 }

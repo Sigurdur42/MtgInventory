@@ -7,9 +7,9 @@ namespace MtgInventory.Models
 {
     public class DeckListItemViewModel : ReactiveObject
     {
-        private string _name;
-        private string _setCode;
-        private string _setName;
+        private string _name = "";
+        private string _setCode = "";
+        private string _setName = "";
         private int _quantity;
         private Guid _cardId;
 

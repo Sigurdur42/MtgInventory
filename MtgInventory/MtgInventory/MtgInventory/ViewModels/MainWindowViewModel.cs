@@ -18,7 +18,7 @@ namespace MtgInventory.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private string _mkmProductsSummary;
+        private string _mkmProductsSummary = "";
 
         private IEnumerable<DetailedCardViewModel> _mkmProductsFound;
 

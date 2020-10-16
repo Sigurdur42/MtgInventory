@@ -14,7 +14,7 @@ namespace MkmApi.Entities
         ///
         public int IdGame { get; set; }
 
-        public string Name { get; set; }
-        public string Abbreviation { get; set; }
+        public string Name { get; set; } = "";
+        public string Abbreviation { get; set; } = "";
     }
 }
