@@ -35,6 +35,8 @@ namespace MtgInventory.ViewModels
 
         private MtgInventorySettings _settings = new MtgInventorySettings();
 
+        private IEnumerable<DetailedSetInfo> _filteredSets = new DetailedSetInfo[0];
+
         public MainWindowViewModel()
         {
             MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly()?.GetName()?.Version;
@@ -49,10 +51,18 @@ namespace MtgInventory.ViewModels
                 UpdateProductSummary();
 
                 AllSets = MainService.AllSets.ToArray();
+                FilteredSets = AllSets;
             });
 
             LogSink = PanelLogSink.Instance;
         }
+
+        public void OnFilterSets()
+        {
+            FilteredSets= MainService?.FilterSets(QuerySetFilter) ?? new DetailedSetInfo[0];
+        }
+
+        public QuerySetFilter QuerySetFilter { get; set; } = new QuerySetFilter();
 
         public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName ?? "";
 
@@ -84,6 +94,16 @@ namespace MtgInventory.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _allSets, value);
+                RebuildSetFilter();
+            }
+        }
+
+        public IEnumerable<DetailedSetInfo> FilteredSets
+        {
+            get => _filteredSets;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _filteredSets, value);
                 RebuildSetFilter();
             }
         }
@@ -146,6 +166,7 @@ namespace MtgInventory.ViewModels
                 MainService.DownloadScryfallSetsData(true);
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
+                FilteredSets = AllSets;
             });
         }
 
@@ -156,6 +177,7 @@ namespace MtgInventory.ViewModels
                 MainService.DownloadScryfallCardData();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
+                FilteredSets = AllSets;
             });
         }
 
@@ -166,6 +188,7 @@ namespace MtgInventory.ViewModels
                 MainService?.RebuildSetData();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
+                FilteredSets = AllSets;
             });
         }
 
@@ -176,6 +199,7 @@ namespace MtgInventory.ViewModels
                 MainService?.DownloadAllProducts();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
+                FilteredSets = AllSets;
             });
         }
 
@@ -188,6 +212,7 @@ namespace MtgInventory.ViewModels
                 {
                     UpdateProductSummary();
                     AllSets = MainService.AllSets.ToArray();
+                    FilteredSets = AllSets;
                 });
             });
         }
@@ -255,6 +280,15 @@ namespace MtgInventory.ViewModels
             });
         }
 
+        public void OnRebuildSetCards(DetailedSetInfo info)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.RebuildCardsForSet(info);
+                UpdateProductSummary();
+            });
+        }
+
         public void OnOpenStockItemInMkmProductPage(MkmStockItemViewModel stockItem)
         {
             Task.Factory.StartNew(() =>
@@ -299,6 +333,14 @@ namespace MtgInventory.ViewModels
             }
         }
 
+        internal void OnGenerateReferenceCardData() => MainService?.GenerateReferenceCardData();
+
+        internal void OnGenerateMissingSetData() => MainService?.GenerateMissingSetData();
+
+        internal void OnGenerateReferenceSetData()
+        {
+        }
+
         private void RebuildSetFilter()
         {
             var setsToFilter = _allSets?.Select(s => s.SetName)?.OrderBy(s => s)?.ToList() ?? new List<string>();
@@ -306,14 +348,6 @@ namespace MtgInventory.ViewModels
             SetFilter = setsToFilter;
 
             _queryCardOptions.SetName = _allSetsName;
-        }
-
-        internal void OnGenerateReferenceCardData() => MainService?.GenerateReferenceCardData();
-        internal void OnGenerateMissingSetData() => MainService?.GenerateMissingSetData();
-
-        internal void OnGenerateReferenceSetData()
-        {
-
         }
 
         private void UpdateProductSummary()

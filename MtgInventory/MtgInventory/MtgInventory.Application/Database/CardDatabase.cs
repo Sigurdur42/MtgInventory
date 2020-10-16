@@ -344,9 +344,6 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildSetData()
         {
-            // Set data
-            MagicSets?.DeleteAll();
-
             _detailedDatabaseBuilder?.BuildMkmSetData();
             _detailedDatabaseBuilder?.BuildScryfallSetData();
             EnsureSetIndex();

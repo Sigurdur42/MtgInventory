@@ -174,6 +174,7 @@
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
           </Grid.RowDefinitions>
 
@@ -185,9 +186,23 @@
 
           <!--<TextBlock VerticalAlignment="Center" >Name</TextBlock>
           <TextBox VerticalAlignment="Center" Grid.Column="1" Text="{Binding MkmProductLookupName}" />
-          <Button Grid.Column="2" Command="{Binding OnSearchMkmProduct}">Search!</Button>-->
+          -->
 
-          <DataGrid AutoGenerateColumns="False" Items="{Binding AllSets}" Grid.Row="1" Grid.ColumnSpan="3"
+          <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
+              <TextBlock>Name filter:</TextBlock>
+              <TextBox Width="200" Text="{Binding QuerySetFilter.Name, Mode=TwoWay}" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Margin="5,0,0,0">
+              <TextBlock>Flags:</TextBlock>
+              <CheckBox IsChecked="{Binding QuerySetFilter.HideOnlyOneSide, Mode=TwoWay}" >Hide MKM/Scryfall only</CheckBox>
+              <CheckBox IsChecked="{Binding QuerySetFilter.HideKnownSets, Mode=TwoWay}" >Hide Known MKM - Scryfall Matches</CheckBox>
+            </StackPanel>
+          </StackPanel>
+
+          <Button Grid.Column="2" Command="{Binding OnFilterSets}">Filter Sets!</Button>
+
+          <DataGrid AutoGenerateColumns="False" Items="{Binding FilteredSets}" Grid.Row="2" Grid.ColumnSpan="3"
                     SelectionMode="Single">
             <DataGrid.Columns>
 
@@ -197,6 +212,17 @@
                     <StackPanel Orientation="Horizontal">
                       <Button Command="{Binding #rootWindow.DataContext.OnDownloadCardDetails}"
                               CommandParameter="{Binding}">Get Card Details</Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+
+              <DataGridTemplateColumn Header="Rebuild" Width="Auto">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                      <Button Command="{Binding #rootWindow.DataContext.OnRebuildSetCards}"
+                              CommandParameter="{Binding}">Rebuild</Button>
                     </StackPanel>
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>

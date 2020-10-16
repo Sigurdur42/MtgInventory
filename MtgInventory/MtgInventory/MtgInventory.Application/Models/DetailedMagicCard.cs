@@ -25,6 +25,10 @@ namespace MtgInventory.Service.Models
         public string SetCodeMkm { get; set; } = "";
         public string SetNameMkm { get; set; } = "";
 
+        public string SetCodeScryfall { get; set; } = "";
+        public string SetNameScryfall { get; set; } = "";
+
+
         public string MkmWebSite { get; set; } = "";
 
         public int CountReprints { get; set; }
@@ -65,6 +69,8 @@ namespace MtgInventory.Service.Models
             ScryfallId = card.Id;
             SetCode = card.Set;
             SetName = card.SetName;
+            SetCodeScryfall = card.Set;
+            SetNameScryfall = card.SetName;
             TypeLine = card.TypeLine;
             ScryfallCardSite = card.ScryfallUri?.ToString() ?? "";
             LastUpdateScryfall = DateTime.Now;

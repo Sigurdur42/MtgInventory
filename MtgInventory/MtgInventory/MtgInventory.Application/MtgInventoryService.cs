@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using MkmApi;
 using MtgBinder.Domain.Scryfall;
@@ -351,6 +352,15 @@ namespace MtgInventory.Service
         public void AutoDownloadCardDetailsForSet(DetailedSetInfo set)
             => _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, set);
 
+        public void RebuildCardsForSet(DetailedSetInfo set)
+        {
+            _autoDownloadCardsAndSets.Stop();
+
+            set.CardsLastUpdated = DateTime.Now.AddDays(-1000);
+            _cardDatabase.MagicSets.Update(set);
+            _autoDownloadCardsAndSets.Start();
+        }
+
         public void EnrichDeckListWithDetails(DeckList deckList)
         {
             Log.Debug($"{nameof(EnrichDeckListWithDetails)} for deck {deckList.Name}");
@@ -456,23 +466,29 @@ namespace MtgInventory.Service
                 .OrderBy(s=>s.SetName)
                 .ToArray();
 
-            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "UnmatchedSets.yaml"));
+            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "UnmatchedSets.csv"));
             if (!targetFile.Directory?.Exists ?? false)
             {
                 targetFile.Directory?.Create();
             }
 
-            var serializer = new SerializerBuilder()
-                ////.EnsureRoundtrip()
-                ////.WithTagMapping(nameof(CardReferenceData.MkmId), typeof(string))
-                ////.WithTagMapping(nameof(CardReferenceData.MkmWebSite), typeof(string))
-                ////.WithTagMapping(nameof(CardReferenceData.MkmImageUrl), typeof(string))
-                ////.WithTagMapping(nameof(CardReferenceData.SetCodeMkm), typeof(string))
-                ////.WithTagMapping(nameof(CardReferenceData.ScryfallId), typeof(Guid))
-                .Build();
+            var parts = unmatchedSets
+                .Select(s => $"{s.SetNameScryfall};{s.SetCodeScryfall};{s.SetNameMkm};{s.SetCodeMkm}")
+                .ToArray();
+            var headline = $"ScryfallName;ScryfallCode;MkmName;MkmCode";
+            File.WriteAllText(targetFile.FullName, headline + Environment.NewLine + string.Join(Environment.NewLine, parts));
 
-            var yaml = serializer.Serialize(unmatchedSets);
-            File.WriteAllText(targetFile.FullName, yaml);
+            ////var serializer = new SerializerBuilder()
+            ////    ////.EnsureRoundtrip()
+            ////    ////.WithTagMapping(nameof(CardReferenceData.MkmId), typeof(string))
+            ////    ////.WithTagMapping(nameof(CardReferenceData.MkmWebSite), typeof(string))
+            ////    ////.WithTagMapping(nameof(CardReferenceData.MkmImageUrl), typeof(string))
+            ////    ////.WithTagMapping(nameof(CardReferenceData.SetCodeMkm), typeof(string))
+            ////    ////.WithTagMapping(nameof(CardReferenceData.ScryfallId), typeof(Guid))
+            ////    .Build();
+
+            ////var yaml = serializer.Serialize(unmatchedSets);
+            ////File.WriteAllText(targetFile.FullName, yaml);
 
             Log.Information($"Wrote {unmatchedSets.Length} set infos to {targetFile.FullName}");
         }
@@ -491,6 +507,27 @@ namespace MtgInventory.Service
             MkmProductsSummary = $"{_cardDatabase.MkmProductInfo.Count()} products in {_cardDatabase.MkmExpansion.Count()} sets";
             ScryfallProductsSummary = $"{_cardDatabase.ScryfallCards.Count()} cards in {_cardDatabase.ScryfallSets.Count()} sets";
             InternalProductsSummary = $"{_cardDatabase.MagicCards.Count()} cards";
+        }
+
+        public IEnumerable<DetailedSetInfo> FilterSets(QuerySetFilter querySetFilter)
+        {
+            var query = _cardDatabase.MagicSets?.Query();
+
+            if (!string.IsNullOrWhiteSpace(querySetFilter.Name))
+            {
+                query = query?.Where(s => s.SetName.Contains(querySetFilter.Name));
+            }
+
+            if (querySetFilter.HideOnlyOneSide)
+            {
+                query = query?.Where(s => !s.IsKnownMkmOnlySet && !s.IsKnownScryfallOnlySet);
+            }
+            if (querySetFilter.HideKnownSets)
+            {
+                query = query?.Where(s => string.IsNullOrWhiteSpace(s.SetCodeMkm) && !string.IsNullOrWhiteSpace(s.SetCodeScryfall));
+            }
+
+            return query?.ToArray() ?? new DetailedSetInfo[0];
         }
     }
 }

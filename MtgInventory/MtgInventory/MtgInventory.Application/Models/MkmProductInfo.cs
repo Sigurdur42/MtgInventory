@@ -1,6 +1,5 @@
 ﻿using System;
 using MkmApi;
-using MkmApi.Entities;
 
 namespace MtgInventory.Service.Models
 {
@@ -42,9 +41,8 @@ namespace MtgInventory.Service.Models
         public DateTime? LastDetailUpdate { get; set; }
 
         public string MkmProductUrl { get; set; } = "";
-        
-        public string MkmImage { get; set; } = "";
 
+        public string MkmImage { get; set; } = "";
 
         public override string ToString()
         {

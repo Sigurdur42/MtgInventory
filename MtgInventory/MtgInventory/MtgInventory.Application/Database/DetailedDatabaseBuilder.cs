@@ -23,7 +23,7 @@ namespace MtgInventory.Service.Database
 
         public void BuildMkmSetData()
         {
-            var indexedSets = _database.MagicSets.FindAll().ToDictionary(s => s.SetCodeMkm);
+            var indexedSets = _database.MagicSets.FindAll().Where(s => !string.IsNullOrWhiteSpace(s.SetCodeMkm)).ToDictionary(s => s.SetCodeMkm);
             var setsToInsert = new List<DetailedSetInfo>();
             var setsToUpdate = new List<DetailedSetInfo>();
 
@@ -39,10 +39,10 @@ namespace MtgInventory.Service.Database
                 {
                     found = new DetailedSetInfo();
                     setsToInsert.Add(found);
+                    indexedSets.Add(key, found);
                 }
 
                 found.UpdateFromMkm(key, mkm);
-                indexedSets.Add(key, found);
             }
 
             if (setsToInsert.Any())
@@ -60,7 +60,7 @@ namespace MtgInventory.Service.Database
 
         public void BuildScryfallSetData()
         {
-            var indexedSets = _database.MagicSets.FindAll().ToDictionary(s => s.SetCodeMkm);
+            var indexedSets = _database.MagicSets.FindAll().ToDictionary(s => s.SetCode);
             var setsToInsert = new List<DetailedSetInfo>();
             var setsToUpdate = new List<DetailedSetInfo>();
 
@@ -132,12 +132,12 @@ namespace MtgInventory.Service.Database
                 "PRES" => "RSP",
                 "RIN" => "RI",
                 "PDSC" => "CC13",
-                "PD14" => "CC14",
-                "PD15" => "CC15",
-                "PD16" => "CC16",
-                "PD17" => "CC17",
-                "PD18" => "CC18",
-                "PD19" => "CC19",
+                "PS14" => "CC14",
+                "PS15" => "CC15",
+                "PS16" => "CC16",
+                "PS17" => "CC17",
+                "PS18" => "CC18",
+                "PS19" => "CC19",
                 "PLIST" => "ZNL",
                 "UGIN" => "UGFP",
                 "PUMA" => "XUMA",
@@ -357,7 +357,7 @@ namespace MtgInventory.Service.Database
         }
 
         private IEnumerable<ScryfallCard> ResolveSpecialScryfallCard(
-                    IEnumerable<ScryfallCard> cards,
+            IEnumerable<ScryfallCard> cards,
             IList<DetailedMagicCard> cardsToUpdate,
             IList<DetailedMagicCard> cardsToInsert,
             DetailedSetInfo setInfo)
@@ -390,18 +390,20 @@ namespace MtgInventory.Service.Database
                 // Commander oversized - Scryfall does not know oversized cards
                 switch (card.Set)
                 {
-                    case "C13":
-                    case "C14":
-                    case "C15":
-                    case "C16":
-                    case "C17":
-                    case "C18":
-                    case "C19":
-                    case "C20":
+                    case "OC13":
+                    case "OC14":
+                    case "OC15":
+                    case "OC16":
+                    case "OC17":
+                    case "OC18":
+                    case "OC19":
+                    case "OC20":
                         {
                             var found = _database.MagicCards.Query()
                                 .Where(c => c.NameEn == card.Name && c.SetCode == card.Set)
+                                .OrderByDescending(c => c.CollectorNumber)
                                 .FirstOrDefault();
+
                             if (found != null)
                             {
                                 found.UpdateFromScryfall(card, null);

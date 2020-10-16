@@ -52,7 +52,16 @@ namespace MtgInventory.Service.Models
             {
                 switch (Code)
                 {
-                    // TODO: Add only sets
+                    case "OC13":
+                    case "OC14":
+                    case "OC15":
+                    case "OC16":
+                    case "OC17":
+                    case "OC18":
+                    case "OC19":
+                    case "OC20":
+                        return true;
+
                     default:
                         return false;
                 }
