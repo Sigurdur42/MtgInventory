@@ -125,6 +125,8 @@
               <AutoCompleteBox Grid.Row="1" Grid.Column="1" Width="300"
                 HorizontalAlignment="Left"
                                 SelectedItem="{Binding DetailedCardQueryOptions.SetName, Mode=TwoWay}"
+                               IsTextCompletionEnabled="true"
+                               IsDropDownOpen="true"
                                 Items="{Binding SetFilter}" />
             </Grid>
           </Expander>
