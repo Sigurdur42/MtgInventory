@@ -324,12 +324,12 @@ namespace MtgInventory.Service
         {
             Log.Debug($"{nameof(EnrichDeckListWithDetails)} for deck {deckList.Name}");
 
-            foreach (var card in deckList.Mainboard.Where(c => c.CardId == null))
+            foreach (var card in deckList.Mainboard.Where(c => c.CardId == Guid.Empty))
             {
                 var found = _cardDatabase.MagicCards
                     .Query()
                     .Where(c => c.NameEn.Equals(card.Name))
-                    .Where(c => c.SetCode != null)
+                    .Where(c => !string.IsNullOrWhiteSpace(c.SetCode))
                     .ToList()
                     .Where(c => c.SetReleaseDate.HasValue)
                     .OrderByDescending(c => c.SetReleaseDate)

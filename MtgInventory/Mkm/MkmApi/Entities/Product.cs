@@ -51,5 +51,7 @@ namespace MkmApi.Entities
         public int CountReprints { get; set; }
 
         public PriceGuide PriceGuide { get; set; } = new PriceGuide();
+
+        public string OriginalResponse { get; set; } = "";
     }
 }

@@ -17,7 +17,7 @@
             company:                // company name; only returned for commercial users
             firstName:              // first name
             lastName:               // last name; only returned for commercial users
-        
+
         address: {}                 // Address entity
         phone:                      // phone number; only returned for commercial users
         email:                      // email address; only returned for commercial users

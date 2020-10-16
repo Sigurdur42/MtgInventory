@@ -64,7 +64,7 @@ namespace MkmApi.EntityReader
                 SellCount = element.GetContent("sellCount"),
                 SoldItems = element.GetContentInt("soldItems"),
                 AvgShippingTime = element.GetContent("avgShippingTime"),
-                OnVacation = element.GetContent("onVacation")
+                OnVacation = element.GetContent("onVacation"),
             };
         }
 
@@ -120,23 +120,24 @@ namespace MkmApi.EntityReader
                 CountReprints = product?.GetContentInt("countReprints") ?? 0,
 
                 PriceGuide = product?.Element("priceGuide")?.ReadPriceGuide() ?? new PriceGuide(),
+                OriginalResponse = product?.ToString(SaveOptions.None) ?? "",
             };
         }
 
         public static string GetContent(this XElement element, string name)
         {
-            return element?.Element(name)?.Value;
+            return element?.Element(name)?.Value ?? "";
         }
 
         public static int GetContentInt(this XElement element, string name)
         {
-            string content = element?.Element(name)?.Value;
+            string content = element?.Element(name)?.Value ?? "";
             return content.ToInt();
         }
 
         public static decimal? GetContentDecimal(this XElement element, string name)
         {
-            string content = element?.Element(name)?.Value;
+            string content = element?.Element(name)?.Value ?? "";
             return content.ToDecimal();
         }
     }
