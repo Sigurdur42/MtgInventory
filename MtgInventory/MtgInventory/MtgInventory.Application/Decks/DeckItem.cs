@@ -15,5 +15,7 @@ namespace MtgInventory.Service.Decks
         public string SetName { get; set; } = "";
 
         public Guid CardId { get; set; }
+
+        public bool IsEmpty => string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(SetCode) && string.IsNullOrEmpty(SetName);
     }
 }

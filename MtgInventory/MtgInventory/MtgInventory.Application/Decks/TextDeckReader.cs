@@ -62,7 +62,7 @@ namespace MtgInventory.Service.Decks
             if (!match.Success)
             {
                 Log.Warning($"{nameof(TextDeckReader)}: Cannot read line '{line}'");
-                return null;
+                return new DeckItem();
             }
 
             var result = new DeckItem()

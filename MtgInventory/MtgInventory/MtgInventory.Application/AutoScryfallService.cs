@@ -32,8 +32,8 @@ namespace MtgInventory.Service
         }
 
         public CardPrice AutoDownloadPrice(
-            string name, 
-            string setCode, 
+            string name,
+            string setCode,
             Guid scryfallId)
         {
             if (Guid.Empty == scryfallId)
@@ -45,8 +45,7 @@ namespace MtgInventory.Service
 
             var latestPrice = GetLatestPrice(scryfallId);
 
-            if (latestPrice == null
-                || latestPrice.UpdateDate.Value.AddDays(_settingService.Settings.RefreshPriceAfterDays) < DateTime.Now)
+            if (latestPrice.UpdateDate.Value.AddDays(_settingService.Settings.RefreshPriceAfterDays) < DateTime.Now)
             {
                 Log.Information($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
 
@@ -69,12 +68,11 @@ namespace MtgInventory.Service
 
         public CardPrice GetLatestPrice(Guid scryfallId)
         {
-            CardPrice result = null;
             var query = _cardDatabase.CardPrices.Query();
 
-            result = query.Where(c => c.ScryfallId == scryfallId).OrderByDescending(p => p.UpdateDate).FirstOrDefault();
+            var result = query.Where(c => c.ScryfallId == scryfallId).OrderByDescending(p => p.UpdateDate).FirstOrDefault();
 
-            return result;
+            return result ?? new CardPrice();
         }
     }
 }

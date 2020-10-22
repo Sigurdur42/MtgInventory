@@ -37,7 +37,7 @@ namespace MtgInventory.Service.Models
 
         public Guid Id { get; set; }
 
-        public string MkmId { get; set; }
+        public string MkmId { get; set; } = "";
 
         public Guid ScryfallId { get; set; }
 
