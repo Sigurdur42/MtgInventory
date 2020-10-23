@@ -23,7 +23,7 @@ namespace MtgInventory
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
                 .WriteTo.PanelLogSink(CultureInfo.InvariantCulture)
-                .WriteTo.File(System.IO.Path.Combine(folder, "MtgInventory.log"), rollingInterval: RollingInterval.Minute)
+                .WriteTo.File(System.IO.Path.Combine(folder, "MtgInventory.log"), rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             AvaloniaXamlLoader.Load(this);

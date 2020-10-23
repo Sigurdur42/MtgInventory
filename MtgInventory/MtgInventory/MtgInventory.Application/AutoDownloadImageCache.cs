@@ -131,17 +131,24 @@ namespace MtgInventory.Service
                  response.StatusCode == HttpStatusCode.Redirect) &&
                 response.ContentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
             {
-                // if the remote file was found, download it
-                using Stream inputStream = response.GetResponseStream();
-                using Stream outputStream = File.OpenWrite(fileName);
-
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                do
+                try
                 {
-                    bytesRead = inputStream.Read(buffer, 0, buffer.Length);
-                    outputStream.Write(buffer, 0, bytesRead);
-                } while (bytesRead != 0);
+                    // if the remote file was found, download it
+                    using Stream inputStream = response.GetResponseStream();
+                    using Stream outputStream = File.OpenWrite(fileName);
+
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    do
+                    {
+                        bytesRead = inputStream.Read(buffer, 0, buffer.Length);
+                        outputStream.Write(buffer, 0, bytesRead);
+                    } while (bytesRead != 0);
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"Cannot download image to {fileName}: {e}");
+                }
             }
         }
     }

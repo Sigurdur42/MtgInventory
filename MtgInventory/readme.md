@@ -18,7 +18,7 @@ Write something fancy here
 ## Open tasks
 - Use task scheduler for parallel work (See https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskscheduler?view=netcore-3.1)
 
-- Auto download sets after startup -> Do this once a week (configurable)
+- remove online only sets
 
 
 - Specific message when MKM API is not configured. Also avoid accessing the API in that case. This must be centralized

@@ -293,7 +293,7 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildCardsForSet(DetailedSetInfo set)
         {
-            _detailedDatabaseBuilder?.RebuildMkmCardsForSet(set.SetCodeMkm);
+            _detailedDatabaseBuilder?.RebuildMkmCardsForSet(set);
             _detailedDatabaseBuilder?.RebuildScryfallCardsForSet(set.SetCodeScryfall);
         }
 

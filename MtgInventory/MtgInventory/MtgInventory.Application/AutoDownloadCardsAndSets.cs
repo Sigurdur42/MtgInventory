@@ -16,13 +16,12 @@ namespace MtgInventory.Service
     public class AutoDownloadCardsAndSets
     {
         private const string _logPrefix = "[ADL] ";
-        private readonly ISettingsService _settingsService;
         private readonly CardDatabase _cardDatabase;
         private readonly IApiCallStatistic _mkmApiCallStatistic;
+        private readonly MkmRequest _mkmRequest;
         private readonly IScryfallApiCallStatistic _scryfallApiCallStatistic;
         private readonly IScryfallService _scryfallService;
-        private readonly MkmRequest _mkmRequest;
-
+        private readonly ISettingsService _settingsService;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Task? _runningTask;
 
@@ -46,48 +45,54 @@ namespace MtgInventory.Service
         }
 
         public event EventHandler CardsUpdated;
+
         public event EventHandler SetsUpdated;
 
-
-        public void Start()
+        public void AutoDownloadMkmDetails(
+            MkmAuthenticationData authenticationData,
+            DetailedSetInfo set)
         {
-            _cancellationTokenSource = new CancellationTokenSource();
-            _runningTask = Task.Factory.StartNew(
-                () => RunAutoDownload(_cancellationTokenSource.Token),
-                _cancellationTokenSource.Token);
+            var cardsOfSet = _cardDatabase?.MagicCards
+                ?.Query()
+                ?.Where(c => c.SetCode == set.SetCode)
+                ?.ToArray() ?? new DetailedMagicCard[0];
+
+            AutoDownloadMkmDetails(authenticationData, cardsOfSet, "");
         }
 
-        public void Stop()
+        public void AutoDownloadMkmDetails(
+            MkmAuthenticationData authenticationData,
+            DetailedMagicCard[] cards,
+            string queryName)
         {
-            if (_runningTask != null && _runningTask.Status == TaskStatus.Running)
+            Task.Factory.StartNew(() =>
             {
-                _cancellationTokenSource.Cancel(false);
-                _runningTask.Wait();
-            }
-        }
+                foreach (var card in cards.Where(c => !string.IsNullOrWhiteSpace(c.MkmId)))
+                {
+                    if (!card.MkmDetailsRequired)
+                    {
+                        // All details do exist
+                        continue;
+                    }
 
-        public ScryfallSet[] DownloadScryfallSetsData(bool rebuildDetailedSetInfo)
-        {
-            Log.Debug($"{_logPrefix}Loading Scryfall expansions...");
-            var scryfallSets = _scryfallService.RetrieveSets()
-                .OrderByDescending(s => s.Name)
-                .Select(s => new ScryfallSet(s))
-                .ToArray();
+                    // refresh to ensure that a previous call did not update this
+                    var refreshed = _cardDatabase.MagicCards.Find(c => c.Id == card.Id).First();
+                    if (!refreshed.MkmDetailsRequired)
+                    {
+                        continue;
+                    }
 
-            _cardDatabase.InsertScryfallSets(scryfallSets);
-
-            if (rebuildDetailedSetInfo)
-            {
-                _cardDatabase.RebuildSetData();
-            }
-            _cardDatabase.UpdateScryfallStatistics(_scryfallApiCallStatistic);
-
-            Log.Debug($"{_logPrefix}Done loading Scryfall expansions...");
-
-            CardsUpdated?.Invoke(this, EventArgs.Empty);
-            SetsUpdated?.Invoke(this, EventArgs.Empty);
-
-            return scryfallSets;
+                    // Now download all details for this card:
+                    if (string.IsNullOrWhiteSpace(queryName))
+                    {
+                        DownloadMkmAdditionalData(authenticationData, card.NameEn, true);
+                    }
+                    else
+                    {
+                        DownloadMkmAdditionalData(authenticationData, queryName, false);
+                    }
+                }
+            });
         }
 
         public void DownloadMkmSetsAndProducts()
@@ -115,52 +120,46 @@ namespace MtgInventory.Service
             CardsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
-        public void AutoDownloadMkmDetails(
-            MkmAuthenticationData authenticationData,
-            DetailedSetInfo set)
+        public ScryfallSet[] DownloadScryfallSetsData(bool rebuildDetailedSetInfo)
         {
-            var cardsOfSet = _cardDatabase?.MagicCards
-                ?.Query()
-                ?.Where(c => c.SetCode == set.SetCode)
-                ?.ToArray() ?? new DetailedMagicCard[0];
+            Log.Debug($"{_logPrefix}Loading Scryfall expansions...");
+            var scryfallSets = _scryfallService.RetrieveSets()
+                .OrderByDescending(s => s.Name)
+                .Select(s => new ScryfallSet(s))
+                .ToArray();
 
-            AutoDownloadMkmDetails(authenticationData, cardsOfSet, "");
+            _cardDatabase.InsertScryfallSets(scryfallSets);
+
+            if (rebuildDetailedSetInfo)
+            {
+                _cardDatabase.RebuildSetData();
+            }
+
+            _cardDatabase.UpdateScryfallStatistics(_scryfallApiCallStatistic);
+
+            Log.Debug($"{_logPrefix}Done loading Scryfall expansions...");
+
+            CardsUpdated?.Invoke(this, EventArgs.Empty);
+            SetsUpdated?.Invoke(this, EventArgs.Empty);
+
+            return scryfallSets;
         }
 
-        public void AutoDownloadMkmDetails(
-            MkmAuthenticationData authenticationData,
-            DetailedMagicCard[] cards,
-            string queryName)
+        public void Start()
         {
-            Task.Factory.StartNew(() =>
+            _cancellationTokenSource = new CancellationTokenSource();
+            _runningTask = Task.Factory.StartNew(
+                () => RunAutoDownload(_cancellationTokenSource.Token),
+                _cancellationTokenSource.Token);
+        }
+
+        public void Stop()
+        {
+            if (_runningTask != null && _runningTask.Status == TaskStatus.Running)
             {
-                // TODO: Cancellation
-                foreach (var card in cards.Where(c => !string.IsNullOrWhiteSpace(c.MkmId)))
-                {
-                    if (!card.MkmDetailsRequired)
-                    {
-                        // All details do exist
-                        continue;
-                    }
-
-                    // refresh to ensure that a previous call did not update this
-                    var refreshed = _cardDatabase.MagicCards.Find(c => c.Id == card.Id).First();
-                    if (!refreshed.MkmDetailsRequired)
-                    {
-                        continue;
-                    }
-
-                    // Now download all details for this card:
-                    if (string.IsNullOrWhiteSpace(queryName))
-                    {
-                        DownloadMkmAdditionalData(authenticationData, card.NameEn, true);
-                    }
-                    else
-                    {
-                        DownloadMkmAdditionalData(authenticationData, queryName, false);
-                    }
-                }
-            });
+                _cancellationTokenSource.Cancel(false);
+                _runningTask.Wait();
+            }
         }
 
         private bool DownloadMkmAdditionalData(
@@ -214,6 +213,37 @@ namespace MtgInventory.Service
             return true;
         }
 
+        private void DownloadScryfallCardsForSet(DetailedSetInfo set)
+        {
+            if (string.IsNullOrWhiteSpace(set.SetCodeScryfall))
+            {
+                // This is a MKM only set
+                return;
+            }
+
+            // Delete Scryfall cards for this set
+            _cardDatabase?.ScryfallCards?.DeleteMany(c => c.Set == set.SetCodeScryfall);
+
+            // Download new cards
+            var cards = _scryfallService.RetrieveCardsForSetCode(set.SetCodeScryfall)
+                .Select(c => new ScryfallCard(c))
+                .ToArray();
+
+            if (!cards.Any())
+            {
+                // Assume that the down´load failed - do not insert and do not mark as complete
+                return;
+            }
+
+            _cardDatabase.InsertScryfallCards(cards);
+
+            var prices = cards.Select(c => new CardPrice(c));
+            _cardDatabase?.CardPrices?.InsertBulk(prices);
+            _cardDatabase?.EnsureCardPriceIndex();
+
+            CardsUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
         private void RunAutoDownload(CancellationToken cancellationToken)
         {
             var stopwatch = Stopwatch.StartNew();
@@ -222,15 +252,15 @@ namespace MtgInventory.Service
             {
                 // Sets are always updated as a whole
                 var knownSets = _cardDatabase.MagicSets
-                    .Query()
-                    .OrderBy(s => s.SetLastUpdated)
-                    .ToArray();
+                    ?.Query()
+                    ?.OrderBy(s => s.SetLastUpdated)
+                    ?.ToArray();
 
                 var lastDownloaded = knownSets
-                    .OrderBy(s => s.SetLastDownloaded).FirstOrDefault() ?? new DetailedSetInfo();
+                    ?.OrderBy(s => s.SetLastDownloaded)?.FirstOrDefault() ?? new DetailedSetInfo();
 
                 var lastUpdated = knownSets
-                    .FirstOrDefault() ?? new DetailedSetInfo();
+                    ?.FirstOrDefault() ?? new DetailedSetInfo();
 
                 var isSetDataDownloadRequired = lastDownloaded.SetLastDownloaded.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
                 var isSetDataOutdated = isSetDataDownloadRequired || lastUpdated.SetLastUpdated.AddDays(_settingsService.Settings.RefreshSetDataAfterDays).Date <= DateTime.Now.Date;
@@ -252,6 +282,8 @@ namespace MtgInventory.Service
                     {
                         return;
                     }
+
+                    SetsUpdated?.Invoke(this, EventArgs.Empty);
                 }
                 else
                 {
@@ -271,7 +303,11 @@ namespace MtgInventory.Service
                     Log.Debug($"{_logPrefix} Set informations are up to date");
                 }
 
-                var allSets = _cardDatabase.MagicSets.FindAll().OrderBy(s => s.ReleaseDateParsed).ToArray();
+                var allSets = _cardDatabase.MagicSets
+                    ?.FindAll()
+                    ?.OrderByDescending(s => s.ReleaseDateParsed)
+                    ?.ToArray() ?? new DetailedSetInfo[0];
+
                 foreach (var detailedSetInfo in allSets)
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -289,7 +325,7 @@ namespace MtgInventory.Service
                         // Cards need to be downloaded again
                         DownloadScryfallCardsForSet(detailedSetInfo);
                         detailedSetInfo.CardsLastDownloaded = DateTime.Now;
-                        _cardDatabase.MagicSets.Update(detailedSetInfo);
+                        _cardDatabase?.MagicSets?.Update(detailedSetInfo);
 
                         if (cancellationToken.IsCancellationRequested)
                         {
@@ -301,53 +337,20 @@ namespace MtgInventory.Service
                     {
                         Log.Debug($"{_logPrefix} Rebuilding cards for set {detailedSetInfo.SetCode}...");
 
-                        _cardDatabase.RebuildCardsForSet(detailedSetInfo);
+                        _cardDatabase?.RebuildCardsForSet(detailedSetInfo);
                         detailedSetInfo.CardsLastUpdated = DateTime.Now;
-                        _cardDatabase.MagicSets.Update(detailedSetInfo);
-                    }
-
-                    if (cardsUpdatedOutdated)
-                    {
-                        CardsUpdated?.Invoke(this, EventArgs.Empty);
+                        _cardDatabase?.MagicSets?.Update(detailedSetInfo);
                     }
                 }
+
+                CardsUpdated?.Invoke(this, EventArgs.Empty);
+                SetsUpdated?.Invoke(this, EventArgs.Empty);
             }
             finally
             {
                 stopwatch.Stop();
                 Log.Information($"{_logPrefix} Finished auto download in {stopwatch.Elapsed}");
             }
-        }
-
-        private void DownloadScryfallCardsForSet(DetailedSetInfo set)
-        {
-            if (string.IsNullOrWhiteSpace(set.SetCodeScryfall))
-            {
-                // This is a MKM only set
-                return;
-            }
-
-            // Delete Scryfall cards for this set
-            _cardDatabase.ScryfallCards.DeleteMany(c => c.Set == set.SetCodeScryfall);
-
-            // Download new cards
-            var cards = _scryfallService.RetrieveCardsForSetCode(set.SetCodeScryfall)
-                .Select(c => new ScryfallCard(c))
-                .ToArray();
-
-            if (!cards.Any())
-            {
-                // Assume that the down´load failed - do not insert and do not mark as complete
-                return;
-            }
-
-            _cardDatabase.InsertScryfallCards(cards);
-
-            var prices = cards.Select(c => new CardPrice(c));
-            _cardDatabase.CardPrices.InsertBulk(prices);
-            _cardDatabase.EnsureCardPriceIndex();
-
-            CardsUpdated?.Invoke(this, EventArgs.Empty);
         }
     }
 }

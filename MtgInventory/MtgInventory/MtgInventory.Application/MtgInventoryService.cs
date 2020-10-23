@@ -58,7 +58,7 @@ namespace MtgInventory.Service
 
         public MtgInventorySettings Settings => _settingsService.Settings;
 
-        public IEnumerable<DetailedSetInfo> AllSets => _cardDatabase.MagicSets.FindAll();
+        public IEnumerable<DetailedSetInfo> AllSets => _cardDatabase?.MagicSets?.FindAll() ?? new DetailedSetInfo[0];
 
         public void Dispose()
         {
