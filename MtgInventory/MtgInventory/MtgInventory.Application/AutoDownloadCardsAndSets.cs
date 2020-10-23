@@ -42,9 +42,12 @@ namespace MtgInventory.Service
             _mkmRequest = mkmRequest;
 
             CardsUpdated += (sender, e) => { };
+            SetsUpdated += (sender, e) => { };
         }
 
         public event EventHandler CardsUpdated;
+        public event EventHandler SetsUpdated;
+
 
         public void Start()
         {
@@ -82,6 +85,7 @@ namespace MtgInventory.Service
             Log.Debug($"{_logPrefix}Done loading Scryfall expansions...");
 
             CardsUpdated?.Invoke(this, EventArgs.Empty);
+            SetsUpdated?.Invoke(this, EventArgs.Empty);
 
             return scryfallSets;
         }
@@ -280,7 +284,7 @@ namespace MtgInventory.Service
 
                     if (cardsDownloadOutdated)
                     {
-                        Log.Debug($"{_logPrefix} Downloading cards for set {detailedSetInfo.SetCode}...");
+                        Log.Debug($"{_logPrefix} Downloading cards for set {detailedSetInfo.SetCode} ({detailedSetInfo.SetName})...");
 
                         // Cards need to be downloaded again
                         DownloadScryfallCardsForSet(detailedSetInfo);
@@ -330,6 +334,13 @@ namespace MtgInventory.Service
             var cards = _scryfallService.RetrieveCardsForSetCode(set.SetCodeScryfall)
                 .Select(c => new ScryfallCard(c))
                 .ToArray();
+
+            if (!cards.Any())
+            {
+                // Assume that the down´load failed - do not insert and do not mark as complete
+                return;
+            }
+
             _cardDatabase.InsertScryfallCards(cards);
 
             var prices = cards.Select(c => new CardPrice(c));

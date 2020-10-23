@@ -50,11 +50,17 @@ namespace MtgInventory.ViewModels
 
                 UpdateProductSummary();
 
-                AllSets = MainService.AllSets.ToArray();
-                FilteredSets = AllSets;
+                AssignSets();
+                MainService.SetsUpdated += (sender, e) => AssignSets();
             });
 
             LogSink = PanelLogSink.Instance;
+        }
+
+        private void AssignSets()
+        {
+            AllSets = MainService.AllSets.ToArray();
+            FilteredSets = AllSets;
         }
 
         public void OnFilterSets()

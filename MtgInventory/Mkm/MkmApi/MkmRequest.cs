@@ -101,13 +101,15 @@ namespace MkmApi
                 queryParameters.Add(new QueryParameter("exact", "true"));
             }
 
-            var response = MakeRequest(
-                authenticationData,
-                $"products/find",
-                queryParameters);
+          
 
             try
             {
+                var response = MakeRequest(
+                    authenticationData,
+                    $"products/find",
+                    queryParameters);
+
                 var doc = XDocument.Parse(response);
                 return doc.Root
                     .Elements("product")
@@ -116,6 +118,7 @@ namespace MkmApi
             }
             catch (Exception error)
             {
+                // TODO: Add serilog
                 Console.WriteLine(error);
             }
 

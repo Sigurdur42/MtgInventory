@@ -41,6 +41,7 @@ namespace MtgInventory.Service
         {
             SystemFolders = new SystemFolders();
             _cardDatabase = new CardDatabase();
+            SetsUpdated += (sender, e) => { };
         }
 
         public IAutoScryfallService AutoScryfallService => _autoScryfallService;
@@ -122,10 +123,19 @@ namespace MtgInventory.Service
                 UpdateCallStatistics();
             };
 
+            _autoDownloadCardsAndSets.SetsUpdated += (sender, args) =>
+            {
+                UpdateProductSummary();
+                UpdateCallStatistics();
+                SetsUpdated?.Invoke(this, EventArgs.Empty);
+            };
+
             _autoDownloadCardsAndSets.Start();
 
             _autoDownloadImageCache = new AutoDownloadImageCache(SystemFolders.BaseFolder);
         }
+
+        public event EventHandler SetsUpdated;
 
         public void ShutDown()
         {
@@ -345,6 +355,8 @@ namespace MtgInventory.Service
                 .ToList();
 
             _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, result.ToArray(), query.Name);
+
+            Log.Debug($"{nameof(FindDetailedCardsByName)}: {query} returned {result.Count} records");
 
             return result;
         }

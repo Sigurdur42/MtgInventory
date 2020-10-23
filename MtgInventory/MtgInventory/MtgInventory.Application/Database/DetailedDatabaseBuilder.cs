@@ -142,6 +142,8 @@ namespace MtgInventory.Service.Database
                 "UGIN" => "UGFP",
                 "PUMA" => "XUMA",
                 "EXP" => "ZEX",
+                "PWAR" => "XWAR",
+                "PIKO" => "XICO",
                 _ => setCode
             };
         }
@@ -412,6 +414,26 @@ namespace MtgInventory.Service.Database
                             }
                         }
                         break;
+
+                    case "PWAR":
+                        if (card.CollectorNumber.Contains("S", StringComparison.InvariantCultureIgnoreCase)
+                            || (card.CollectorNumber.Contains("★", StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                            // This is japanese alt art. MKM has a differnt set for this
+                            var found = _database?.MagicCards
+                                ?.Query()
+                                ?.Where(c => c.NameEn == card.Name && c.SetCodeMkm == "JWAR")
+                                ?.OrderByDescending(c => c.CollectorNumber)
+                                ?.FirstOrDefault();
+
+                            if (found != null)
+                            {
+                                found.UpdateFromScryfall(card, null);
+                                cardsToUpdate.Add(found);
+                                continue;
+                            }
+                        }
+                        break;
                 }
 
                 switch (card.Id.ToString().ToUpperInvariant())
@@ -440,7 +462,7 @@ namespace MtgInventory.Service.Database
             DetailedSetInfo setInfo,
             bool resetMkmData)
         {
-            var found = _database.MagicCards.Query().Where(c => c.MkmId == mkmId).First();
+            var found = _database?.MagicCards?.Query().Where(c => c.MkmId == mkmId).FirstOrDefault() ?? new DetailedMagicCard();
             found.UpdateFromScryfall(card, setInfo);
 
             if (resetMkmData)

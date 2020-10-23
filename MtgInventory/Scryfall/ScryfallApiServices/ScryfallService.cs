@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Microsoft.Extensions.Logging;
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
 using ScryfallApiServices;
+using Serilog;
 
 namespace MtgBinder.Domain.Scryfall
 {
@@ -59,41 +60,43 @@ namespace MtgBinder.Domain.Scryfall
             string lookupPattern,
             SearchOptions.RollupMode rollupMode)
         {
-            var page = 1;
-            ResultList<Card> cards;
-
-            var searchOptions = new SearchOptions()
+            try
             {
-                Mode = rollupMode,
-                IncludeExtras = true,
-                Direction = SearchOptions.SortDirection.Asc,
-                Sort = SearchOptions.CardSort.Name
-            };
+                var page = 1;
+                ResultList<Card> cards;
 
-            var result = new List<Card>();
-            do
+                var searchOptions = new SearchOptions() {Mode = rollupMode, IncludeExtras = true, Direction = SearchOptions.SortDirection.Asc, Sort = SearchOptions.CardSort.Name};
+
+                var result = new List<Card>();
+                do
+                {
+                    _autoSleep.AutoSleep();
+                    cards = _apiClient.Cards.Search(lookupPattern, page, searchOptions).Result;
+                    IncrementCallStatistic();
+
+                    if (page == 1 && cards.HasMore)
+                    {
+                        // Initialize progress
+                        var pageCount = cards.TotalCards / cards.Data.Count;
+                    }
+
+                    ++page;
+
+                    if (cards.Data != null)
+                    {
+                        result.AddRange(cards.Data);
+                    }
+
+                    // TODO: Handle errors
+                } while (cards.HasMore);
+
+                return result.ToArray();
+            }
+            catch (Exception error)
             {
-                _autoSleep.AutoSleep();
-                cards = _apiClient.Cards.Search(lookupPattern, page, searchOptions).Result;
-                IncrementCallStatistic();
-
-                if (page == 1 && cards.HasMore)
-                {
-                    // Initialize progress
-                    var pageCount = cards.TotalCards / cards.Data.Count;
-                }
-
-                ++page;
-
-                if (cards.Data != null)
-                {
-                    result.AddRange(cards.Data);
-                }
-
-                // TODO: Handle errors
-            } while (cards.HasMore);
-
-            return result.ToArray();
+                Log.Error($"Cannot run search for {lookupPattern}: {error}");
+                return Array.Empty<Card>();
+            }
         }
 
         private void IncrementCallStatistic()
