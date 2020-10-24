@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using MkmApi.Entities;
 using MtgInventory.Service.Models;
 using Serilog;
 
@@ -12,6 +13,7 @@ namespace MtgInventory.Service.Database
         private readonly CardDatabase _database;
         private readonly object _sync = new object();
         private bool _buildingInProgress;
+        private readonly SetReferenceService _setReferenceService = new SetReferenceService();
 
         public DetailedDatabaseBuilder(
             CardDatabase database)
@@ -19,18 +21,20 @@ namespace MtgInventory.Service.Database
             _database = database;
         }
 
-        // TODO: Make thread safe
-
         public void BuildMkmSetData()
         {
-            var indexedSets = _database.MagicSets.FindAll().Where(s => !string.IsNullOrWhiteSpace(s.SetCodeMkm)).ToDictionary(s => s.SetCodeMkm);
+            var indexedSets = _database?.MagicSets?.FindAll()
+                ?.Where(s => !string.IsNullOrWhiteSpace(s.SetCodeMkm))
+                ?.ToDictionary(s => s.SetCodeMkm)
+                ?? new Dictionary<string, DetailedSetInfo>();
+
             var setsToInsert = new List<DetailedSetInfo>();
             var setsToUpdate = new List<DetailedSetInfo>();
 
             Log.Debug("Rebuilding MKM Set data...");
-            foreach (var mkm in _database.MkmExpansion.FindAll())
+            foreach (var mkm in _database?.MkmExpansion?.FindAll() ?? new List<Expansion>())
             {
-                var key = GetMainSetCodeForMkm(mkm.Abbreviation.ToUpperInvariant());
+                var key = mkm.Abbreviation.ToUpperInvariant();
                 if (indexedSets.TryGetValue(key, out var found))
                 {
                     setsToUpdate.Add(found);
@@ -43,24 +47,28 @@ namespace MtgInventory.Service.Database
                 }
 
                 found.UpdateFromMkm(key, mkm);
+                UpdateSetMigrationStatus(found);
             }
 
             if (setsToInsert.Any())
             {
-                _database.MagicSets.InsertBulk(setsToInsert);
+                _database?.MagicSets?.InsertBulk(setsToInsert);
             }
 
             if (setsToUpdate.Any())
             {
-                _database.MagicSets.Update(setsToUpdate);
+                _database?.MagicSets?.Update(setsToUpdate);
             }
 
-            _database.EnsureSetIndex();
+            _database?.EnsureSetIndex();
         }
 
         public void BuildScryfallSetData()
         {
-            var indexedSets = _database.MagicSets.FindAll().ToDictionary(s => s.SetCode);
+            var indexedSets = _database?.MagicSets?.FindAll()
+                                  ?.ToDictionary(s => s.SetCode)
+                              ?? new Dictionary<string, DetailedSetInfo>();
+
             var setsToInsert = new List<DetailedSetInfo>();
             var setsToUpdate = new List<DetailedSetInfo>();
 
@@ -72,7 +80,12 @@ namespace MtgInventory.Service.Database
                     continue;
                 }
 
-                var key = GetMainSetCodeForScryfall(scryfall.Code?.ToUpperInvariant() ?? "");
+                var scryfallKey = scryfall.Code?.ToUpperInvariant() ?? "";
+                var key = _setReferenceService.GetMkmSetCode(scryfallKey);
+                if (string.IsNullOrEmpty(key))
+                {
+                    key = scryfallKey;
+                }
                 if (!indexedSets.TryGetValue(key, out var found))
                 {
                     found = new DetailedSetInfo();
@@ -85,73 +98,20 @@ namespace MtgInventory.Service.Database
                 }
 
                 found.UpdateFromScryfall(key, scryfall);
+                UpdateSetMigrationStatus(found);
             }
 
             if (setsToInsert.Any())
             {
-                _database.MagicSets.InsertBulk(setsToInsert);
+                _database.MagicSets?.InsertBulk(setsToInsert);
             }
 
             if (setsToUpdate.Any())
             {
-                _database.MagicSets.Update(setsToUpdate);
+                _database.MagicSets?.Update(setsToUpdate);
             }
 
             _database.EnsureSetIndex();
-        }
-
-        internal static string GetMainSetCodeForMkm(string setCode)
-        {
-            return setCode;
-        }
-
-        internal static string GetMainSetCodeForScryfall(string setCode)
-        {
-            var setCodePatched = setCode.ToUpperInvariant() ?? "";
-            return setCodePatched switch
-            {
-                "CST" => "CSPTD",
-                "MP2" => "AKHI",
-                "PCMP" => "CPR",
-                "PEMN" => "EMNP",
-                "PGPX" => "GPPR",
-                "GUL" => "PGRU",
-                "IBS" => "ITP",
-                "PXLN" => "XLNP",
-                "MPS" => "KLDS",
-                "AMH1" => "XMH1",
-                "CON" => "CONF",
-                "PALP" => "APL",
-                "FBB" => "DTL",
-                "4BB" => "4EBB",
-                "PGRU" => "GUL",
-                "HHO" => "HHPR",
-                "PHJ" => "HJCC",
-                "CEI" => "IED",
-                "ITP" => "IBS",
-                "MGB" => "MUL",
-                "MB1" => "MYS",
-                "CMB1" => "MYSPT",
-                "PREL" => "REL",
-                "REN" => "RE",
-                "PRES" => "RSP",
-                "RIN" => "RI",
-                "PDSC" => "CC13",
-                "PS14" => "CC14",
-                "PS15" => "CC15",
-                "PS16" => "CC16",
-                "PS17" => "CC17",
-                "PS18" => "CC18",
-                "PS19" => "CC19",
-                "PLIST" => "ZNL",
-                "UGIN" => "UGFP",
-                "PUMA" => "XUMA",
-                "EXP" => "ZEX",
-                "PWAR" => "XWAR",
-                "PIKO" => "XICO",
-                "PVAN" => "VG",
-                _ => setCode
-            };
         }
 
         internal void RebuildMkmCardsForSet(DetailedSetInfo lastSet)
@@ -488,6 +448,31 @@ namespace MtgInventory.Service.Database
             }
 
             return result;
+        }
+
+        private void UpdateSetMigrationStatus(DetailedSetInfo set)
+        {
+            if (set.IsKnownMkmOnlySet)
+            {
+                set.MigrationStatus = SetMigrationStatus.Migrated;
+                return;
+            }
+
+            var scryfallCode = _setReferenceService.GetMkmSetCode(set.SetCodeScryfall);
+            if (!string.IsNullOrEmpty(scryfallCode))
+            {
+                set.MigrationStatus = SetMigrationStatus.Migrated;
+                return;
+            }
+
+            var mkmCode = _setReferenceService.GetScryfallSetCode(set.SetCodeMkm);
+            if (!string.IsNullOrEmpty(mkmCode))
+            {
+                set.MigrationStatus = SetMigrationStatus.Migrated;
+                return;
+            }
+
+            set.MigrationStatus = SetMigrationStatus.Unknown;
         }
     }
 }

@@ -19,17 +19,18 @@ namespace MkmApi.Entities
          * */
 
         public int IdExpansion { get; set; }
-        public string EnName { get; set; }
+        public string EnName { get; set; } = "";
         public string Abbreviation { get; set; } = "";
-        public string Icon { get; set; }
-        public string ReleaseDate { get; set; }
-        public string IsReleased { get; set; }
+        public string Icon { get; set; } = "";
+        public string ReleaseDate { get; set; } = "";
+        public string IsReleased { get; set; } = "";
         public int IdGame { get; set; }
 
         public DateTime? ReleaseDateParsed { get; set; }
 
         public bool IsMkmOnlySet
         {
+            // move this logic to ´database
             get
             {
                 if (Regex.IsMatch(Abbreviation, @"^TOK\d+$", RegexOptions.IgnoreCase))

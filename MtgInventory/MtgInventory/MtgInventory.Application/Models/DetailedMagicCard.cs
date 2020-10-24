@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MkmApi.Entities;
+using MtgInventory.Service.Database;
 using MtgInventory.Service.ReferenceData;
 
 namespace MtgInventory.Service.Models
@@ -57,6 +58,9 @@ namespace MtgInventory.Service.Models
         public bool MkmDetailsRequired => !string.IsNullOrWhiteSpace(MkmId) && string.IsNullOrWhiteSpace(MkmWebSite);
        
         public bool IsScryfallOnly => string.IsNullOrWhiteSpace(MkmId);
+
+        public CardMigrationStatus MigrationStatus { get; set; } = CardMigrationStatus.Unknown;
+
 
         public override string ToString()
         {

@@ -235,6 +235,7 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -244,6 +245,8 @@
                                             <TextBlock VerticalAlignment="Center" Grid.Column="1" Margin="3,0,0,0" Text="{Binding MkmCardCount}" HorizontalAlignment="Right"/>
                                             <TextBlock VerticalAlignment="Center" Grid.Row="1">Scryfall cards:</TextBlock>
                                             <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Margin="3,0,0,0" Text="{Binding ScryfallCardCount}"  HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="2">Migrated:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="3,0,0,0" Text="{Binding MigrationStatus}"  HorizontalAlignment="Right"/>
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

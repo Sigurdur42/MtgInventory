@@ -19,23 +19,16 @@ namespace MtgInventory.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         private const string _allSetsName = "All Sets";
-        private string _mkmProductsSummary = "";
-
-        private IEnumerable<DetailedCardViewModel> _mkmProductsFound;
-
-        private DeckListItemViewModel[] _currentDeckList;
-
-        private MkmApiCallStatistics _mkmApiCallStatistics;
-
-        private IEnumerable<MkmStockItemViewModel> _currentStock;
-
         private IEnumerable<DetailedSetInfo> _allSets;
-        private IEnumerable<string> _setFilter;
-        private QueryCardOptions _queryCardOptions = new QueryCardOptions();
-
-        private MtgInventorySettings _settings = new MtgInventorySettings();
-
+        private DeckListItemViewModel[] _currentDeckList;
+        private IEnumerable<MkmStockItemViewModel> _currentStock;
         private IEnumerable<DetailedSetInfo> _filteredSets = new DetailedSetInfo[0];
+        private MkmApiCallStatistics _mkmApiCallStatistics;
+        private IEnumerable<DetailedCardViewModel> _mkmProductsFound;
+        private string _mkmProductsSummary = "";
+        private QueryCardOptions _queryCardOptions = new QueryCardOptions();
+        private IEnumerable<string> _setFilter;
+        private MtgInventorySettings _settings = new MtgInventorySettings();
 
         public MainWindowViewModel()
         {
@@ -57,43 +50,6 @@ namespace MtgInventory.ViewModels
             LogSink = PanelLogSink.Instance;
         }
 
-        private void AssignSets()
-        {
-            AllSets = MainService.AllSets.ToArray();
-            FilteredSets = AllSets;
-        }
-
-        public void OnFilterSets()
-        {
-            FilteredSets= MainService?.FilterSets(QuerySetFilter) ?? new DetailedSetInfo[0];
-        }
-
-        public QuerySetFilter QuerySetFilter { get; set; } = new QuerySetFilter();
-
-        public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName ?? "";
-
-        public string MainTitle { get; private set; }
-
-        public MtgInventoryService MainService { get; } = new MtgInventoryService();
-
-        public PanelLogSink LogSink { get; private set; }
-
-        public DeckListItemViewModel[] CurrentDeckList
-        {
-            get => _currentDeckList;
-            set => this.RaiseAndSetIfChanged(ref _currentDeckList, value);
-        }
-
-        public MtgInventorySettings Settings
-        {
-            get => _settings;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _settings, value);
-                RebuildSetFilter();
-            }
-        }
-
         public IEnumerable<DetailedSetInfo> AllSets
         {
             get => _allSets;
@@ -102,6 +58,24 @@ namespace MtgInventory.ViewModels
                 this.RaiseAndSetIfChanged(ref _allSets, value);
                 RebuildSetFilter();
             }
+        }
+
+        public DeckListItemViewModel[] CurrentDeckList
+        {
+            get => _currentDeckList;
+            set => this.RaiseAndSetIfChanged(ref _currentDeckList, value);
+        }
+
+        public IEnumerable<MkmStockItemViewModel> CurrentStock
+        {
+            get => _currentStock;
+            set => this.RaiseAndSetIfChanged(ref _currentStock, value);
+        }
+
+        public QueryCardOptions DetailedCardQueryOptions
+        {
+            get => _queryCardOptions;
+            set => this.RaiseAndSetIfChanged(ref _queryCardOptions, value);
         }
 
         public IEnumerable<DetailedSetInfo> FilteredSets
@@ -114,34 +88,16 @@ namespace MtgInventory.ViewModels
             }
         }
 
-        public IEnumerable<string> SetFilter
-        {
-            get => _setFilter;
-            set => this.RaiseAndSetIfChanged(ref _setFilter, value);
-        }
+        public PanelLogSink LogSink { get; private set; }
 
-        public string MkmProductsSummary
-        {
-            get => _mkmProductsSummary;
-            set => this.RaiseAndSetIfChanged(ref _mkmProductsSummary, value);
-        }
+        public MtgInventoryService MainService { get; } = new MtgInventoryService();
 
-        public QueryCardOptions DetailedCardQueryOptions
-        {
-            get => _queryCardOptions;
-            set => this.RaiseAndSetIfChanged(ref _queryCardOptions, value);
-        }
+        public string MainTitle { get; private set; }
 
         public MkmApiCallStatistics MkmApiCallStatistics
         {
             get => _mkmApiCallStatistics;
             set => this.RaiseAndSetIfChanged(ref _mkmApiCallStatistics, value);
-        }
-
-        public IEnumerable<MkmStockItemViewModel> CurrentStock
-        {
-            get => _currentStock;
-            set => this.RaiseAndSetIfChanged(ref _currentStock, value);
         }
 
         public IEnumerable<DetailedCardViewModel> MkmProductsFound
@@ -150,9 +106,50 @@ namespace MtgInventory.ViewModels
             set => this.RaiseAndSetIfChanged(ref _mkmProductsFound, value);
         }
 
-        public void ShutDown()
+        public string MkmProductsSummary
         {
-            MainService?.ShutDown();
+            get => _mkmProductsSummary;
+            set => this.RaiseAndSetIfChanged(ref _mkmProductsSummary, value);
+        }
+
+        public QuerySetFilter QuerySetFilter { get; set; } = new QuerySetFilter();
+
+        public IEnumerable<string> SetFilter
+        {
+            get => _setFilter;
+            set => this.RaiseAndSetIfChanged(ref _setFilter, value);
+        }
+
+        public MtgInventorySettings Settings
+        {
+            get => _settings;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _settings, value);
+                RebuildSetFilter();
+            }
+        }
+
+        public string SystemBaseFolder => MainService?.SystemFolders.BaseFolder.FullName ?? "";
+
+        public void OnDownloadAndRebuildAll()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.DownloadAllProducts();
+                UpdateProductSummary();
+                AllSets = MainService.AllSets.ToArray();
+                FilteredSets = AllSets;
+            });
+        }
+
+        public void OnDownloadCardDetails(DetailedSetInfo info)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                MainService?.AutoDownloadCardDetailsForSet(info);
+                UpdateProductSummary();
+            });
         }
 
         public void OnDownloadMkmSetsAndCards()
@@ -162,17 +159,6 @@ namespace MtgInventory.ViewModels
                 MainService?.DownloadMkmSetsAndProducts();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
-            });
-        }
-
-        public void OnDownloadScryfallSets()
-        {
-            Task.Factory.StartNew(() =>
-            {
-                MainService.DownloadScryfallSetsData(true);
-                UpdateProductSummary();
-                AllSets = MainService.AllSets.ToArray();
-                FilteredSets = AllSets;
             });
         }
 
@@ -187,63 +173,48 @@ namespace MtgInventory.ViewModels
             });
         }
 
-        public Task OnRebuildSetData()
+        public void OnDownloadScryfallSets()
         {
-            return Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(() =>
             {
-                MainService?.RebuildSetData();
+                MainService.DownloadScryfallSetsData();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
                 FilteredSets = AllSets;
             });
         }
 
-        public void OnDownloadAndRebuildAll()
+        public void OnFilterSets()
         {
-            Task.Factory.StartNew(() =>
-            {
-                MainService?.DownloadAllProducts();
-                UpdateProductSummary();
-                AllSets = MainService.AllSets.ToArray();
-                FilteredSets = AllSets;
-            });
+            FilteredSets = MainService?.FilterSets(QuerySetFilter) ?? new DetailedSetInfo[0];
         }
 
-        public void OnRebuildInternalDatabase()
+        public async Task OnLoadDeckFile()
         {
-            Task.Factory.StartNew(() =>
+            var openFile = new OpenFileDialog()
             {
-                var task = MainService?.RebuildInternalDatabase();
-                task?.ContinueWith((task) =>
-                {
-                    UpdateProductSummary();
-                    AllSets = MainService.AllSets.ToArray();
-                    FilteredSets = AllSets;
-                });
-            });
-        }
+                Title = "Select deck file",
+                AllowMultiple = false,
+            };
 
-        public void OnSearchMkmProduct()
-        {
-            Task.Factory.StartNew(() =>
+            var result = await openFile.ShowAsync(MainWindow.Instance);
+            if (result != null && result.Any())
             {
-                var cards = MainService
-                    .FindDetailedCardsByName(_queryCardOptions)
-                    .Select(c => new DetailedCardViewModel(c))
-                    .ToArray();
+                var file = result.First();
 
-                MkmProductsFound = cards;
+                var content = File.ReadAllText(file);
+                var reader = new TextDeckReader();
+                var loaded = reader.ReadDeck(content, new FileInfo(file).Name);
 
-                foreach (var item in cards)
+                if (loaded.UnreadLines?.Any() ?? false)
                 {
-                    item.CardPrice = MainService.AutoScryfallService.AutoDownloadPrice(
-                        item.Card.NameEn,
-                        item.Card.SetCode,
-                        item.Card.ScryfallId);
+                    var display = $"These lines could not be read:{Environment.NewLine}{string.Join(Environment.NewLine, loaded.UnreadLines)}";
+                    MessageBoxDialog.DisplayWarning("Reading deck", display);
                 }
 
-                MainService.UpdateCallStatistics();
-            });
+                MainService.EnrichDeckListWithDetails(loaded.Deck);
+                CurrentDeckList = loaded.Deck.Mainboard.Select(c => new DeckListItemViewModel(c)).ToArray();
+            }
         }
 
         public void OnLoadMkmStock()
@@ -277,12 +248,25 @@ namespace MtgInventory.ViewModels
             });
         }
 
-        public void OnDownloadCardDetails(DetailedSetInfo info)
+        public void OnOpenStockItemInMkmProductPage(MkmStockItemViewModel stockItem)
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.AutoDownloadCardDetailsForSet(info);
-                UpdateProductSummary();
+                MainService?.OpenMkmProductPage(stockItem?.IdProduct ?? "");
+            });
+        }
+
+        public void OnRebuildInternalDatabase()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                var task = MainService?.RebuildInternalDatabase();
+                task?.ContinueWith((task) =>
+                {
+                    UpdateProductSummary();
+                    AllSets = MainService.AllSets.ToArray();
+                    FilteredSets = AllSets;
+                });
             });
         }
 
@@ -295,12 +279,9 @@ namespace MtgInventory.ViewModels
             });
         }
 
-        public void OnOpenStockItemInMkmProductPage(MkmStockItemViewModel stockItem)
+        public void OnRebuildSetData()
         {
-            Task.Factory.StartNew(() =>
-            {
-                MainService?.OpenMkmProductPage(stockItem?.IdProduct ?? "");
-            });
+            MainService?.RebuildSetData();
         }
 
         public void OnSaveSettings()
@@ -311,40 +292,49 @@ namespace MtgInventory.ViewModels
             });
         }
 
-        public async Task OnLoadDeckFile()
+        public void OnSearchMkmProduct()
         {
-            var openFile = new OpenFileDialog()
+            Task.Factory.StartNew(() =>
             {
-                Title = "Select deck file",
-                AllowMultiple = false,
-            };
+                var cards = MainService
+                    .FindDetailedCardsByName(_queryCardOptions)
+                    .Select(c => new DetailedCardViewModel(c))
+                    .ToArray();
 
-            var result = await openFile.ShowAsync(MainWindow.Instance);
-            if (result != null && result.Any())
-            {
-                var file = result.First();
+                MkmProductsFound = cards;
 
-                var content = File.ReadAllText(file);
-                var reader = new TextDeckReader();
-                var loaded = reader.ReadDeck(content, new FileInfo(file).Name);
-
-                if (loaded.UnreadLines?.Any() ?? false)
+                foreach (var item in cards)
                 {
-                    var display = $"These lines could not be read:{Environment.NewLine}{string.Join(Environment.NewLine, loaded.UnreadLines)}";
-                    MessageBoxDialog.DisplayWarning("Reading deck", display);
+                    item.CardPrice = MainService.AutoScryfallService.AutoDownloadPrice(
+                        item.Card.NameEn,
+                        item.Card.SetCode,
+                        item.Card.ScryfallId);
                 }
 
-                MainService.EnrichDeckListWithDetails(loaded.Deck);
-                CurrentDeckList = loaded.Deck.Mainboard.Select(c => new DeckListItemViewModel(c)).ToArray();
-            }
+                MainService.UpdateCallStatistics();
+            });
         }
 
-        internal void OnGenerateReferenceCardData() => MainService?.GenerateReferenceCardData();
+        public void ShutDown()
+        {
+            MainService?.ShutDown();
+        }
 
         internal void OnGenerateMissingSetData() => MainService?.GenerateMissingSetData();
 
+        internal void OnGenerateReferenceCardData() => MainService?.GenerateReferenceCardData();
+
         internal void OnGenerateReferenceSetData()
         {
+            MainService?.GenerateReferenceSetData();
+        }
+
+        private void AssignSets()
+        {
+            AllSets = MainService.AllSets.ToArray();
+            FilteredSets = AllSets;
+
+            UpdateProductSummary();
         }
 
         private void RebuildSetFilter()

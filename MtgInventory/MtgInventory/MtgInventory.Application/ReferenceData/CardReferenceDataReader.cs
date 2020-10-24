@@ -13,7 +13,9 @@ namespace MtgInventory.Service.ReferenceData
             var resourceLoader = new ResourceLoader();
             var yaml = resourceLoader.GetEmbeddedResourceString(
                 GetType().Assembly,
-                "ReferenceCardData.yaml");
+                "ReferenceSetData.csv");
+
+
 
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)

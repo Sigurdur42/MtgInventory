@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using CsvHelper;
 using MkmApi;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
@@ -15,7 +16,6 @@ using MtgInventory.Service.Settings;
 using ScryfallApi.Client;
 using ScryfallApiServices;
 using Serilog;
-using YamlDotNet.Serialization;
 
 namespace MtgInventory.Service
 {
@@ -26,16 +26,13 @@ namespace MtgInventory.Service
     {
         private readonly CardDatabase _cardDatabase;
         private readonly SettingsService _settingsService = new SettingsService();
-        private MkmRequest _mkmRequest;
-        private IScryfallService _scryfallService;
-
+        private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
+        private AutoDownloadImageCache _autoDownloadImageCache;
+        private IAutoScryfallService _autoScryfallService;
         private bool _isUpdatingDetailedCards;
         private MkmPriceService _mkmPriceService;
-        private IAutoScryfallService _autoScryfallService;
-
-        private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
-
-        private AutoDownloadImageCache _autoDownloadImageCache;
+        private MkmRequest _mkmRequest;
+        private IScryfallService _scryfallService;
 
         public MtgInventoryService()
         {
@@ -44,25 +41,282 @@ namespace MtgInventory.Service
             SetsUpdated += (sender, e) => { };
         }
 
-        public IAutoScryfallService AutoScryfallService => _autoScryfallService;
-        public SystemFolders SystemFolders { get; }
-
-        public MkmAuthenticationData MkmAuthenticationData => _settingsService.Settings.MkmAuthentication;
-
-        public string MkmProductsSummary { get; private set; }
-        public string ScryfallProductsSummary { get; private set; }
-        public string InternalProductsSummary { get; private set; }
-
-        public IApiCallStatistic MkmApiCallStatistic { get; private set; }
-        public IScryfallApiCallStatistic ScryfallApiCallStatistic { get; private set; }
-
-        public MtgInventorySettings Settings => _settingsService.Settings;
+        public event EventHandler SetsUpdated;
 
         public IEnumerable<DetailedSetInfo> AllSets => _cardDatabase?.MagicSets?.FindAll() ?? new DetailedSetInfo[0];
+        public IAutoScryfallService AutoScryfallService => _autoScryfallService;
+        public string InternalProductsSummary { get; private set; }
+        public IApiCallStatistic MkmApiCallStatistic { get; private set; }
+        public MkmAuthenticationData MkmAuthenticationData => _settingsService.Settings.MkmAuthentication;
+        public string MkmProductsSummary { get; private set; }
+        public IScryfallApiCallStatistic ScryfallApiCallStatistic { get; private set; }
+        public string ScryfallProductsSummary { get; private set; }
+        public MtgInventorySettings Settings => _settingsService.Settings;
+        public SystemFolders SystemFolders { get; }
+
+        public void AutoDownloadCardDetailsForSet(DetailedSetInfo set)
+            => _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, set);
 
         public void Dispose()
         {
             ShutDown();
+        }
+
+        public void DownloadAllProducts()
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            _cardDatabase.ClearDetailedCards();
+
+            var scryfallCardDownload = DownloadScryfallData();
+            var mkmTask = Task.Factory.StartNew(DownloadMkmSetsAndProducts);
+
+            _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
+
+            mkmTask.Wait();
+            scryfallCardDownload.Wait();
+
+            RebuildInternalDatabase();
+
+            UpdateProductSummary();
+            stopwatch.Stop();
+
+            Log.Information($"Updating complete database took {stopwatch.Elapsed}");
+        }
+
+        public void DownloadMkmSetsAndProducts()
+        {
+            _autoDownloadCardsAndSets.DownloadMkmSetsAndProducts();
+        }
+
+        public IEnumerable<DetailedStockItem> DownloadMkmStock()
+        {
+            Log.Debug($"{nameof(DownloadMkmStock)} now...");
+            if (!_settingsService.Settings.MkmAuthentication.IsValid())
+            {
+                Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
+                return new DetailedStockItem[0];
+            }
+
+            var result = _mkmRequest
+                .GetStockAsCsv(MkmAuthenticationData)
+                .Select(s => new DetailedStockItem(s))
+                .ToArray();
+
+            UpdateCallStatistics();
+
+            // Now find the scryfall ids
+
+            var mkmIds = result.Select(r => r.IdProduct).ToArray();
+
+            var detailedCards = _cardDatabase.MagicCards.Query()
+                .Where(c => mkmIds.Contains(c.MkmId))
+                .ToArray();
+
+            foreach (var card in detailedCards)
+            {
+                var stock = result.Where(c => c.IdProduct == card.MkmId).ToArray();
+                foreach (var item in stock)
+                {
+                    item.ScryfallId = card.ScryfallId;
+                }
+            }
+
+            Log.Debug($"{nameof(DownloadMkmStock)} loaded {result.Length} items");
+
+            ////_autoDownloadCardsAndSets.AutoDownloadMkmDetails(
+            ////    MkmAuthenticationData,
+            ////    detailedCards,
+            ////    "");
+
+            return result;
+        }
+
+        public void DownloadScryfallCardData()
+        {
+            _cardDatabase.ClearScryfallCards();
+            var scryfallSets = _cardDatabase.ScryfallSets.FindAll().ToArray();
+            var remainingSets = scryfallSets.Length;
+            foreach (var set in scryfallSets)
+            {
+                Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
+                var cards = _scryfallService.RetrieveCardsForSetCode(set.Code).Select(c => new ScryfallCard(c)).ToArray();
+                _cardDatabase.InsertScryfallCards(cards);
+                remainingSets--;
+                // Insert prices from Scryfall
+                var prices = cards.Select(c => new CardPrice(c));
+                _cardDatabase.CardPrices.InsertBulk(prices);
+            }
+            _cardDatabase.EnsureCardPriceIndex();
+            Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
+        }
+
+        public ScryfallSet[] DownloadScryfallSetsData()
+        {
+            return _autoDownloadCardsAndSets.DownloadScryfallSetsData();
+        }
+
+        public void EnrichDeckListWithDetails(DeckList deckList)
+        {
+            Log.Debug($"{nameof(EnrichDeckListWithDetails)} for deck {deckList.Name}");
+
+            foreach (var card in deckList.Mainboard.Where(c => c.CardId == Guid.Empty))
+            {
+                var found = _cardDatabase.MagicCards
+                    .Query()
+                    .Where(c => c.NameEn.Equals(card.Name))
+                    .Where(c => !string.IsNullOrWhiteSpace(c.SetCode))
+                    .ToList()
+                    .Where(c => c.SetReleaseDate.HasValue)
+                    .OrderByDescending(c => c.SetReleaseDate)
+                    .ToArray();
+
+                if (found.Any())
+                {
+                    var use = found.First();
+                    card.CardId = use.Id;
+                    card.SetCode = use.SetCode;
+                    card.SetName = use.SetName;
+                }
+            }
+        }
+
+        public IEnumerable<DetailedSetInfo> FilterSets(QuerySetFilter querySetFilter)
+        {
+            var query = _cardDatabase.MagicSets?.Query();
+
+            if (!string.IsNullOrWhiteSpace(querySetFilter.Name))
+            {
+                query = query?.Where(s => s.SetName.Contains(querySetFilter.Name));
+            }
+
+            if (querySetFilter.HideOnlyOneSide)
+            {
+                query = query?.Where(s => !s.IsKnownMkmOnlySet && !s.IsKnownScryfallOnlySet);
+            }
+            if (querySetFilter.HideKnownSets)
+            {
+                query = query?.Where(s => s.MigrationStatus != SetMigrationStatus.Migrated);
+            }
+
+            return query?.ToArray() ?? new DetailedSetInfo[0];
+        }
+
+        public IEnumerable<DetailedMagicCard> FindDetailedCardsByName(QueryCardOptions query)
+        {
+            if (_cardDatabase?.MagicCards == null || !query.IsValid)
+            {
+                return new DetailedMagicCard[0];
+            }
+
+            Log.Debug($"{nameof(FindDetailedCardsByName)}: {query}");
+
+            var databaseQuery = _cardDatabase.MagicCards.Query();
+
+            if (!string.IsNullOrEmpty(query.Name))
+            {
+                databaseQuery = databaseQuery.Where(p => p.NameEn.Contains(query.Name, StringComparison.InvariantCultureIgnoreCase));
+            }
+
+            if (query.IsBasicLand)
+            {
+                databaseQuery = databaseQuery.Where(q => q.IsBasicLand);
+            }
+
+            if (query.IsToken)
+            {
+                databaseQuery = databaseQuery.Where(q => q.IsToken);
+            }
+
+            if (query.IsSetName)
+            {
+                databaseQuery = databaseQuery.Where(q => q.SetName == query.SetName);
+            }
+
+            var result = databaseQuery
+                .ToList()
+                .OrderBy(p => p.NameEn)
+                .ThenBy(p => p.SetName)
+                .ToList();
+
+            _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, result.ToArray(), query.Name);
+
+            Log.Debug($"{nameof(FindDetailedCardsByName)}: {query} returned {result.Count} records");
+
+            return result;
+        }
+
+        public void GenerateMissingSetData()
+        {
+            var unmatchedSets = _cardDatabase.MagicSets
+                ?.Query()
+                ?.Where(s => s.MigrationStatus == SetMigrationStatus.Unknown)
+                ?.ToArray() ?? new DetailedSetInfo[0];
+
+            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "UnmatchedSets.csv"));
+            if (!targetFile.Directory?.Exists ?? false)
+            {
+                targetFile.Directory?.Create();
+            }
+
+            var parts = unmatchedSets
+                .Select(s => $"{s.SetNameScryfall};{s.SetCodeScryfall};{s.SetNameMkm};{s.SetCodeMkm}")
+                .ToArray();
+            var headline = $"ScryfallName;ScryfallCode;MkmName;MkmCode";
+            File.WriteAllText(targetFile.FullName, headline + Environment.NewLine + string.Join(Environment.NewLine, parts));
+
+            Log.Information($"Wrote {unmatchedSets.Length} set infos to {targetFile.FullName}");
+        }
+
+        public void GenerateReferenceCardData()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            Log.Information($"Start generating card reference data...");
+
+            var allCards = _cardDatabase?.MagicCards?.FindAll()
+                ?.Where(c => !c.IsScryfallOnly && !c.MkmDetailsRequired)
+                ?.ToArray() ?? new DetailedMagicCard[0];
+
+            var result = allCards.Select(card => card.GenerateReferenceData()).ToList();
+
+            var reader = new CardReferenceDataReader();
+            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceData.yaml"));
+
+            reader.Write(targetFile, result.ToArray());
+
+            stopwatch.Stop();
+            Log.Information($"Done generating card reference data in {stopwatch.Elapsed}");
+        }
+
+        public void GenerateReferenceSetData()
+        {
+            var unmatchedSets = _cardDatabase.MagicSets
+                ?.Query()
+                ?.Where(s => s.MigrationStatus != SetMigrationStatus.Unknown || s.SetCodeMkm == s.SetCodeScryfall)
+                ?.ToArray()
+                ?.Where(s => !string.IsNullOrEmpty(s.SetCodeMkm))
+                ?.OrderBy(s => s.SetCodeMkm)
+                ?.Select(s => new SetReferenceData()
+                {
+                    MkmCode = s.SetCodeMkm,
+                    ScryfallCode = s.SetCodeScryfall,
+                })
+                ?.ToArray()
+                ?? new SetReferenceData[0];
+
+            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceSet.csv"));
+            if (!targetFile.Directory?.Exists ?? false)
+            {
+                targetFile.Directory?.Create();
+            }
+
+            using (var writer = new StreamWriter(targetFile.FullName))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(unmatchedSets);
+            }
+
+            Log.Information($"Wrote {unmatchedSets.Length} set infos to {targetFile.FullName}");
         }
 
         public void Initialize(
@@ -135,70 +389,64 @@ namespace MtgInventory.Service
             _autoDownloadImageCache = new AutoDownloadImageCache(SystemFolders.BaseFolder);
         }
 
-        public event EventHandler SetsUpdated;
-
-        public void ShutDown()
+        public void OpenMkmProductPage(string mkmId)
         {
-            Log.Information($"{nameof(ShutDown)}: Shutting down application service");
+            if (string.IsNullOrEmpty(mkmId))
+            {
+                Log.Warning($"Cannot find product with empty MKM id");
+            }
 
+            var found = _cardDatabase.MagicCards.Query().Where(p => p.MkmId == mkmId).FirstOrDefault();
+            if (found == null)
+            {
+                Log.Warning($"Cannot find product with MKM id {mkmId}");
+                return;
+            }
+
+            OpenMkmProductPage(found);
+        }
+
+        public void OpenMkmProductPage(DetailedMagicCard product)
+        {
+            var prefix = $"{nameof(OpenMkmProductPage)}({product.Id} {product.NameEn} {product.SetCode})";
+
+            var additionalInfo = _cardDatabase.FindAdditionalMkmInfo(product.MkmId) ?? new MkmAdditionalCardInfo();
+
+            if (!additionalInfo.IsValid())
+            {
+                Log.Information($"{prefix}: Downloading additional info...");
+
+                // We need to download the product details first
+                if (string.IsNullOrEmpty(product.MkmId))
+                {
+                    Log.Warning($"Card {product} does not exist on MKM. ");
+                    return;
+                }
+
+                if (!_settingsService.Settings.MkmAuthentication.IsValid())
+                {
+                    Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
+                    return;
+                }
+
+                var productDetails = _mkmRequest.GetProductData(MkmAuthenticationData, product.MkmId);
+                additionalInfo = _cardDatabase.UpdateMkmAdditionalInfo(productDetails);
+
+                UpdateCallStatistics();
+            }
+
+            // Now open a browser with the url
+            Log.Debug($"{prefix}: Opening MKM product page...");
+            Browser.OpenBrowser(additionalInfo.MkmWebSite);
+        }
+
+        public void RebuildCardsForSet(DetailedSetInfo set)
+        {
             _autoDownloadCardsAndSets.Stop();
-            _settingsService.SaveSettings();
-            _settingsService.Dispose();
-            _cardDatabase.Dispose();
-        }
 
-        public void SaveSettings() => _settingsService.SaveSettings();
-
-        public ScryfallSet[] DownloadScryfallSetsData()
-        {
-            return _autoDownloadCardsAndSets.DownloadScryfallSetsData();
-        }
-
-        public void DownloadMkmSetsAndProducts()
-        {
-            _autoDownloadCardsAndSets.DownloadMkmSetsAndProducts();
-        }
-
-        public void GenerateReferenceCardData()
-        {
-            var stopwatch = Stopwatch.StartNew();
-            Log.Information($"Start generating card reference data...");
-
-            var allCards = _cardDatabase?.MagicCards?.FindAll()
-                ?.Where(c => !c.IsScryfallOnly && !c.MkmDetailsRequired)
-                ?.ToArray() ?? new DetailedMagicCard[0];
-
-            var result = allCards.Select(card => card.GenerateReferenceData()).ToList();
-
-            var reader = new CardReferenceDataReader();
-            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceData.yaml"));
-
-            reader.Write(targetFile, result.ToArray());
-
-            stopwatch.Stop();
-            Log.Information($"Done generating card reference data in {stopwatch.Elapsed}");
-        }
-
-        public void DownloadAllProducts()
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            _cardDatabase.ClearDetailedCards();
-
-            var scryfallCardDownload = DownloadScryfallData();
-            var mkmTask = Task.Factory.StartNew(DownloadMkmSetsAndProducts);
-
-            _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
-
-            mkmTask.Wait();
-            scryfallCardDownload.Wait();
-
-            RebuildInternalDatabase();
-
-            UpdateProductSummary();
-            stopwatch.Stop();
-
-            Log.Information($"Updating complete database took {stopwatch.Elapsed}");
+            set.CardsLastUpdated = DateTime.Now.AddDays(-1000);
+            _cardDatabase.MagicSets.Update(set);
+            _autoDownloadCardsAndSets.Start();
         }
 
         public Task RebuildInternalDatabase()
@@ -266,243 +514,22 @@ namespace MtgInventory.Service
             }
         }
 
-        public void OpenMkmProductPage(string mkmId)
+        public void SaveSettings() => _settingsService.SaveSettings();
+
+        public void ShutDown()
         {
-            if (string.IsNullOrEmpty(mkmId))
-            {
-                Log.Warning($"Cannot find product with empty MKM id");
-            }
+            Log.Information($"{nameof(ShutDown)}: Shutting down application service");
 
-            var found = _cardDatabase.MagicCards.Query().Where(p => p.MkmId == mkmId).FirstOrDefault();
-            if (found == null)
-            {
-                Log.Warning($"Cannot find product with MKM id {mkmId}");
-                return;
-            }
-
-            OpenMkmProductPage(found);
-        }
-
-        public void OpenMkmProductPage(DetailedMagicCard product)
-        {
-            var prefix = $"{nameof(OpenMkmProductPage)}({product.Id} {product.NameEn} {product.SetCode})";
-
-            var additionalInfo = _cardDatabase.FindAdditionalMkmInfo(product.MkmId) ?? new MkmAdditionalCardInfo();
-
-            if (!additionalInfo.IsValid())
-            {
-                Log.Information($"{prefix}: Downloading additional info...");
-
-                // We need to download the product details first
-                if (string.IsNullOrEmpty(product.MkmId))
-                {
-                    Log.Warning($"Card {product} does not exist on MKM. ");
-                    return;
-                }
-
-                if (!_settingsService.Settings.MkmAuthentication.IsValid())
-                {
-                    Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
-                    return;
-                }
-
-                var productDetails = _mkmRequest.GetProductData(MkmAuthenticationData, product.MkmId);
-                additionalInfo = _cardDatabase.UpdateMkmAdditionalInfo(productDetails);
-
-                UpdateCallStatistics();
-            }
-
-            // Now open a browser with the url
-            Log.Debug($"{prefix}: Opening MKM product page...");
-            Browser.OpenBrowser(additionalInfo.MkmWebSite);
-        }
-
-        public IEnumerable<DetailedMagicCard> FindDetailedCardsByName(QueryCardOptions query)
-        {
-            if (_cardDatabase?.MagicCards == null || !query.IsValid)
-            {
-                return new DetailedMagicCard[0];
-            }
-
-            Log.Debug($"{nameof(FindDetailedCardsByName)}: {query}");
-
-            var databaseQuery = _cardDatabase.MagicCards.Query();
-
-            if (!string.IsNullOrEmpty(query.Name))
-            {
-                databaseQuery = databaseQuery.Where(p => p.NameEn.Contains(query.Name, StringComparison.InvariantCultureIgnoreCase));
-            }
-
-            if (query.IsBasicLand)
-            {
-                databaseQuery = databaseQuery.Where(q => q.IsBasicLand);
-            }
-
-            if (query.IsToken)
-            {
-                databaseQuery = databaseQuery.Where(q => q.IsToken);
-            }
-
-            if (query.IsSetName)
-            {
-                databaseQuery = databaseQuery.Where(q => q.SetName == query.SetName);
-            }
-
-            var result = databaseQuery
-                .ToList()
-                .OrderBy(p => p.NameEn)
-                .ThenBy(p => p.SetName)
-                .ToList();
-
-            _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, result.ToArray(), query.Name);
-
-            Log.Debug($"{nameof(FindDetailedCardsByName)}: {query} returned {result.Count} records");
-
-            return result;
-        }
-
-        public void AutoDownloadCardDetailsForSet(DetailedSetInfo set)
-            => _autoDownloadCardsAndSets.AutoDownloadMkmDetails(MkmAuthenticationData, set);
-
-        public void RebuildCardsForSet(DetailedSetInfo set)
-        {
             _autoDownloadCardsAndSets.Stop();
-
-            set.CardsLastUpdated = DateTime.Now.AddDays(-1000);
-            _cardDatabase.MagicSets.Update(set);
-            _autoDownloadCardsAndSets.Start();
-        }
-
-        public void EnrichDeckListWithDetails(DeckList deckList)
-        {
-            Log.Debug($"{nameof(EnrichDeckListWithDetails)} for deck {deckList.Name}");
-
-            foreach (var card in deckList.Mainboard.Where(c => c.CardId == Guid.Empty))
-            {
-                var found = _cardDatabase.MagicCards
-                    .Query()
-                    .Where(c => c.NameEn.Equals(card.Name))
-                    .Where(c => !string.IsNullOrWhiteSpace(c.SetCode))
-                    .ToList()
-                    .Where(c => c.SetReleaseDate.HasValue)
-                    .OrderByDescending(c => c.SetReleaseDate)
-                    .ToArray();
-
-                if (found.Any())
-                {
-                    var use = found.First();
-                    card.CardId = use.Id;
-                    card.SetCode = use.SetCode;
-                    card.SetName = use.SetName;
-                }
-            }
+            _settingsService.SaveSettings();
+            _settingsService.Dispose();
+            _cardDatabase.Dispose();
         }
 
         public void UpdateCallStatistics()
         {
             _cardDatabase.UpdateMkmStatistics(MkmApiCallStatistic);
             _cardDatabase.UpdateScryfallStatistics(ScryfallApiCallStatistic);
-        }
-
-        public IEnumerable<DetailedStockItem> DownloadMkmStock()
-        {
-            Log.Debug($"{nameof(DownloadMkmStock)} now...");
-            if (!_settingsService.Settings.MkmAuthentication.IsValid())
-            {
-                Log.Warning($"MKM authentication configuration is missing - cannot access MKM API.");
-                return new DetailedStockItem[0];
-            }
-
-            var result = _mkmRequest
-                .GetStockAsCsv(MkmAuthenticationData)
-                .Select(s => new DetailedStockItem(s))
-                .ToArray();
-
-            UpdateCallStatistics();
-
-            // Now find the scryfall ids
-
-            var mkmIds = result.Select(r => r.IdProduct).ToArray();
-
-            var detailedCards = _cardDatabase.MagicCards.Query()
-                .Where(c => mkmIds.Contains(c.MkmId))
-                .ToArray();
-
-            foreach (var card in detailedCards)
-            {
-                var stock = result.Where(c => c.IdProduct == card.MkmId).ToArray();
-                foreach (var item in stock)
-                {
-                    item.ScryfallId = card.ScryfallId;
-                }
-            }
-
-            Log.Debug($"{nameof(DownloadMkmStock)} loaded {result.Length} items");
-
-            ////_autoDownloadCardsAndSets.AutoDownloadMkmDetails(
-            ////    MkmAuthenticationData,
-            ////    detailedCards,
-            ////    "");
-
-            return result;
-        }
-
-        public void DownloadScryfallCardData()
-        {
-            _cardDatabase.ClearScryfallCards();
-            var scryfallSets = _cardDatabase.ScryfallSets.FindAll().ToArray();
-            var remainingSets = scryfallSets.Length;
-            foreach (var set in scryfallSets)
-            {
-                Log.Debug($"{nameof(DownloadAllProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
-                var cards = _scryfallService.RetrieveCardsForSetCode(set.Code).Select(c => new ScryfallCard(c)).ToArray();
-                _cardDatabase.InsertScryfallCards(cards);
-                remainingSets--;
-                // Insert prices from Scryfall
-                var prices = cards.Select(c => new CardPrice(c));
-                _cardDatabase.CardPrices.InsertBulk(prices);
-            }
-            _cardDatabase.EnsureCardPriceIndex();
-            Log.Debug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
-        }
-
-        public void GenerateMissingSetData()
-        {
-            var unmatchedSets = _cardDatabase.MagicSets
-                ?.Query()
-                ?.Where(s => string.IsNullOrWhiteSpace(s.SetCodeMkm) || string.IsNullOrWhiteSpace(s.SetCodeScryfall))
-                ?.ToArray() ?? new DetailedSetInfo[0];
-
-            unmatchedSets = unmatchedSets
-                .Where(s => !s.IsKnownMkmOnlySet && !s.IsKnownScryfallOnlySet)
-                .OrderBy(s=>s.SetName)
-                .ToArray();
-
-            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "UnmatchedSets.csv"));
-            if (!targetFile.Directory?.Exists ?? false)
-            {
-                targetFile.Directory?.Create();
-            }
-
-            var parts = unmatchedSets
-                .Select(s => $"{s.SetNameScryfall};{s.SetCodeScryfall};{s.SetNameMkm};{s.SetCodeMkm}")
-                .ToArray();
-            var headline = $"ScryfallName;ScryfallCode;MkmName;MkmCode";
-            File.WriteAllText(targetFile.FullName, headline + Environment.NewLine + string.Join(Environment.NewLine, parts));
-
-            ////var serializer = new SerializerBuilder()
-            ////    ////.EnsureRoundtrip()
-            ////    ////.WithTagMapping(nameof(CardReferenceData.MkmId), typeof(string))
-            ////    ////.WithTagMapping(nameof(CardReferenceData.MkmWebSite), typeof(string))
-            ////    ////.WithTagMapping(nameof(CardReferenceData.MkmImageUrl), typeof(string))
-            ////    ////.WithTagMapping(nameof(CardReferenceData.SetCodeMkm), typeof(string))
-            ////    ////.WithTagMapping(nameof(CardReferenceData.ScryfallId), typeof(Guid))
-            ////    .Build();
-
-            ////var yaml = serializer.Serialize(unmatchedSets);
-            ////File.WriteAllText(targetFile.FullName, yaml);
-
-            Log.Information($"Wrote {unmatchedSets.Length} set infos to {targetFile.FullName}");
         }
 
         internal Task DownloadScryfallData()
@@ -519,27 +546,6 @@ namespace MtgInventory.Service
             MkmProductsSummary = $"{_cardDatabase.MkmProductInfo.Count()} products in {_cardDatabase.MkmExpansion.Count()} sets";
             ScryfallProductsSummary = $"{_cardDatabase.ScryfallCards.Count()} cards in {_cardDatabase.ScryfallSets.Count()} sets";
             InternalProductsSummary = $"{_cardDatabase.MagicCards.Count()} cards";
-        }
-
-        public IEnumerable<DetailedSetInfo> FilterSets(QuerySetFilter querySetFilter)
-        {
-            var query = _cardDatabase.MagicSets?.Query();
-
-            if (!string.IsNullOrWhiteSpace(querySetFilter.Name))
-            {
-                query = query?.Where(s => s.SetName.Contains(querySetFilter.Name));
-            }
-
-            if (querySetFilter.HideOnlyOneSide)
-            {
-                query = query?.Where(s => !s.IsKnownMkmOnlySet && !s.IsKnownScryfallOnlySet);
-            }
-            if (querySetFilter.HideKnownSets)
-            {
-                query = query?.Where(s => string.IsNullOrWhiteSpace(s.SetCodeMkm) && !string.IsNullOrWhiteSpace(s.SetCodeScryfall));
-            }
-
-            return query?.ToArray() ?? new DetailedSetInfo[0];
         }
     }
 }

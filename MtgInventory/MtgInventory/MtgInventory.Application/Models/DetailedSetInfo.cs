@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using MkmApi.Entities;
+using MtgInventory.Service.Database;
 
 namespace MtgInventory.Service.Models
 {
@@ -47,6 +48,8 @@ namespace MtgInventory.Service.Models
         public bool IsKnownScryfallOnlySet { get; set; }
 
         public bool IsKnownMkmOnlySet { get; set; }
+
+        public SetMigrationStatus MigrationStatus { get; set; } = SetMigrationStatus.Unknown;
 
         internal void UpdateFromMkm(string normalizedSetCode, Expansion mkm)
         {
