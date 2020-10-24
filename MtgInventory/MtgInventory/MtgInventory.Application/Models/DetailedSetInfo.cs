@@ -61,7 +61,6 @@ namespace MtgInventory.Service.Models
             IsReleased = mkm.IsReleased;
             SetLastUpdated = DateTime.Now;
             SetLastDownloaded = DateTime.Now;
-            IsKnownMkmOnlySet = mkm.IsMkmOnlySet;
 
             if (SetNameMkm.Contains("Token", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -78,7 +77,6 @@ namespace MtgInventory.Service.Models
             SetNameScryfall = scryfall.Name;
             SetLastUpdated = DateTime.Now;
             SetLastDownloaded = DateTime.Now;
-            IsKnownScryfallOnlySet = scryfall.IsScryfallOnlySet;
             ScryfallCardCount = scryfall.card_count;
 
             SetName = string.IsNullOrWhiteSpace(SetName) ? SetNameScryfall : SetName;

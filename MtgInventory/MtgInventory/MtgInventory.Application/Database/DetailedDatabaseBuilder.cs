@@ -47,6 +47,7 @@ namespace MtgInventory.Service.Database
                 }
 
                 found.UpdateFromMkm(key, mkm);
+                found.IsKnownMkmOnlySet = _setReferenceService.IsMkmOnly(mkm.Abbreviation);
                 UpdateSetMigrationStatus(found);
             }
 
@@ -98,6 +99,8 @@ namespace MtgInventory.Service.Database
                 }
 
                 found.UpdateFromScryfall(key, scryfall);
+                found.IsKnownScryfallOnlySet = _setReferenceService.IsScryfallOnly(scryfallKey);
+
                 UpdateSetMigrationStatus(found);
             }
 

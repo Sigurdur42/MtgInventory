@@ -351,7 +351,6 @@ namespace MtgInventory.Service.Database
 
         internal void EnsureSetIndex()
         {
-            Log.Debug($"Rebuilding set index...");
             MagicSets?.EnsureIndex(s => s.SetNameScryfall);
             MagicSets?.EnsureIndex(s => s.SetNameMkm);
             MagicSets?.EnsureIndex(s => s.SetCodeScryfall);

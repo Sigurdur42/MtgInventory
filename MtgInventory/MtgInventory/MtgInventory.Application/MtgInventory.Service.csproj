@@ -6,9 +6,13 @@
 
   <ItemGroup>
     <None Remove="Database\SetReferenceData.csv" />
+    <None Remove="Database\SetReferenceMkm.txt" />
+    <None Remove="Database\SetReferenceScryfall.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Database\SetReferenceScryfall.txt" />
+    <EmbeddedResource Include="Database\SetReferenceMkm.txt" />
     <EmbeddedResource Include="Database\SetReferenceData.csv" />
   </ItemGroup>
 

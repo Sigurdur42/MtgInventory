@@ -13,12 +13,27 @@ namespace MtgInventory.Service.Database
     {
         private readonly Dictionary<string, SetReferenceData> _mkmIndexedSetData;
         private readonly Dictionary<string, SetReferenceData> _scryfallIndexedSetData;
+        private readonly string[] _mkmOnly;
+        private readonly string[] _scryfallOnly;
 
         public SetReferenceService()
         {
-            var raw = ReadEmbedded();
+            var raw = ReadEmbeddedSetReferenceData();
             _mkmIndexedSetData = raw.ToDictionary(s => s.MkmCode);
             _scryfallIndexedSetData = raw.ToDictionary(s => s.ScryfallCode);
+
+            _mkmOnly = ReadEmbeddedMkmOnly("SetReferenceMkm.txt");
+            _scryfallOnly = ReadEmbeddedMkmOnly("SetReferenceScryfall.txt");
+        }
+
+        public bool IsMkmOnly(string mkmSetCode)
+        {
+            return _mkmOnly.Any(c => c.Equals(mkmSetCode, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public bool IsScryfallOnly(string scryfallSetCode)
+        {
+            return _scryfallOnly.Any(c => c.Equals(scryfallSetCode, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public string GetMkmSetCode(string scryfallSetCode)
@@ -43,7 +58,27 @@ namespace MtgInventory.Service.Database
             return "";
         }
 
-        private SetReferenceData[] ReadEmbedded()
+        private string[] ReadEmbeddedMkmOnly(string resourceName)
+        {
+            try
+            {
+                var resourceLoader = new ResourceLoader();
+                var yaml = resourceLoader.GetEmbeddedResourceString(
+                    GetType().Assembly,
+                    resourceName);
+
+                return yaml.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(i => i.Trim())
+                    .ToArray();
+            }
+            catch (Exception error)
+            {
+                Log.Error($"Cannot load mkm only reference data: {error}");
+                return new string[0];
+            }
+        }
+
+        private SetReferenceData[] ReadEmbeddedSetReferenceData()
         {
             try
             {

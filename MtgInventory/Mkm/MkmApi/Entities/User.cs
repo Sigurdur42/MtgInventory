@@ -39,9 +39,9 @@
         links: []                   // HATEOAS links
          * */
 
-        public string IdUser { get; set; }
-        public string UserName { get; set; }
-        public string RegistrationDate { get; set; }
+        public string IdUser { get; set; } = "";
+        public string UserName { get; set; } = "";
+        public string RegistrationDate { get; set; } = "";
 
         /// <summary>
         /// 0: private user
@@ -50,27 +50,27 @@
         /// </summary>
         public int IsCommercial { get; set; }
 
-        public string IsSeller { get; set; }
+        public string IsSeller { get; set; } = "";
 
         // TODO: Name
         // TODO: Address
 
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public string Vat { get; set; }
+        public string Phone { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Vat { get; set; } = "";
 
         public int RiskGroup { get; set; }
         public int Reputation { get; set; }
-        public string ShipsFast { get; set; }
-        public string SellCount { get; set; }
+        public string ShipsFast { get; set; } = "";
+        public string SellCount { get; set; } = "";
         public int SoldItems { get; set; }
-        public string AvgShippingTime { get; set; }
-        public string OnVacation { get; set; }
+        public string AvgShippingTime { get; set; } = "";
+        public string OnVacation { get; set; } = "";
 
-        public string LegalInformation { get; set; }
-        public string LossPercentage { get; set; }
+        public string LegalInformation { get; set; } = "";
+        public string LossPercentage { get; set; } = "";
 
-        public string UnsentShipments { get; set; }
+        public string UnsentShipments { get; set; } = "";
         // TODO: Links
     }
 }

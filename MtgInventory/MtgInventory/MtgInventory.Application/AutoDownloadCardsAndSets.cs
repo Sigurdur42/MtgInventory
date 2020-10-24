@@ -124,6 +124,7 @@ namespace MtgInventory.Service
         {
             Log.Debug($"{_logPrefix}Loading Scryfall expansions...");
             var scryfallSets = _scryfallService.RetrieveSets()
+                .Where(s => !s.IsDigital)
                 .OrderByDescending(s => s.Name)
                 .Select(s => new ScryfallSet(s))
                 .ToArray();

@@ -251,7 +251,11 @@ namespace MtgInventory.Service
             var unmatchedSets = _cardDatabase.MagicSets
                 ?.Query()
                 ?.Where(s => s.MigrationStatus == SetMigrationStatus.Unknown)
-                ?.ToArray() ?? new DetailedSetInfo[0];
+                ?.ToArray()
+                ?.OrderBy(s => s.SetCodeMkm)
+                ?.ThenBy(s => s.SetCodeScryfall)
+                                ?.ToArray()
+                                ?? new DetailedSetInfo[0];
 
             var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "UnmatchedSets.csv"));
             if (!targetFile.Directory?.Exists ?? false)

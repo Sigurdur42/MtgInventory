@@ -28,44 +28,21 @@ namespace MtgInventory.Service.Models
             UpdateDateUtc = DateTime.UtcNow;
         }
 
-        public Guid Id { get; set; }
-
-        public string Code { get; set; }
-        public string MtgoCode { get; set; }
-        public string Name { get; set; }
-        public string SetType { get; set; }
-        public DateTime? ReleaseDate { get; set; }
-        public string BlockCode { get; set; }
         public string Block { get; set; }
-        public string ParentSetCode { get; set; }
+        public string BlockCode { get; set; }
         public int card_count { get; set; }
+        public string Code { get; set; }
+        public Uri IconSvgUri { get; set; }
+        public Guid Id { get; set; }
         public bool IsDigital { get; set; }
         public bool IsFoilOnly { get; set; }
-        public Uri IconSvgUri { get; set; }
+        public string MtgoCode { get; set; }
+        public string Name { get; set; }
+        public string ParentSetCode { get; set; }
+        public DateTime? ReleaseDate { get; set; }
+        public string SetType { get; set; }
         public Uri SsearchUri { get; set; }
 
         public DateTime? UpdateDateUtc { get; set; }
-
-        public bool IsScryfallOnlySet
-        {
-            get
-            {
-                switch (Code)
-                {
-                    case "OC13":
-                    case "OC14":
-                    case "OC15":
-                    case "OC16":
-                    case "OC17":
-                    case "OC18":
-                    case "OC19":
-                    case "OC20":
-                        return true;
-
-                    default:
-                        return false;
-                }
-            }
-        }
     }
 }
