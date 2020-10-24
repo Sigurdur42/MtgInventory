@@ -229,10 +229,10 @@ namespace MtgInventory.Service.Database
                 }
             }
 
-            _database.MagicCards.InsertBulk(cardsToInsert);
-            _database.MagicCards.Update(cardsToUpdate);
+            _database?.MagicCards?.InsertBulk(cardsToInsert);
+            _database?.MagicCards?.Update(cardsToUpdate);
 
-            _database.EnsureMagicCardsIndex();
+            _database?.EnsureMagicCardsIndex();
         }
 
         internal void RebuildMkmCardsForSet(string mkmSetCode)

@@ -120,7 +120,7 @@ namespace MtgInventory.Service
             CardsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
-        public ScryfallSet[] DownloadScryfallSetsData(bool rebuildDetailedSetInfo)
+        public ScryfallSet[] DownloadScryfallSetsData()
         {
             Log.Debug($"{_logPrefix}Loading Scryfall expansions...");
             var scryfallSets = _scryfallService.RetrieveSets()
@@ -129,11 +129,6 @@ namespace MtgInventory.Service
                 .ToArray();
 
             _cardDatabase.InsertScryfallSets(scryfallSets);
-
-            if (rebuildDetailedSetInfo)
-            {
-                _cardDatabase.RebuildSetData();
-            }
 
             _cardDatabase.UpdateScryfallStatistics(_scryfallApiCallStatistic);
 
@@ -277,7 +272,13 @@ namespace MtgInventory.Service
                         return;
                     }
 
-                    DownloadScryfallSetsData(true);
+                    DownloadScryfallSetsData();
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    _cardDatabase.RebuildSetData();
                     if (cancellationToken.IsCancellationRequested)
                     {
                         return;

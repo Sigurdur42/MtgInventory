@@ -149,9 +149,9 @@ namespace MtgInventory.Service
 
         public void SaveSettings() => _settingsService.SaveSettings();
 
-        public ScryfallSet[] DownloadScryfallSetsData(bool rebuildDetailedSetInfo)
+        public ScryfallSet[] DownloadScryfallSetsData()
         {
-            return _autoDownloadCardsAndSets.DownloadScryfallSetsData(rebuildDetailedSetInfo);
+            return _autoDownloadCardsAndSets.DownloadScryfallSetsData();
         }
 
         public void DownloadMkmSetsAndProducts()
@@ -509,7 +509,7 @@ namespace MtgInventory.Service
         {
             return Task.Factory.StartNew(() =>
             {
-                DownloadScryfallSetsData(false);
+                DownloadScryfallSetsData();
                 DownloadScryfallCardData();
             });
         }
