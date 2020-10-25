@@ -234,7 +234,7 @@ namespace MkmApi
             }
 
             var today = DateTime.Now.Date;
-            if (_apiCallStatistic.Today != today)
+            if (_apiCallStatistic.Today.Date != today)
             {
                 _apiCallStatistic.Today = today;
                 _apiCallStatistic.CountToday = 0;

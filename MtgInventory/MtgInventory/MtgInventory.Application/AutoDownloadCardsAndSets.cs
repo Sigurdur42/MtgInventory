@@ -67,7 +67,7 @@ namespace MtgInventory.Service
         {
             Task.Factory.StartNew(() =>
             {
-                foreach (var card in cards.Where(c => !string.IsNullOrWhiteSpace(c.MkmId)))
+                foreach (var card in cards.Where(c => !string.IsNullOrWhiteSpace(c.MkmId)).Distinct())
                 {
                     if (!card.MkmDetailsRequired)
                     {
@@ -175,35 +175,35 @@ namespace MtgInventory.Service
             var remaining = productData.Length;
             foreach (var product in productData)
             {
-                var details = _cardDatabase?.MagicCards
+                var detailArray = _cardDatabase?.MagicCards
                     ?.Query()
                     ?.Where(c => c.MkmId == product.IdProduct)
-                    ?.FirstOrDefault();
+                    ?.ToArray();
 
-                Log.Information($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
-
-                if (details != null)
+                foreach (var details in detailArray)
                 {
-                    details.UpdateFromMkm(product);
-                    _cardDatabase?.MagicCards?.Update(details);
-                }
+                    Log.Information($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
 
-                var additional = _cardDatabase?.MkmAdditionalInfo
-                    ?.Query()
-                    ?.Where(c => c.MkmId == product.IdProduct)
-                    ?.FirstOrDefault();
-
-                if (additional == null)
-                {
-                    additional = new MkmAdditionalCardInfo()
+                    if (details != null)
                     {
-                        MkmId = product.IdProduct
-                    };
-                    _cardDatabase?.MkmAdditionalInfo?.Insert(additional);
-                }
+                        details.UpdateFromMkm(product);
+                        _cardDatabase?.MagicCards?.Update(details);
+                    }
 
-                additional.UpdateFromProduct(product);
-                _cardDatabase?.MkmAdditionalInfo?.Update(additional);
+                    var additional = _cardDatabase?.MkmAdditionalInfo
+                        ?.Query()
+                        ?.Where(c => c.MkmId == product.IdProduct)
+                        ?.FirstOrDefault();
+
+                    if (additional == null)
+                    {
+                        additional = new MkmAdditionalCardInfo() { MkmId = product.IdProduct };
+                        _cardDatabase?.MkmAdditionalInfo?.Insert(additional);
+                    }
+
+                    additional.UpdateFromProduct(product);
+                    _cardDatabase?.MkmAdditionalInfo?.Update(additional);
+                }
             }
 
             return true;
