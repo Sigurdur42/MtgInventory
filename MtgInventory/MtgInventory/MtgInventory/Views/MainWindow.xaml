@@ -133,7 +133,6 @@
 
                     <DataGrid AutoGenerateColumns="False" Items="{Binding MkmProductsFound}" Grid.Row="2" Grid.ColumnSpan="3">
                         <DataGrid.Columns>
-
                             <DataGridTemplateColumn Header="Image" Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -150,6 +149,33 @@
                                         <StackPanel Orientation="Horizontal">
                                             <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}">Open in MKM</Button>
                                         </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Debug" Width="Auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="3,0,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock VerticalAlignment="Center">Mkm Id:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Column="1" Margin="3,0,0,0" Text="{Binding Card.MkmId}" HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="1">Coll Nr:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Margin="3,0,0,0" Text="{Binding CollectorNumber}"  HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="2">SF Set:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="3,0,0,0" Text="{Binding Card.SetCodeScryfall}"  HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="3">Man. Map:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" Margin="3,0,0,0" Text="{Binding Card.IsMappedByReferenceCard}"  HorizontalAlignment="Right"/>
+                                        </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -236,6 +262,8 @@
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -247,6 +275,37 @@
                                             <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Margin="3,0,0,0" Text="{Binding ScryfallCardCount}"  HorizontalAlignment="Right"/>
                                             <TextBlock VerticalAlignment="Center" Grid.Row="2">Migrated:</TextBlock>
                                             <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="3,0,0,0" Text="{Binding MigrationStatus}"  HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="3">SF Only:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" Margin="3,0,0,0" Text="{Binding IsKnownScryfallOnlySet}"  HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="4">MKM Only:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="4" Grid.Column="1" Margin="3,0,0,0" Text="{Binding IsKnownMkmOnlySet}"  HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Mapping" Width="Auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="3,0,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock VerticalAlignment="Center">SF Code:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Column="1" Margin="3,0,0,0" Text="{Binding SetCodeScryfall}" HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="1">MKM Code:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Margin="3,0,0,0" Text="{Binding SetCodeMkm}"  HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="2">SF Name:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="3,0,0,0" Text="{Binding SetNameScryfall}"  HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="3">MKM Name:</TextBlock>
+                                            <TextBlock VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" Margin="3,0,0,0" Text="{Binding SetNameMkm}"  HorizontalAlignment="Right"/>
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -254,11 +313,11 @@
 
                             <DataGridTextColumn Header="Name" Binding="{Binding SetName}" />
 
-                            <DataGridTextColumn Header="Name (MKM)" Binding="{Binding SetNameMkm}" />
+                            <!--<DataGridTextColumn Header="Name (MKM)" Binding="{Binding SetNameMkm}" />
                             <DataGridTextColumn Header="Code (MKM)" Binding="{Binding SetCodeMkm}" />
 
                             <DataGridTextColumn Header="Name (Scryfall)" Binding="{Binding SetNameScryfall}" />
-                            <DataGridTextColumn Header="Code (Scryfall)" Binding="{Binding SetCodeScryfall}" />
+                            <DataGridTextColumn Header="Code (Scryfall)" Binding="{Binding SetCodeScryfall}" />-->
 
                             <DataGridTextColumn Header="Released" Binding="{Binding ReleaseDateParsed}" />
                         </DataGrid.Columns>

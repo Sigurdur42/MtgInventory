@@ -2,65 +2,49 @@
 using System.Linq;
 using MkmApi.Entities;
 using MtgInventory.Service.Database;
-using MtgInventory.Service.ReferenceData;
 
 namespace MtgInventory.Service.Models
 {
     public class DetailedMagicCard
     {
-        // The internal id for the database
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        public string MkmId { get; set; }
-        public string MkmMetaCardId { get; set; }
-        public string CollectorNumber { get; set; }
-        public Guid ScryfallId { get; set; }
-
-        public string NameEn { get; set; } = "";
-        public string SetCode { get; set; }
-        public string SetName { get; set; }
-        public string TypeLine { get; set; }
-
-        public string ScryfallCardSite { get; set; } = "";
-
-        public string SetCodeMkm { get; set; } = "";
-        public string SetNameMkm { get; set; } = "";
-
-        public string SetCodeScryfall { get; set; } = "";
-        public string SetNameScryfall { get; set; } = "";
-
-
-        public string MkmWebSite { get; set; } = "";
+        public string CollectorNumber { get; set; } = "";
 
         public int CountReprints { get; set; }
 
-        public DateTime? SetReleaseDate { get; set; }
-        public DateTime? LastUpdateMkm { get; set; }
+        // The internal id for the database
+        public Guid Id { get; set; } = Guid.NewGuid();
 
-        public DateTime? LastUpdateScryfall { get; set; }
-
-        public bool IsBasicLand { get; set; }
-        public bool IsLand { get; set; }
-        public bool IsCreature { get; set; }
         public bool IsArtifact { get; set; }
+        public bool IsBasicLand { get; set; }
+        public bool IsCreature { get; set; }
         public bool IsInstant { get; set; }
+        public bool IsLand { get; set; }
+        public bool IsMappedByReferenceCard { get; set; }
+        public bool IsScryfallOnly => string.IsNullOrWhiteSpace(MkmId);
         public bool IsSorcery { get; set; }
         public bool IsToken { get; set; }
-
-        public int PrimaryMultiverseId { get; set; }
-
-        public int[] MultiverseIds { get; set; } = new int[0];
-
-        public ImageLinkUri[] ScryfallImages { get; set; } = new ImageLinkUri[0];
-
-        public ImageLinkUri[] MkmImages { get; set; } = new ImageLinkUri[0];
-
-        public bool MkmDetailsRequired => !string.IsNullOrWhiteSpace(MkmId) && string.IsNullOrWhiteSpace(MkmWebSite);
-       
-        public bool IsScryfallOnly => string.IsNullOrWhiteSpace(MkmId);
-
+        public DateTime? LastUpdateMkm { get; set; }
+        public DateTime? LastUpdateScryfall { get; set; }
         public CardMigrationStatus MigrationStatus { get; set; } = CardMigrationStatus.Unknown;
-
+        public bool MkmDetailsRequired => !string.IsNullOrWhiteSpace(MkmId) && string.IsNullOrWhiteSpace(MkmWebSite);
+        public string MkmId { get; set; } = "";
+        public ImageLinkUri[] MkmImages { get; set; } = new ImageLinkUri[0];
+        public string MkmMetaCardId { get; set; } = "";
+        public string MkmWebSite { get; set; } = "";
+        public int[] MultiverseIds { get; set; } = new int[0];
+        public string NameEn { get; set; } = "";
+        public int PrimaryMultiverseId { get; set; }
+        public string ScryfallCardSite { get; set; } = "";
+        public Guid ScryfallId { get; set; }
+        public ImageLinkUri[] ScryfallImages { get; set; } = new ImageLinkUri[0];
+        public string SetCode { get; set; } = "";
+        public string SetCodeMkm { get; set; } = "";
+        public string SetCodeScryfall { get; set; } = "";
+        public string SetName { get; set; } = "";
+        public string SetNameMkm { get; set; } = "";
+        public string SetNameScryfall { get; set; } = "";
+        public DateTime? SetReleaseDate { get; set; }
+        public string TypeLine { get; set; } = "";
 
         public override string ToString()
         {
@@ -111,9 +95,8 @@ namespace MtgInventory.Service.Models
                 MkmId = MkmId,
                 Name = NameEn,
                 MkmWebSite = MkmWebSite,
-                ScryfallId = ScryfallId,
-                SetCodeMkm = SetCodeMkm,
-                Id = Id,
+                ScryfallCollectorNumber = CollectorNumber,
+                ScryfallSetCode = SetCodeScryfall,
                 MkmImageUrl = MkmImages?.FirstOrDefault()?.Uri ?? "",
             };
         }
@@ -151,6 +134,19 @@ namespace MtgInventory.Service.Models
                     Uri = "http:" + product.Image,
                 }
             };
+        }
+
+        public void UpdateManualMapped(CardReferenceData reference)
+        {
+            MkmWebSite = reference.MkmWebSite;
+            MkmImages = new []{new ImageLinkUri()
+            {
+                Uri = reference.MkmImageUrl,
+                Category = "normal"
+
+            }};
+
+            IsMappedByReferenceCard = true;
         }
     }
 }

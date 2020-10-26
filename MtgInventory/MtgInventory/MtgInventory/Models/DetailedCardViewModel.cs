@@ -52,5 +52,7 @@ namespace MtgInventory.Models
         }
 
         public DetailedMagicCard Card { get; }
+
+        public string CollectorNumber => Card?.CollectorNumber?.Replace("★", "*") ?? "";
     }
 }

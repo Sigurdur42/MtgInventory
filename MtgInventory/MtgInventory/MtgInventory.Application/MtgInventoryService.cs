@@ -11,7 +11,6 @@ using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
-using MtgInventory.Service.ReferenceData;
 using MtgInventory.Service.Settings;
 using ScryfallApi.Client;
 using ScryfallApiServices;
@@ -270,6 +269,38 @@ namespace MtgInventory.Service
             File.WriteAllText(targetFile.FullName, headline + Environment.NewLine + string.Join(Environment.NewLine, parts));
 
             Log.Information($"Wrote {unmatchedSets.Length} set infos to {targetFile.FullName}");
+
+            var mkmDetailIds = _cardDatabase.MkmAdditionalInfo
+                ?.FindAll()
+                ?.Select(d => d.MkmId)
+                ?.Distinct()
+                ?.ToArray()
+                ?? new string[0];
+
+            Log.Debug($"Found {mkmDetailIds.Length} items in MKM additional details");
+            var knownSets = new List<string>();
+            var productsIndexed = _cardDatabase.MkmProductInfo
+                ?.FindAll()
+                ?.ToDictionary(p => p.Id)
+                ?? new Dictionary<string, MkmProductInfo>();
+
+            foreach (var id in mkmDetailIds)
+            {
+                if (productsIndexed.TryGetValue(id, out var found))
+                {
+                    knownSets.Add(found.ExpansionCode);
+                }
+            }
+
+            knownSets = knownSets.Distinct().ToList();
+            var missingSets = _cardDatabase.MagicSets
+                ?.Query()
+                ?.Where(s => !knownSets.Contains(s.SetCodeMkm))
+                ?.ToArray()
+                ?? new DetailedSetInfo[0];
+
+            targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "MissingDetailsSets.csv"));
+            File.WriteAllText(targetFile.FullName, string.Join(Environment.NewLine, missingSets.OrderBy(s=>s.SetName).Select(s => s.SetName)));
         }
 
         public void GenerateReferenceCardData()
@@ -283,10 +314,10 @@ namespace MtgInventory.Service
 
             var result = allCards.Select(card => card.GenerateReferenceData()).ToList();
 
-            var reader = new CardReferenceDataReader();
-            var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceData.yaml"));
+            ////var reader = new CardReferenceDataReader();
+            ////var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceData.yaml"));
 
-            reader.Write(targetFile, result.ToArray());
+            ////reader.Write(targetFile, result.ToArray());
 
             stopwatch.Stop();
             Log.Information($"Done generating card reference data in {stopwatch.Elapsed}");

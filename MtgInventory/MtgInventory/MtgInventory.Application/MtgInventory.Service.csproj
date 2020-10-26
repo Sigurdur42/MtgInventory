@@ -5,12 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Database\CardReferenceData.csv" />
     <None Remove="Database\SetReferenceData.csv" />
     <None Remove="Database\SetReferenceMkm.txt" />
     <None Remove="Database\SetReferenceScryfall.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Database\CardReferenceData.csv" />
     <EmbeddedResource Include="Database\SetReferenceScryfall.txt" />
     <EmbeddedResource Include="Database\SetReferenceMkm.txt" />
     <EmbeddedResource Include="Database\SetReferenceData.csv" />
@@ -29,6 +31,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Mkm\MkmApi\MkmApi.csproj" />
     <ProjectReference Include="..\..\Scryfall\ScryfallApiServices\ScryfallApiServices.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ReferenceData\" />
   </ItemGroup>
 
 </Project>

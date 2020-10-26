@@ -13,7 +13,7 @@ namespace MtgInventory.Service.Database
         private readonly CardDatabase _database;
         private readonly object _sync = new object();
         private bool _buildingInProgress;
-        private readonly SetReferenceService _setReferenceService = new SetReferenceService();
+        private readonly ReferenceDataService _referenceService = new ReferenceDataService();
 
         public DetailedDatabaseBuilder(
             CardDatabase database)
@@ -47,7 +47,7 @@ namespace MtgInventory.Service.Database
                 }
 
                 found.UpdateFromMkm(key, mkm);
-                found.IsKnownMkmOnlySet = _setReferenceService.IsMkmOnly(mkm.Abbreviation);
+                found.IsKnownMkmOnlySet = _referenceService.IsMkmOnly(mkm.Abbreviation);
                 UpdateSetMigrationStatus(found);
             }
 
@@ -82,7 +82,7 @@ namespace MtgInventory.Service.Database
                 }
 
                 var scryfallKey = scryfall.Code?.ToUpperInvariant() ?? "";
-                var key = _setReferenceService.GetMkmSetCode(scryfallKey);
+                var key = _referenceService.GetMkmSetCode(scryfallKey);
                 if (string.IsNullOrEmpty(key))
                 {
                     key = scryfallKey;
@@ -99,7 +99,7 @@ namespace MtgInventory.Service.Database
                 }
 
                 found.UpdateFromScryfall(key, scryfall);
-                found.IsKnownScryfallOnlySet = _setReferenceService.IsScryfallOnly(scryfallKey);
+                found.IsKnownScryfallOnlySet = _referenceService.IsScryfallOnly(scryfallKey);
 
                 UpdateSetMigrationStatus(found);
             }
@@ -331,7 +331,6 @@ namespace MtgInventory.Service.Database
                 return string.Format(CultureInfo.InvariantCulture, "{0:D6}", parsed);
             }
 
-            Log.Warning($"Cannot convert collector number '{existingNumber}' to decimal.");
             return existingNumber;
         }
 
@@ -353,7 +352,7 @@ namespace MtgInventory.Service.Database
         }
 
         private IEnumerable<ScryfallCard> ResolveSpecialScryfallCard(
-                    IEnumerable<ScryfallCard> cards,
+            IEnumerable<ScryfallCard> cards,
             IList<DetailedMagicCard> cardsToUpdate,
             IList<DetailedMagicCard> cardsToInsert,
             DetailedSetInfo setInfo)
@@ -367,6 +366,26 @@ namespace MtgInventory.Service.Database
             foreach (var card in cardsArray.OrderBy(c => GetCollectorNumber(c.CollectorNumber)))
             {
                 ++index;
+                
+                // Look for manual mapped cards here
+                var manualMapped = _referenceService.GetMappedCard(card.CollectorNumber, card.Set);
+                if (manualMapped != null)
+                {
+                    var found = _database?.MagicCards
+                        ?.Query()
+                        ?.Where(c => c.MkmId == manualMapped.MkmId)
+                        ?.FirstOrDefault();
+                    if (found == null)
+                    {
+                        Log.Error($"Cannot find manual mapped reference card with mkm id {manualMapped.MkmId}");
+                    }
+                    else
+                    {
+                        found.UpdateFromScryfall(card, setInfo);
+                        found.UpdateManualMapped(manualMapped);
+                    }
+                }
+
 
                 if (cardsCount == 2 && index == 2)
                 {
@@ -386,52 +405,52 @@ namespace MtgInventory.Service.Database
                 }
 
                 // Commander oversized - Scryfall does not know oversized cards
-                switch (card.Set)
-                {
-                    case "OC13":
-                    case "OC14":
-                    case "OC15":
-                    case "OC16":
-                    case "OC17":
-                    case "OC18":
-                    case "OC19":
-                    case "OC20":
-                        {
-                            var found = _database?.MagicCards
-                                ?.Query()
-                                ?.Where(c => c.NameEn == card.Name && c.SetCode == card.Set)
-                                ?.OrderByDescending(c => c.CollectorNumber)
-                                ?.FirstOrDefault();
+                //switch (card.Set)
+                //{
+                //    case "OC13":
+                //    case "OC14":
+                //    case "OC15":
+                //    case "OC16":
+                //    case "OC17":
+                //    case "OC18":
+                //    case "OC19":
+                //    case "OC20":
+                //        {
+                //            var found = _database?.MagicCards
+                //                ?.Query()
+                //                ?.Where(c => c.NameEn == card.Name && c.SetCode == card.Set)
+                //                ?.OrderByDescending(c => c.CollectorNumber)
+                //                ?.FirstOrDefault();
 
-                            if (found != null)
-                            {
-                                found.UpdateFromScryfall(card, null);
-                                cardsToUpdate.Add(found);
-                                continue;
-                            }
-                        }
-                        break;
+                //            if (found != null)
+                //            {
+                //                found.UpdateFromScryfall(card, null);
+                //                cardsToUpdate.Add(found);
+                //                continue;
+                //            }
+                //        }
+                //        break;
 
-                    case "PWAR":
-                        if (card.CollectorNumber.Contains("S", StringComparison.InvariantCultureIgnoreCase)
-                            || (card.CollectorNumber.Contains("★", StringComparison.InvariantCultureIgnoreCase)))
-                        {
-                            // This is japanese alt art. MKM has a differnt set for this
-                            var found = _database?.MagicCards
-                                ?.Query()
-                                ?.Where(c => c.NameEn == card.Name && c.SetCodeMkm == "JWAR")
-                                ?.OrderByDescending(c => c.CollectorNumber)
-                                ?.FirstOrDefault();
+                //    case "PWAR":
+                //        if (card.CollectorNumber.Contains("S", StringComparison.InvariantCultureIgnoreCase)
+                //            || (card.CollectorNumber.Contains("★", StringComparison.InvariantCultureIgnoreCase)))
+                //        {
+                //            // This is japanese alt art. MKM has a differnt set for this
+                //            var found = _database?.MagicCards
+                //                ?.Query()
+                //                ?.Where(c => c.NameEn == card.Name && c.SetCodeMkm == "JWAR")
+                //                ?.OrderByDescending(c => c.CollectorNumber)
+                //                ?.FirstOrDefault();
 
-                            if (found != null)
-                            {
-                                found.UpdateFromScryfall(card, null);
-                                cardsToUpdate.Add(found);
-                                continue;
-                            }
-                        }
-                        break;
-                }
+                //            if (found != null)
+                //            {
+                //                found.UpdateFromScryfall(card, null);
+                //                cardsToUpdate.Add(found);
+                //                continue;
+                //            }
+                //        }
+                //        break;
+                //}
 
                 switch (card.Id.ToString().ToUpperInvariant())
                 {
@@ -461,14 +480,14 @@ namespace MtgInventory.Service.Database
                 return;
             }
 
-            var scryfallCode = _setReferenceService.GetMkmSetCode(set.SetCodeScryfall);
+            var scryfallCode = _referenceService.GetMkmSetCode(set.SetCodeScryfall);
             if (!string.IsNullOrEmpty(scryfallCode))
             {
                 set.MigrationStatus = SetMigrationStatus.Migrated;
                 return;
             }
 
-            var mkmCode = _setReferenceService.GetScryfallSetCode(set.SetCodeMkm);
+            var mkmCode = _referenceService.GetScryfallSetCode(set.SetCodeMkm);
             if (!string.IsNullOrEmpty(mkmCode))
             {
                 set.MigrationStatus = SetMigrationStatus.Migrated;
