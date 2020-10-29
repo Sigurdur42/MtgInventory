@@ -2,6 +2,9 @@
 using Avalonia;
 using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace MtgInventory
 {
@@ -19,8 +22,23 @@ namespace MtgInventory
         // yet and stuff might break.
         public static void Main(string[] args)
         {
+            ServiceProvider? serviceProvider = null;
             try
             {
+                serviceProvider = new ServiceCollection()
+                    .AddLogging(cfg =>
+                    {
+                        cfg.AddConsole();
+                        cfg.AddDebug();
+                    }).Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Debug)
+                    .BuildServiceProvider();
+
+                // TODO: Add other DI configs
+
+                var logger = serviceProvider.GetService<ILogger<Program>>();
+
+                logger.LogInformation("This is log message.");
+
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
             catch (Exception error)
@@ -28,6 +46,11 @@ namespace MtgInventory
                 // TODO: Actual log
                 Console.WriteLine($"Unhandled exception caught: {error}");
             }
+            finally
+            {
+                serviceProvider?.Dispose();
+            }
         }
+
     }
 }
