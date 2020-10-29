@@ -216,9 +216,9 @@ namespace MkmApi
             request.Method = method;
 
             var response = request.GetResponse() as HttpWebResponse;
-            var encoding = response.CharacterSet == "" ?
+            var encoding = response?.CharacterSet == "" ?
                 Encoding.UTF8 :
-                Encoding.GetEncoding(response.CharacterSet);
+                Encoding.GetEncoding(response?.CharacterSet ?? "");
 
             using var stream = response.GetResponseStream();
 

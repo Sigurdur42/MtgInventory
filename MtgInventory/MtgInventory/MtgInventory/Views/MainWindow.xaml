@@ -168,7 +168,7 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock VerticalAlignment="Center">Mkm Id:</TextBlock>
-                                            <TextBlock VerticalAlignment="Center" Grid.Column="1" Margin="3,0,0,0" Text="{Binding Card.MkmId}" HorizontalAlignment="Right"/>
+                                            <TextBlock VerticalAlignment="Center" Grid.Column="1" Margin="3,0,0,0" Text="{Binding Card.MkmId}" HorizontalAlignment="Right" />
                                             <TextBlock VerticalAlignment="Center" Grid.Row="1">Coll Nr:</TextBlock>
                                             <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Margin="3,0,0,0" Text="{Binding CollectorNumber}"  HorizontalAlignment="Right"/>
                                             <TextBlock VerticalAlignment="Center" Grid.Row="2">SF Set:</TextBlock>

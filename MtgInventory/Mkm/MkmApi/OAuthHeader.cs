@@ -48,6 +48,7 @@ namespace MkmApi
         /// </summary>
         /// <param name="method">Request Method</param>
         /// <param name="urlWithoutQueryParameters">Request URI</param>
+        /// <param name="queryParameters">query arguments</param>
         /// <returns>Authorization header value</returns>
         public string GetAuthorizationHeader(
             string method, 

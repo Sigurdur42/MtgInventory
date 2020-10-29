@@ -26,7 +26,7 @@ namespace MkmApi.TestUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _productName, value);
         }
 
-        public MkmAuthenticationData AuthenticationData { get; set; }
+        public MkmAuthenticationData AuthenticationData { get; set; } = new MkmAuthenticationData();
 
         public string Output
         {

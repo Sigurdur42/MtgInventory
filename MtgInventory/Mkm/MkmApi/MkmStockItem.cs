@@ -7,43 +7,43 @@ namespace MkmApi
     public class MkmStockItem
     {
         [Name("idArticle")]
-        public string IdArticle { get; set; }
+        public string IdArticle { get; set; } = "";
 
         [Name("idProduct")]
-        public string IdProduct { get; set; }
+        public string IdProduct { get; set; } = "";
 
         [Name("English Name")]
-        public string EnglishName { get; set; }
+        public string EnglishName { get; set; } = "";
 
         [Name("Exp.")]
-        public string SetCode { get; set; }
+        public string SetCode { get; set; } = "";
 
         [Name("Exp. Name")]
-        public string SetName { get; set; }
+        public string SetName { get; set; } = "";
 
         [Name("Price")]
         public decimal Price { get; set; }
 
         [Name("Language")]
-        public string Language { get; set; }
+        public string Language { get; set; } = "";
 
         [Name("Condition")]
-        public string Condition { get; set; }
+        public string Condition { get; set; } = "";
 
         [Name("Foil?")]
-        public string Foil { get; set; }
+        public string Foil { get; set; } = "";
 
         [Name("Signed?")]
-        public string Signed { get; set; }
+        public string Signed { get; set; } = "";
 
         [Name("Playset?")]
-        public string Playset { get; set; }
+        public string Playset { get; set; } = "";
 
         [Name("Altered?")]
-        public string Altered { get; set; }
+        public string Altered { get; set; } = "";
 
         [Name("Comments")]
-        public string Comments { get; set; }
+        public string Comments { get; set; } = "";
 
         [Name("Amount")]
         public int Amount { get; set; }
