@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
 using ScryfallApiServices;
-using Serilog;
 
 namespace MtgBinder.Domain.Scryfall
 {
@@ -16,10 +15,14 @@ namespace MtgBinder.Domain.Scryfall
         private readonly GoodCiticenAutoSleep _autoSleep = new GoodCiticenAutoSleep();
 
         public ScryfallService(
-            ScryfallApiClient apiClient,
+            ILoggerFactory loggerFactory,
             IScryfallApiCallStatistic scryfallApiCallStatistic)
         {
-            _apiClient = apiClient;
+            _apiClient = new ScryfallApiClient(new System.Net.Http.HttpClient()
+            {
+                BaseAddress = new Uri("https://api.scryfall.com/")
+            }, loggerFactory?.CreateLogger<ScryfallApiClient>(), null);
+
             _apiCallStatistic = scryfallApiCallStatistic;
         }
 
@@ -94,7 +97,7 @@ namespace MtgBinder.Domain.Scryfall
             }
             catch (Exception error)
             {
-                Log.Error($"Cannot run search for {lookupPattern}: {error}");
+                // Log.Error($"Cannot run search for {lookupPattern}: {error}");
                 return Array.Empty<Card>();
             }
         }

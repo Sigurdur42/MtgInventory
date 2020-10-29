@@ -8,7 +8,7 @@ namespace MtgInventory.Models
 {
     public class MkmStockItemViewModel : ReactiveObject
     {
-        private CardPrice _cardPrice;
+        private CardPrice _cardPrice = new CardPrice();
         private decimal? _marketPrice;
 
         public MkmStockItemViewModel(DetailedStockItem stockItem)

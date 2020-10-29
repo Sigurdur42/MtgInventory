@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using CsvHelper;
-using Serilog;
 
 namespace MtgInventory.Service.Database
 {
@@ -97,7 +96,7 @@ namespace MtgInventory.Service.Database
             }
             catch (Exception error)
             {
-                Log.Error($"Cannot load card reference data: {error}");
+                // Log.Error($"Cannot load card reference data: {error}");
                 return new CardReferenceData[0];
             }
         }
@@ -117,7 +116,7 @@ namespace MtgInventory.Service.Database
             }
             catch (Exception error)
             {
-                Log.Error($"Cannot load mkm only reference data: {error}");
+                // Log.Error($"Cannot load mkm only reference data: {error}");
                 return new string[0];
             }
         }
@@ -142,7 +141,7 @@ namespace MtgInventory.Service.Database
             }
             catch (Exception error)
             {
-                Log.Error($"Cannot load set reference data: {error}");
+                // Log.Error($"Cannot load set reference data: {error}");
                 return new SetReferenceData[0];
             }
         }

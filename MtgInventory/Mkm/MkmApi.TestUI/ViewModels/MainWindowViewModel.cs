@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using static System.Environment;
 
@@ -14,6 +15,8 @@ namespace MkmApi.TestUI.ViewModels
         private readonly ApiCallStatistics _apiCallStatistics = new ApiCallStatistics();
 
         private string _productName = "cancel";
+
+        private ILoggerFactory? _loggerFactory = null;
 
         public MainWindowViewModel()
         {
@@ -43,7 +46,7 @@ namespace MkmApi.TestUI.ViewModels
             }
 
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(_apiCallStatistics);
+            var request = new MkmRequest(_apiCallStatistics, null);
 
             var index = 0;
             var result = request.FindProducts(AuthenticationData, _productName, true);
@@ -66,7 +69,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadAllCards()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(_apiCallStatistics);
+            var request = new MkmRequest(_apiCallStatistics, _loggerFactory);
 
             var index = 0;
             using (var products = request.GetProductsAsCsv(AuthenticationData))
@@ -96,7 +99,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadStock()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(_apiCallStatistics);
+            var request = new MkmRequest(_apiCallStatistics, _loggerFactory);
             var result = request.GetStockAsCsv(AuthenticationData);
 
             stopwatch.Stop();
@@ -110,7 +113,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadSingleProduct()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(_apiCallStatistics);
+            var request = new MkmRequest(_apiCallStatistics, _loggerFactory);
             var result = request.GetProductData(AuthenticationData, "16366");
 
             stopwatch.Stop();
@@ -124,7 +127,7 @@ namespace MkmApi.TestUI.ViewModels
         public void OnDownloadGames()
         {
             var stopwatch = Stopwatch.StartNew();
-            var request = new MkmRequest(_apiCallStatistics);
+            var request = new MkmRequest(_apiCallStatistics, _loggerFactory);
             var result = request.GetGames(AuthenticationData).OrderBy(g => g.IdGame);
 
             stopwatch.Stop();

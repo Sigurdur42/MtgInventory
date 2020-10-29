@@ -4,7 +4,13 @@ using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
+using MkmApi;
+using MtgInventory.Logging;
+using MtgInventory.Models;
+using MtgInventory.Service;
+using MtgInventory.ViewModels;
+using MtgInventory.Views;
+using ScryfallApiServices;
 
 namespace MtgInventory
 {
@@ -22,20 +28,36 @@ namespace MtgInventory
         // yet and stuff might break.
         public static void Main(string[] args)
         {
-            ServiceProvider? serviceProvider = null;
+            ILogger? logger = null;
             try
             {
-                serviceProvider = new ServiceCollection()
+                var serviceCollection = new ServiceCollection()
                     .AddLogging(cfg =>
                     {
                         cfg.AddConsole();
                         cfg.AddDebug();
-                    }).Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Debug)
-                    .BuildServiceProvider();
+                        cfg.AddProvider(new PanelLogSinkProvider());
+                    }).Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Debug);
+
+                // Add other DI
+
+                var callStats = new MkmApiCallStatistics();
+                serviceCollection
+                    .AddMtgInventoryService()
+                    .AddSingleton<MainWindowViewModel>()
+                    .AddSingleton<MainWindow>()
+                    .AddSingleton<IScryfallApiCallStatistic>(callStats)
+                    .AddSingleton<IApiCallStatistic>(callStats)
+                    .AddSingleton<MkmApiCallStatistics>(callStats)
+                    .AddSingleton<MkmRequest>()
+                    ;
+
+                ServiceProvider = serviceCollection.BuildServiceProvider();
 
                 // TODO: Add other DI configs
+                var loggerFactory = ServiceProvider.GetService<ILoggerFactory>();
 
-                var logger = serviceProvider.GetService<ILogger<Program>>();
+                 logger = ServiceProvider.GetService<ILogger<Program>>();
 
                 logger.LogInformation("This is log message.");
 
@@ -44,13 +66,14 @@ namespace MtgInventory
             catch (Exception error)
             {
                 // TODO: Actual log
-                Console.WriteLine($"Unhandled exception caught: {error}");
+                logger.LogError($"Unhandled exception caught: {error}");
             }
             finally
             {
-                serviceProvider?.Dispose();
+                ServiceProvider?.Dispose();
             }
         }
 
+        internal static ServiceProvider? ServiceProvider { get; set; }
     }
 }

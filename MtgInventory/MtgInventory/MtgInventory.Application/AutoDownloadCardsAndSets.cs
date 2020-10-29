@@ -3,19 +3,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MkmApi;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Models;
 using MtgInventory.Service.Settings;
 using ScryfallApiServices;
-using Serilog;
 
 namespace MtgInventory.Service
 {
     public class AutoDownloadCardsAndSets
     {
-        private const string _logPrefix = "[ADL] ";
         private readonly CardDatabase _cardDatabase;
         private readonly IApiCallStatistic _mkmApiCallStatistic;
         private readonly MkmRequest _mkmRequest;
@@ -24,8 +23,10 @@ namespace MtgInventory.Service
         private readonly ISettingsService _settingsService;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Task? _runningTask;
+        private readonly ILogger _logger;
 
-        public AutoDownloadCardsAndSets(
+        internal AutoDownloadCardsAndSets(
+            ILoggerFactory loggerFactory,
             ISettingsService settingsService,
             CardDatabase cardDatabase,
             IApiCallStatistic mkmApiCallStatistic,
@@ -33,6 +34,7 @@ namespace MtgInventory.Service
             IScryfallService scryfallService,
             MkmRequest mkmRequest)
         {
+            _logger = loggerFactory.CreateLogger<AutoDownloadCardsAndSets>();
             _settingsService = settingsService;
             _cardDatabase = cardDatabase;
             _mkmApiCallStatistic = mkmApiCallStatistic;
@@ -99,20 +101,19 @@ namespace MtgInventory.Service
         {
             if (!_settingsService.Settings.MkmAuthentication.IsValid())
             {
-                Log.Warning($"{_logPrefix}MKM authentication configuration is missing - cannot access MKM API.");
+                _logger.LogWarning($"MKM authentication configuration is missing - cannot access MKM API.");
                 return;
             }
 
-            Log.Debug($"{_logPrefix}Loading MKM expansions...");
+            _logger.LogDebug($"Loading MKM expansions...");
 
-            var mkmRequest = new MkmRequest(_mkmApiCallStatistic);
-            var expansions = mkmRequest.GetExpansions(_settingsService.Settings.MkmAuthentication, 1).ToArray();
+            var expansions = _mkmRequest.GetExpansions(_settingsService.Settings.MkmAuthentication, 1).ToArray();
             _cardDatabase.InsertExpansions(expansions);
 
-            Log.Debug($"{_logPrefix}Loading MKM products...");
-            using var products = mkmRequest.GetProductsAsCsv(_settingsService.Settings.MkmAuthentication);
+            _logger.LogDebug($"Loading MKM products...");
+            using var products = _mkmRequest.GetProductsAsCsv(_settingsService.Settings.MkmAuthentication);
 
-            Log.Debug($"{_logPrefix}Inserting products into database...");
+            _logger.LogDebug($"Inserting products into database...");
             _cardDatabase.InsertProductInfo(products.Products, expansions);
 
             _cardDatabase.UpdateMkmStatistics(_mkmApiCallStatistic);
@@ -122,7 +123,7 @@ namespace MtgInventory.Service
 
         public ScryfallSet[] DownloadScryfallSetsData()
         {
-            Log.Debug($"{_logPrefix}Loading Scryfall expansions...");
+            _logger.LogDebug($"Loading Scryfall expansions...");
             var scryfallSets = _scryfallService.RetrieveSets()
                 .Where(s => !s.IsDigital)
                 .OrderByDescending(s => s.Name)
@@ -133,7 +134,7 @@ namespace MtgInventory.Service
 
             _cardDatabase.UpdateScryfallStatistics(_scryfallApiCallStatistic);
 
-            Log.Debug($"{_logPrefix}Done loading Scryfall expansions...");
+            _logger.LogDebug($"Done loading Scryfall expansions...");
 
             CardsUpdated?.Invoke(this, EventArgs.Empty);
             SetsUpdated?.Invoke(this, EventArgs.Empty);
@@ -158,18 +159,18 @@ namespace MtgInventory.Service
             }
         }
 
-        private bool DownloadMkmAdditionalData(
+        private void DownloadMkmAdditionalData(
             MkmAuthenticationData authenticationData,
             string cardName,
             bool exactNameMatch)
         {
-            Log.Information($"Downloading MKM data for '{cardName}'");
+            _logger.LogInformation($"Downloading MKM data for '{cardName}'");
             var productData = _mkmRequest.FindProducts(authenticationData, cardName, exactNameMatch).ToArray();
-            Log.Information($"{productData.Length} MKM data for '{cardName}' found");
+            _logger.LogInformation($"{productData.Length} MKM data for '{cardName}' found");
 
             if (productData.Length == 0)
             {
-                return false;
+                return;
             }
 
             var remaining = productData.Length;
@@ -182,7 +183,7 @@ namespace MtgInventory.Service
 
                 foreach (var details in detailArray)
                 {
-                    Log.Information($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
+                    _logger.LogInformation($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
 
                     if (details != null)
                     {
@@ -206,7 +207,7 @@ namespace MtgInventory.Service
                 }
             }
 
-            return true;
+      
         }
 
         private void DownloadScryfallCardsForSet(DetailedSetInfo set)
@@ -243,7 +244,7 @@ namespace MtgInventory.Service
         private void RunAutoDownload(CancellationToken cancellationToken)
         {
             var stopwatch = Stopwatch.StartNew();
-            Log.Information($"{_logPrefix} Starting auto download");
+            _logger.LogInformation($" Starting auto download");
             try
             {
                 // Sets are always updated as a whole
@@ -265,7 +266,7 @@ namespace MtgInventory.Service
                 if (isSetDataDownloadRequired)
                 {
                     // Sets are too old - update
-                    Log.Information($"{_logPrefix} Sets are too old - will update now");
+                    _logger.LogInformation($" Sets are too old - will update now");
 
                     DownloadMkmSetsAndProducts();
                     if (cancellationToken.IsCancellationRequested)
@@ -289,7 +290,7 @@ namespace MtgInventory.Service
                 }
                 else
                 {
-                    Log.Debug($"{_logPrefix} Set informations do not need to be downloaded");
+                    _logger.LogDebug($" Set informations do not need to be downloaded");
                 }
 
                 if (isSetDataOutdated)
@@ -302,7 +303,7 @@ namespace MtgInventory.Service
                 }
                 else
                 {
-                    Log.Debug($"{_logPrefix} Set informations are up to date");
+                    _logger.LogDebug($" Set informations are up to date");
                 }
 
                 var allSets = _cardDatabase.MagicSets
@@ -322,7 +323,7 @@ namespace MtgInventory.Service
 
                     if (cardsDownloadOutdated)
                     {
-                        Log.Debug($"{_logPrefix} Downloading cards for set {detailedSetInfo.SetCode} ({detailedSetInfo.SetName})...");
+                        _logger.LogDebug($" Downloading cards for set {detailedSetInfo.SetCode} ({detailedSetInfo.SetName})...");
 
                         // Cards need to be downloaded again
                         DownloadScryfallCardsForSet(detailedSetInfo);
@@ -337,7 +338,7 @@ namespace MtgInventory.Service
 
                     if (cardsUpdatedOutdated)
                     {
-                        Log.Debug($"{_logPrefix} Rebuilding cards for set {detailedSetInfo.SetCode}...");
+                        _logger.LogDebug($" Rebuilding cards for set {detailedSetInfo.SetCode}...");
 
                         _cardDatabase?.RebuildCardsForSet(detailedSetInfo);
                         detailedSetInfo.CardsLastUpdated = DateTime.Now;
@@ -351,7 +352,7 @@ namespace MtgInventory.Service
             finally
             {
                 stopwatch.Stop();
-                Log.Information($"{_logPrefix} Finished auto download in {stopwatch.Elapsed}");
+                _logger.LogInformation($" Finished auto download in {stopwatch.Elapsed}");
             }
         }
     }

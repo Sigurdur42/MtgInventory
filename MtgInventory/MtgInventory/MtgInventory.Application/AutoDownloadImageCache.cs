@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using MtgInventory.Service.Models;
-using Serilog;
 
 namespace MtgInventory.Service
 {
@@ -30,12 +29,12 @@ namespace MtgInventory.Service
                 return localFile;
             }
 
-            Log.Debug($"Downloading '{category}' image for {card.SetCode} {card.NameEn}");
+            // Log.Debug($"Downloading '{category}' image for {card.SetCode} {card.NameEn}");
             // Need to download it
             var uri = GetUrl(card, category);
             if (!uri.IsValid)
             {
-                Log.Warning($"{card.SetCode} {card.NameEn} - no image uri set - cannot download.");
+                // Log.Warning($"{card.SetCode} {card.NameEn} - no image uri set - cannot download.");
                 return null;
             }
 
@@ -117,7 +116,7 @@ namespace MtgInventory.Service
             }
             catch (Exception error)
             {
-                Log.Error($"Error downloading {uri} to {fileName}: {error}");
+                // Log.Error($"Error downloading {uri} to {fileName}: {error}");
                 return;
             }
 
@@ -147,7 +146,7 @@ namespace MtgInventory.Service
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Cannot download image to {fileName}: {e}");
+                    // Log.Error($"Cannot download image to {fileName}: {e}");
                 }
             }
         }

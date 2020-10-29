@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using System.Xml.Linq;
 using CsvHelper;
+using Microsoft.Extensions.Logging;
 using MkmApi.Entities;
 using MkmApi.EntityReader;
 
@@ -16,14 +17,16 @@ namespace MkmApi
     public class MkmRequest
     {
         private readonly IApiCallStatistic _apiCallStatistic;
+        private readonly ILoggerFactory _loggerFactory;
 
         private readonly List<QueryParameter> _emptyParameters = new List<QueryParameter>();
 
         private readonly MkmGoodCiticenAutoSleep _autoSleep = new MkmGoodCiticenAutoSleep();
 
-        public MkmRequest(IApiCallStatistic apiCallStatistic)
+        public MkmRequest(IApiCallStatistic apiCallStatistic, ILoggerFactory loggerFactory)
         {
             _apiCallStatistic = apiCallStatistic;
+            _loggerFactory = loggerFactory;
         }
 
         public IEnumerable<Article> GetArticles(

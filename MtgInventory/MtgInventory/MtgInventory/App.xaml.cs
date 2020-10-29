@@ -1,14 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Shapes;
 using Avalonia.Markup.Xaml;
-using MtgInventory.Logging;
-using MtgInventory.Service;
-using MtgInventory.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using MtgInventory.Views;
-using Serilog;
-using System;
-using System.Globalization;
 
 namespace MtgInventory
 {
@@ -16,16 +10,6 @@ namespace MtgInventory
     {
         public override void Initialize()
         {
-            var systemFolders = new SystemFolders();
-            var folder = System.IO.Path.Combine(systemFolders.BaseFolder.FullName, "Logs");
-
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .WriteTo.PanelLogSink(CultureInfo.InvariantCulture)
-                .WriteTo.File(System.IO.Path.Combine(folder, "MtgInventory.log"), rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-
             AvaloniaXamlLoader.Load(this);
         }
 
@@ -33,10 +17,8 @@ namespace MtgInventory
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowViewModel(),
-                };
+                var mainWindow = Program.ServiceProvider.GetService<MainWindow>();
+                desktop.MainWindow = mainWindow;
             }
 
             base.OnFrameworkInitializationCompleted();

@@ -1,12 +1,18 @@
-﻿using Serilog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace MtgInventory.Service.Decks
 {
-    public class TextDeckReader
+    public interface ITextDeckReader
+    {
+        DeckReaderResult ReadDeck(
+            string deckContent,
+            string deckName);
+    }
+
+    public class TextDeckReader : ITextDeckReader
     {
         public DeckReaderResult ReadDeck(
             string deckContent,
@@ -61,7 +67,7 @@ namespace MtgInventory.Service.Decks
 
             if (!match.Success)
             {
-                Log.Warning($"{nameof(TextDeckReader)}: Cannot read line '{line}'");
+                // Log.Warning($"{nameof(TextDeckReader)}: Cannot read line '{line}'");
                 return new DeckItem();
             }
 

@@ -2,7 +2,6 @@
 using MkmApi;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Models;
-using Serilog;
 
 namespace MtgInventory.Service
 {
@@ -11,7 +10,7 @@ namespace MtgInventory.Service
         private readonly CardDatabase _cardDatabase;
         private readonly MkmRequest _mkmRequest;
 
-        public MkmPriceService(
+        internal MkmPriceService(
             CardDatabase cardDatabase,
             MkmRequest mkmRequest)
         {

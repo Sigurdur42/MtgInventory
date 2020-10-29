@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using LiteDB;
-using Serilog;
 
 namespace MtgInventory.Service.Settings
 {
@@ -18,7 +17,6 @@ namespace MtgInventory.Service.Settings
 
     public sealed class SettingsService : ISettingsService
     {
-        private readonly ILogger _logger = Log.ForContext<SettingsService>();
         private LiteDatabase? _database;
 
         private ILiteCollection<MtgInventorySettings>? _settingsCollection;
@@ -28,12 +26,12 @@ namespace MtgInventory.Service.Settings
         public void Dispose()
         {
             _database?.Dispose();
+            _settingsCollection = null;
         }
 
         public void Initialize(
             DirectoryInfo folder)
         {
-            _logger.Information($"Initializing setting service...");
             folder.EnsureExists();
 
             var databaseFile = Path.Combine(folder.FullName, "Settings.db");

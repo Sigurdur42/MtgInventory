@@ -8,7 +8,13 @@ namespace MtgInventory.Views
     {
         public MainWindow()
         {
+
+        }
+
+        public MainWindow(MainWindowViewModel mainWindowViewModel)
+        {
             InitializeComponent();
+            DataContext = mainWindowViewModel;
         }
 
         public static MainWindow? Instance { get; private set; }

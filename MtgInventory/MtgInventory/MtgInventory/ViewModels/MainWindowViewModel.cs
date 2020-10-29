@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Microsoft.Extensions.Logging;
 using MtgInventory.Logging;
 using MtgInventory.Models;
 using MtgInventory.Service;
@@ -19,25 +20,29 @@ namespace MtgInventory.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         private const string _allSetsName = "All Sets";
-        private IEnumerable<DetailedSetInfo> _allSets;
-        private DeckListItemViewModel[] _currentDeckList;
-        private IEnumerable<MkmStockItemViewModel> _currentStock;
+        private IEnumerable<DetailedSetInfo> _allSets = new DetailedSetInfo[0];
+        private DeckListItemViewModel[] _currentDeckList = new DeckListItemViewModel[0];
+        private IEnumerable<MkmStockItemViewModel> _currentStock = new MkmStockItemViewModel[0];
         private IEnumerable<DetailedSetInfo> _filteredSets = new DetailedSetInfo[0];
         private MkmApiCallStatistics _mkmApiCallStatistics;
-        private IEnumerable<DetailedCardViewModel> _mkmProductsFound;
+        private IEnumerable<DetailedCardViewModel> _mkmProductsFound = new DetailedCardViewModel[0];
         private string _mkmProductsSummary = "";
         private QueryCardOptions _queryCardOptions = new QueryCardOptions();
-        private IEnumerable<string> _setFilter;
+        private IEnumerable<string> _setFilter = new string[0];
         private MtgInventorySettings _settings = new MtgInventorySettings();
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(
+            ILoggerFactory loggerFactory,
+            MtgInventoryService mainService,
+            MkmApiCallStatistics mkmApiCallStatistic)
         {
             MainTitle = $"MtgInventory V" + Assembly.GetEntryAssembly()?.GetName()?.Version;
+            MainService = mainService;
+            _mkmApiCallStatistics = mkmApiCallStatistic;
 
             Task.Factory.StartNew(() =>
             {
-                MkmApiCallStatistics = new MkmApiCallStatistics();
-                MainService.Initialize(MkmApiCallStatistics, MkmApiCallStatistics);
+                MainService.Initialize();
 
                 Settings = MainService.Settings;
 
@@ -47,7 +52,7 @@ namespace MtgInventory.ViewModels
                 MainService.SetsUpdated += (sender, e) => AssignSets();
             });
 
-            LogSink = PanelLogSink.Instance;
+            LogSink = PanelLogSinkProvider.LoggerInstance;
         }
 
         public IEnumerable<DetailedSetInfo> AllSets
@@ -88,9 +93,9 @@ namespace MtgInventory.ViewModels
             }
         }
 
-        public PanelLogSink LogSink { get; private set; }
+        public PanelLogSinkLogger LogSink { get; private set; }
 
-        public MtgInventoryService MainService { get; } = new MtgInventoryService();
+        public MtgInventoryService MainService { get; }
 
         public string MainTitle { get; private set; }
 
@@ -136,7 +141,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.DownloadAllProducts();
+                MainService.DownloadAllProducts();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
                 FilteredSets = AllSets;
@@ -156,7 +161,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.DownloadMkmSetsAndProducts();
+                MainService.DownloadMkmSetsAndProducts();
                 UpdateProductSummary();
                 AllSets = MainService.AllSets.ToArray();
             });
@@ -243,7 +248,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.OpenMkmProductPage(info?.Card?.MkmId ?? "");
+                MainService.OpenMkmProductPage(info?.Card?.MkmId ?? "");
                 UpdateProductSummary();
             });
         }
@@ -252,7 +257,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                MainService?.OpenMkmProductPage(stockItem?.IdProduct ?? "");
+                MainService.OpenMkmProductPage(stockItem?.IdProduct ?? "");
             });
         }
 
@@ -260,7 +265,7 @@ namespace MtgInventory.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                var task = MainService?.RebuildInternalDatabase();
+                var task = MainService.RebuildInternalDatabase();
                 task?.ContinueWith((task) =>
                 {
                     UpdateProductSummary();

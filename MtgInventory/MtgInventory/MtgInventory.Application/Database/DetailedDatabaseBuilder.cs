@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using MkmApi.Entities;
 using MtgInventory.Service.Models;
-using Serilog;
 
 namespace MtgInventory.Service.Database
 {
@@ -31,7 +30,7 @@ namespace MtgInventory.Service.Database
             var setsToInsert = new List<DetailedSetInfo>();
             var setsToUpdate = new List<DetailedSetInfo>();
 
-            Log.Debug("Rebuilding MKM Set data...");
+            // Log.Debug("Rebuilding MKM Set data...");
             foreach (var mkm in _database?.MkmExpansion?.FindAll() ?? new List<Expansion>())
             {
                 var key = mkm.Abbreviation.ToUpperInvariant();
@@ -73,7 +72,7 @@ namespace MtgInventory.Service.Database
             var setsToInsert = new List<DetailedSetInfo>();
             var setsToUpdate = new List<DetailedSetInfo>();
 
-            Log.Debug("Rebuilding Scryfall Set data...");
+            // Log.Debug("Rebuilding Scryfall Set data...");
             foreach (var scryfall in _database.ScryfallSets.FindAll())
             {
                 if (scryfall.Code == null)
@@ -119,7 +118,7 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildMkmCardsForSet(DetailedSetInfo lastSet)
         {
-            Log.Debug($"Rebuilding MKM card data for set code {lastSet.SetCodeMkm} {lastSet?.SetName}...");
+            // Log.Debug($"Rebuilding MKM card data for set code {lastSet.SetCodeMkm} {lastSet?.SetName}...");
 
             var indexedCards = _database?.MagicCards
                                         ?.Query()
@@ -162,7 +161,7 @@ namespace MtgInventory.Service.Database
                     {
                         // Something is off here - card count mismatch
                         // TODO: Handle this specificly
-                        Log.Debug($"MKM different card count {mkm.Key}_{lastSet.SetCodeMkm}: MKM: {mkm.Count()}, internal: {indexed.Count()}...");
+                        // Log.Debug($"MKM different card count {mkm.Key}_{lastSet.SetCodeMkm}: MKM: {mkm.Count()}, internal: {indexed.Count()}...");
 
                         var max = Math.Min(indexed.Count(), mkm.Count());
 
@@ -226,7 +225,7 @@ namespace MtgInventory.Service.Database
             var lastSet = lastSets.FirstOrDefault() ?? new DetailedSetInfo();
             var allSetCodes = lastSets.Select(s => s.SetCode).ToArray();
 
-            Log.Debug($"Rebuilding Scryfall card data for set code {scryfallSetId} {lastSet.SetName} ({lastSets.Length} sets)...");
+            // Log.Debug($"Rebuilding Scryfall card data for set code {scryfallSetId} {lastSet.SetName} ({lastSets.Length} sets)...");
 
             var indexedCards = _database?.MagicCards
                                         ?.Query()
@@ -288,7 +287,7 @@ namespace MtgInventory.Service.Database
                             Environment.NewLine,
                             indexed.Select(s => $"MKM id: {s.MkmId}"));
 
-                        Log.Debug($"Scryfall different card count {key}_{scryfallSetId}: Scryfall: {remainingCardsOfSet.Count()}, internal: {indexed.Count()}...{Environment.NewLine}{debugData}{Environment.NewLine}{debugDataMkm}");
+                        // Log.Debug($"Scryfall different card count {key}_{scryfallSetId}: Scryfall: {remainingCardsOfSet.Count()}, internal: {indexed.Count()}...{Environment.NewLine}{debugData}{Environment.NewLine}{debugDataMkm}");
                         var max = Math.Min(indexed.Count(), remainingCardsOfSet.Count());
                         var ordered = indexed.OrderBy(c => c.CollectorNumber).ToArray();
                         for (var index = 0; index < max; ++index)
@@ -377,7 +376,7 @@ namespace MtgInventory.Service.Database
                         ?.FirstOrDefault();
                     if (found == null)
                     {
-                        Log.Error($"Cannot find manual mapped reference card with mkm id {manualMapped.MkmId}");
+                        // Log.Error($"Cannot find manual mapped reference card with mkm id {manualMapped.MkmId}");
                     }
                     else
                     {

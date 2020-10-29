@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Models;
 using MtgInventory.Service.Settings;
-using Serilog;
 
 namespace MtgInventory.Service
 {
@@ -20,8 +20,10 @@ namespace MtgInventory.Service
         private readonly CardDatabase _cardDatabase;
         private readonly IScryfallService _scryfallApi;
         private readonly ISettingsService _settingService;
+        private readonly ILogger _logger;
 
         public AutoScryfallService(
+            ILoggerFactory loggerFactory,
             CardDatabase cardDatabase,
             IScryfallService scryfallService,
             ISettingsService settingService)
@@ -29,6 +31,7 @@ namespace MtgInventory.Service
             _cardDatabase = cardDatabase;
             _scryfallApi = scryfallService;
             _settingService = settingService;
+            _logger = loggerFactory.CreateLogger<AutoScryfallService>();
         }
 
         public CardPrice AutoDownloadPrice(
@@ -38,7 +41,7 @@ namespace MtgInventory.Service
         {
             if (Guid.Empty == scryfallId)
             {
-                Log.Warning($"No valid scryfall id - skipping price download for {name}-{setCode}");
+                _logger.LogWarning($"No valid scryfall id - skipping price download for {name}-{setCode}");
 
                 return new CardPrice();
             }
@@ -47,7 +50,7 @@ namespace MtgInventory.Service
 
             if (latestPrice.UpdateDate.Value.AddDays(_settingService.Settings.RefreshPriceAfterDays) < DateTime.Now)
             {
-                Log.Information($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
+                _logger.LogInformation($"Price for scryfall {name}-{setCode} is outdated - downloading current one");
 
                 var result = _scryfallApi
                     .RetrieveCardsForSetCode(setCode)
