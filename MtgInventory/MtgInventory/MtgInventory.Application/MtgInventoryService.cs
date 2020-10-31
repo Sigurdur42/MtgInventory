@@ -25,7 +25,7 @@ namespace MtgInventory.Service
         private readonly CardDatabase _cardDatabase;
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly MkmRequest _mkmRequest;
+        private readonly IMkmRequest _mkmRequest;
         private readonly IScryfallService _scryfallService;
         private readonly ISettingsService _settingsService;
         private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
@@ -40,7 +40,7 @@ namespace MtgInventory.Service
             IAutoScryfallService autoScryfallService,
             IApiCallStatistic mkmApiCallStatistic,
             IScryfallApiCallStatistic scryfallApiCallStatistic,
-            MkmRequest mkmRequest)
+            IMkmRequest mkmRequest)
         {
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger<MtgInventoryService>();

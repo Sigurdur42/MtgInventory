@@ -62,27 +62,18 @@
         </Grid>
 
         <!-- Logging Panel -->
-        <DataGrid AutoGenerateColumns="False" Items="{Binding LogSink.LogMessages}" Grid.Column="1" Grid.Row="1">
+        <!--<DataGrid AutoGenerateColumns="False" Items="{Binding LogSink.LogMessages}" Grid.Column="1" Grid.Row="1">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Level"
                          Binding="{Binding LogLevel}" />
                 <DataGridTextColumn Header="Message"
              Binding="{Binding Message}" />
 
-                <!--<DataGridTemplateColumn Header="Open MKM" Width="Auto">
-          <DataGridTemplateColumn.CellTemplate>
-            <DataTemplate>
-              <StackPanel Orientation="Horizontal">
-                <Button Command="{Binding #rootWindow.DataContext.OnOpenMkmProductPage}" CommandParameter="{Binding}"> Open in MKM</Button>
-              </StackPanel>
-            </DataTemplate>
-          </DataGridTemplateColumn.CellTemplate>
-        </DataGridTemplateColumn>-->
             </DataGrid.Columns>
-        </DataGrid>
+        </DataGrid>-->
 
         <!--<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center" />-->
-        <TabControl Grid.Row="0" Grid.RowSpan="2">
+        <TabControl Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="2">
             <TabItem Header="Magic Cards">
                 <Grid>
                     <Grid.RowDefinitions>

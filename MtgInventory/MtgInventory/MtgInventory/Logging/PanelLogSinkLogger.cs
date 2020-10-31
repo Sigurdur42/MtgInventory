@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -8,6 +10,10 @@ namespace MtgInventory.Logging
     public class PanelLogSinkLogger : ILogger
     {
         private readonly string _category;
+
+        private readonly ConcurrentBag<LogMessage> _newMessages = new ConcurrentBag<LogMessage>();
+
+        private Task? _currentBackgroundThread;
 
         static PanelLogSinkLogger()
         {
@@ -20,7 +26,7 @@ namespace MtgInventory.Logging
 
         public ObservableCollection<LogMessage> LogMessages { get; } = new ObservableCollection<LogMessage>();
 
-        public int MaxLines { get; set; } = 50;
+        public int MaxLines { get; set; } = 30;
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -41,24 +47,42 @@ namespace MtgInventory.Logging
         {
             var timeStamp = DateTime.Now;
 
+            var levelString = logLevel.ToString();
             var formatted = formatter(state, exception);
-
-            var dispatcher = Dispatcher.UIThread;
-
-            dispatcher.Post(() =>
+            var logMessage = new LogMessage
             {
-                while (LogMessages.Count >= MaxLines)
+                LogLevel = levelString.Substring(0, Math.Min(3, levelString.Length)).ToUpperInvariant(),
+                Message = formatted
+            };
+
+            _newMessages.Add(logMessage);
+
+            if (((_currentBackgroundThread?.IsCompleted) ?? false)
+                && _newMessages.Count > 1)
+            {
+                return;
+            }
+
+            _currentBackgroundThread = Task.Factory.StartNew(() =>
+            {
+                if (_newMessages.IsEmpty)
                 {
-                    LogMessages.RemoveAt(0);
+                    return;
                 }
 
-                var levelString = logLevel.ToString();
-                var message = formatted;
+                var dispatcher = Dispatcher.UIThread;
 
-                LogMessages.Add(new LogMessage
+                dispatcher.Post(() =>
                 {
-                    LogLevel = levelString.Substring(0, Math.Min(3, levelString.Length)).ToUpperInvariant(),
-                    Message = message
+                    while (_newMessages.TryTake(out var msg))
+                    {
+                        while (LogMessages.Count >= MaxLines)
+                        {
+                            LogMessages.RemoveAt(0);
+                        }
+
+                        LogMessages.Add(msg);
+                    }
                 });
             });
         }

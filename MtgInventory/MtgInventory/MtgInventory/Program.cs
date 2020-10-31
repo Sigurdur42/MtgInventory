@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MkmApi;
@@ -31,13 +33,22 @@ namespace MtgInventory
             ILogger? logger = null;
             try
             {
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json");
+
+                var configuration = builder.Build();
+
                 var serviceCollection = new ServiceCollection()
                     .AddLogging(cfg =>
                     {
+                        cfg.AddConfiguration(configuration.GetSection("Logging"));
                         cfg.AddConsole();
                         cfg.AddDebug();
-                        cfg.AddProvider(new PanelLogSinkProvider());
-                    }).Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Debug);
+                        //// cfg.AddProvider(new PanelLogSinkProvider());
+                    })
+                    // .Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Trace)
+                    ;
 
                 // Add other DI
 
@@ -49,7 +60,7 @@ namespace MtgInventory
                     .AddSingleton<IScryfallApiCallStatistic>(callStats)
                     .AddSingleton<IApiCallStatistic>(callStats)
                     .AddSingleton<MkmApiCallStatistics>(callStats)
-                    .AddSingleton<MkmRequest>()
+                    .AddSingleton<IMkmRequest, MkmRequest>()
                     ;
 
                 ServiceProvider = serviceCollection.BuildServiceProvider();

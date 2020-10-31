@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -14,23 +15,83 @@ using MkmApi.EntityReader;
 
 namespace MkmApi
 {
-    public class MkmRequest
+    public interface IMkmRequest
     {
+        IEnumerable<Product> FindProducts(
+            MkmAuthenticationData authenticationData,
+            string productName,
+            bool searchExact);
+
+        IEnumerable<Article> GetArticles(
+                    MkmAuthenticationData authenticationData,
+            string productId,
+            bool commercialOnly,
+            IEnumerable<QueryParameter> queryParameters);
+
+        IEnumerable<Expansion> GetExpansions(MkmAuthenticationData authenticationData, int gameId);
+
+        IEnumerable<Game> GetGames(MkmAuthenticationData authenticationData);
+
+        Product GetProductData(MkmAuthenticationData authenticationData, string productId);
+
+        ProductCsvData GetProductsAsCsv(MkmAuthenticationData authenticationData);
+
+        IEnumerable<MkmStockItem> GetStockAsCsv(MkmAuthenticationData authenticationData);
+    }
+
+    public class MkmRequest : IMkmRequest
+    {
+        private const string _loggerKey = nameof(MkmRequest);
         private readonly IApiCallStatistic _apiCallStatistic;
-        private readonly ILoggerFactory _loggerFactory;
-
-        private readonly List<QueryParameter> _emptyParameters = new List<QueryParameter>();
-
         private readonly MkmGoodCiticenAutoSleep _autoSleep = new MkmGoodCiticenAutoSleep();
+        private readonly List<QueryParameter> _emptyParameters = new List<QueryParameter>();
+        private readonly ILogger _logger;
 
         public MkmRequest(IApiCallStatistic apiCallStatistic, ILoggerFactory loggerFactory)
         {
             _apiCallStatistic = apiCallStatistic;
-            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger(_loggerKey);
+        }
+
+        public IEnumerable<Product> FindProducts(
+            MkmAuthenticationData authenticationData,
+            string productName,
+            bool searchExact)
+        {
+            var queryParameters = new List<QueryParameter>();
+            queryParameters.Add(new QueryParameter("search", productName));
+            queryParameters.Add(new QueryParameter("idGame", "1"));
+            queryParameters.Add(new QueryParameter("idLanguage", "1"));
+            queryParameters.Add(new QueryParameter("maxResults", "10000"));
+
+            if (searchExact)
+            {
+                queryParameters.Add(new QueryParameter("exact", "true"));
+            }
+
+            try
+            {
+                var response = MakeRequest(
+                    authenticationData,
+                    $"products/find",
+                    queryParameters);
+
+                var doc = XDocument.Parse(response);
+                return doc.Root
+                    .Elements("product")
+                    .Select(g => g.ReadProduct())
+                    .ToArray();
+            }
+            catch (Exception error)
+            {
+                _logger.LogError($"Error in product in {nameof(FindProducts)}({productName}, {searchExact}): {error}");
+            }
+
+            return new List<Product>();
         }
 
         public IEnumerable<Article> GetArticles(
-            MkmAuthenticationData authenticationData,
+                    MkmAuthenticationData authenticationData,
             string productId,
             bool commercialOnly,
             IEnumerable<QueryParameter> queryParameters)
@@ -74,60 +135,6 @@ namespace MkmApi
             ////};
         }
 
-        public IEnumerable<Game> GetGames(MkmAuthenticationData authenticationData)
-        {
-            var response = MakeRequest(
-                authenticationData,
-                $"games",
-                _emptyParameters);
-
-            var doc = XDocument.Parse(response);
-            return doc.Root
-                .Elements("game")
-                .Select(g => g.ReadGame())
-                .ToArray();
-        }
-
-        public IEnumerable<Product> FindProducts(
-            MkmAuthenticationData authenticationData,
-            string productName,
-            bool searchExact)
-        {
-            var queryParameters = new List<QueryParameter>();
-            queryParameters.Add(new QueryParameter("search", productName));
-            queryParameters.Add(new QueryParameter("idGame", "1"));
-            queryParameters.Add(new QueryParameter("idLanguage", "1"));
-            queryParameters.Add(new QueryParameter("maxResults", "10000"));
-
-            if (searchExact)
-            {
-                queryParameters.Add(new QueryParameter("exact", "true"));
-            }
-
-          
-
-            try
-            {
-                var response = MakeRequest(
-                    authenticationData,
-                    $"products/find",
-                    queryParameters);
-
-                var doc = XDocument.Parse(response);
-                return doc.Root
-                    .Elements("product")
-                    .Select(g => g.ReadProduct())
-                    .ToArray();
-            }
-            catch (Exception error)
-            {
-                // TODO: Add serilog
-                Console.WriteLine(error);
-            }
-
-            return new List<Product>();
-        }
-
         public IEnumerable<Expansion> GetExpansions(MkmAuthenticationData authenticationData, int gameId)
         {
             var response = MakeRequest(
@@ -139,6 +146,20 @@ namespace MkmApi
             return doc.Root
                 .Elements("expansion")
                 .Select(g => g.ReadExpansion())
+                .ToArray();
+        }
+
+        public IEnumerable<Game> GetGames(MkmAuthenticationData authenticationData)
+        {
+            var response = MakeRequest(
+                authenticationData,
+                $"games",
+                _emptyParameters);
+
+            var doc = XDocument.Parse(response);
+            return doc.Root
+                .Elements("game")
+                .Select(g => g.ReadGame())
                 .ToArray();
         }
 
@@ -179,19 +200,14 @@ namespace MkmApi
 
             var bytes = Convert.FromBase64String(stockNode.Value);
 
-            using (var decompressionStream = new GZipStream(new MemoryStream(bytes), CompressionMode.Decompress))
-            {
-                using (var decompressedStreamReader = new StreamReader(decompressionStream, Encoding.UTF8))
-                {
-                    using (var csv = new CsvReader(decompressedStreamReader, CultureInfo.InvariantCulture))
-                    {
-                        csv.Configuration.HasHeaderRecord = true;
-                        csv.Configuration.Delimiter = ";";
-                        csv.Configuration.BadDataFound = (context) => { };
-                        return csv.GetRecords<MkmStockItem>().ToList();
-                    }
-                }
-            }
+            using var decompressionStream = new GZipStream(new MemoryStream(bytes), CompressionMode.Decompress);
+            using var decompressedStreamReader = new StreamReader(decompressionStream, Encoding.UTF8);
+            using var csv = new CsvReader(decompressedStreamReader, CultureInfo.InvariantCulture);
+
+            csv.Configuration.HasHeaderRecord = true;
+            csv.Configuration.Delimiter = ";";
+            csv.Configuration.BadDataFound = (context) => { };
+            return csv.GetRecords<MkmStockItem>().ToList();
         }
 
         internal string MakeRequest(
@@ -201,7 +217,9 @@ namespace MkmApi
         {
             if (!authenticationData.IsValid())
             {
-                throw new InvalidOperationException($"MKM authentication data is not set. Please configure MKM data before calling the API functions.");
+                var error = $"MKM authentication data is not set. Please configure MKM data before calling the API functions.";
+                _logger.LogError(error);
+                throw new InvalidOperationException(error);
             }
 
             _autoSleep.AutoSleep();
@@ -213,7 +231,11 @@ namespace MkmApi
             var method = "GET";
             var url = $"https://api.cardmarket.com/ws/v2.0/{urlCommand}";
 
-            var request = WebRequest.CreateHttp(url + parameters?.GenerateQueryString()) as HttpWebRequest;
+            var httpUrl = url + parameters?.GenerateQueryString();
+            var request = WebRequest.CreateHttp(httpUrl);
+
+            var stopwatch = Stopwatch.StartNew();
+            _logger.LogTrace($"Calling {httpUrl}...");
             var header = new OAuthHeader(authenticationData);
             request.Headers.Add(HttpRequestHeader.Authorization, header.GetAuthorizationHeader(method, url, parameters));
             request.Method = method;
@@ -226,7 +248,10 @@ namespace MkmApi
             using var stream = response.GetResponseStream();
 
             var reader = new StreamReader(stream, encoding);
-            return reader.ReadToEnd();
+            var result = reader.ReadToEnd();
+            stopwatch.Stop();
+            _logger.LogTrace($"Call to {httpUrl} took {stopwatch.Elapsed} exited with {response.StatusCode}");
+            return result;
         }
 
         private void IncrementCallStatistic()

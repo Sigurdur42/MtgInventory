@@ -8,11 +8,11 @@ namespace MtgInventory.Service
     public sealed class MkmPriceService
     {
         private readonly CardDatabase _cardDatabase;
-        private readonly MkmRequest _mkmRequest;
+        private readonly IMkmRequest _mkmRequest;
 
         internal MkmPriceService(
             CardDatabase cardDatabase,
-            MkmRequest mkmRequest)
+            IMkmRequest mkmRequest)
         {
             _cardDatabase = cardDatabase;
             _mkmRequest = mkmRequest;
