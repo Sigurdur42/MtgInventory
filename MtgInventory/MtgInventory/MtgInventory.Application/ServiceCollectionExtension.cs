@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MkmApi;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Settings;
+using ScryfallApiServices;
 
 namespace MtgInventory.Service
 {
@@ -10,8 +12,8 @@ namespace MtgInventory.Service
     {
         public static IServiceCollection AddMtgInventoryService(this IServiceCollection serviceCollection)
         {
-            // TODO: Scryfall only manuall?
-            serviceCollection.AddSingleton<IScryfallService, ScryfallService>();
+            serviceCollection.AddMkmApi();
+            serviceCollection.AddScryfallApi();
 
             serviceCollection.AddSingleton<CardDatabase>();
             serviceCollection.AddSingleton<ITextDeckReader, TextDeckReader>();

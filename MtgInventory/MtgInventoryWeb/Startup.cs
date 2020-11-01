@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MtgInventory.Service;
 using MtgInventoryWeb.Data;
 
 namespace MtgInventoryWeb
@@ -51,12 +52,13 @@ namespace MtgInventoryWeb
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
+            services.AddMtgInventoryService();
+
             services.AddLogging(cfg =>
             {
                 cfg.AddConfiguration(Configuration.GetSection("Logging"));
                 cfg.AddConsole();
                 cfg.AddDebug();
-                //// cfg.AddProvider(new PanelLogSinkProvider());
             });
         }
     }
