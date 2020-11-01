@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_SolutionItems", "_Solution
 		readme.md = readme.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgInventoryWeb", "MtgInventoryWeb\MtgInventoryWeb.csproj", "{D63674D4-62C6-4923-A9EF-A0EBA2D22580}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{B8AF5C42-C59C-4F83-B6F0-66C52297022B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8AF5C42-C59C-4F83-B6F0-66C52297022B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8AF5C42-C59C-4F83-B6F0-66C52297022B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D63674D4-62C6-4923-A9EF-A0EBA2D22580}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63674D4-62C6-4923-A9EF-A0EBA2D22580}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D63674D4-62C6-4923-A9EF-A0EBA2D22580}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D63674D4-62C6-4923-A9EF-A0EBA2D22580}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
