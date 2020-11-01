@@ -42,6 +42,11 @@ namespace MtgInventoryWeb
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+
+            var mainService = app.ApplicationServices.GetService<MtgInventoryService>();
+            mainService?.Initialize();
+
+            // TODO: Shutdown event
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.

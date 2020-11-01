@@ -374,6 +374,7 @@ namespace MtgInventory.Service
         public void Initialize()
         {
             _logger.LogInformation($"{nameof(Initialize)}: Initializing application service");
+            _logger.LogInformation($"{nameof(Initialize)}: Base folder: {SystemFolders.BaseFolder.FullName}");
 
             ////var reader = new AuthenticationReader();
             ////_mkmAuthenticationDataFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, ".mkmAuthenticationData"));
