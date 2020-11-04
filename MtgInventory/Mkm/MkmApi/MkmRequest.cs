@@ -15,30 +15,6 @@ using MkmApi.EntityReader;
 
 namespace MkmApi
 {
-    public interface IMkmRequest
-    {
-        IEnumerable<Product> FindProducts(
-            MkmAuthenticationData authenticationData,
-            string productName,
-            bool searchExact);
-
-        IEnumerable<Article> GetArticles(
-                    MkmAuthenticationData authenticationData,
-            string productId,
-            bool commercialOnly,
-            IEnumerable<QueryParameter> queryParameters);
-
-        IEnumerable<Expansion> GetExpansions(MkmAuthenticationData authenticationData, int gameId);
-
-        IEnumerable<Game> GetGames(MkmAuthenticationData authenticationData);
-
-        Product GetProductData(MkmAuthenticationData authenticationData, string productId);
-
-        ProductCsvData GetProductsAsCsv(MkmAuthenticationData authenticationData);
-
-        IEnumerable<MkmStockItem> GetStockAsCsv(MkmAuthenticationData authenticationData);
-    }
-
     public class MkmRequest : IMkmRequest
     {
         private const string _loggerKey = nameof(MkmRequest);
@@ -47,7 +23,9 @@ namespace MkmApi
         private readonly List<QueryParameter> _emptyParameters = new List<QueryParameter>();
         private readonly ILogger _logger;
 
-        public MkmRequest(IApiCallStatistic apiCallStatistic, ILoggerFactory loggerFactory)
+        public MkmRequest(
+            IApiCallStatistic apiCallStatistic,
+            ILoggerFactory loggerFactory)
         {
             _apiCallStatistic = apiCallStatistic;
             _logger = loggerFactory.CreateLogger(_loggerKey);
@@ -58,11 +36,13 @@ namespace MkmApi
             string productName,
             bool searchExact)
         {
-            var queryParameters = new List<QueryParameter>();
-            queryParameters.Add(new QueryParameter("search", productName));
-            queryParameters.Add(new QueryParameter("idGame", "1"));
-            queryParameters.Add(new QueryParameter("idLanguage", "1"));
-            queryParameters.Add(new QueryParameter("maxResults", "10000"));
+            var queryParameters = new List<QueryParameter>
+            {
+                new QueryParameter("search", productName),
+                new QueryParameter("idGame", "1"), 
+                new QueryParameter("idLanguage", "1"), 
+                new QueryParameter("maxResults", "10000")
+            };
 
             if (searchExact)
             {
@@ -91,7 +71,7 @@ namespace MkmApi
         }
 
         public IEnumerable<Article> GetArticles(
-                    MkmAuthenticationData authenticationData,
+            MkmAuthenticationData authenticationData,
             string productId,
             bool commercialOnly,
             IEnumerable<QueryParameter> queryParameters)
