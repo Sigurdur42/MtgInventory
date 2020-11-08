@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MkmApi;
+using MkmApi.Entities;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Models;
@@ -16,14 +18,15 @@ namespace MtgInventory.Service
     public class AutoDownloadCardsAndSets
     {
         private readonly CardDatabase _cardDatabase;
+        private readonly ILogger _logger;
         private readonly IApiCallStatistic _mkmApiCallStatistic;
         private readonly IMkmRequest _mkmRequest;
         private readonly IScryfallApiCallStatistic _scryfallApiCallStatistic;
         private readonly IScryfallService _scryfallService;
         private readonly ISettingsService _settingsService;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private HashSet<string> _knownEmptyLookups = new HashSet<string>();
         private Task? _runningTask;
-        private readonly ILogger _logger;
 
         internal AutoDownloadCardsAndSets(
             ILoggerFactory loggerFactory,
@@ -84,14 +87,34 @@ namespace MtgInventory.Service
                         continue;
                     }
 
+                    var alreadyKnownEmpty = _knownEmptyLookups.Contains(queryName);
+                    var downloadSuccessful = true;
+
+                    if (alreadyKnownEmpty)
+                    {
+                        DownloadMkmAdditionalDataById(authenticationData, card.MkmId);
+                        return;
+                    }
+
                     // Now download all details for this card:
                     if (string.IsNullOrWhiteSpace(queryName))
                     {
-                        DownloadMkmAdditionalData(authenticationData, card.NameEn, true);
+                        downloadSuccessful = DownloadMkmAdditionalData(authenticationData, card.NameEn, true);
                     }
                     else
                     {
-                        DownloadMkmAdditionalData(authenticationData, queryName, false);
+                        downloadSuccessful = DownloadMkmAdditionalData(authenticationData, queryName, false);
+                    }
+
+                    if (!downloadSuccessful)
+                    {
+                        _knownEmptyLookups.Add(queryName);
+                        _knownEmptyLookups.Add(card.NameEn);
+
+                        if (!string.IsNullOrEmpty(card.MkmId))
+                        {
+                            DownloadMkmAdditionalDataById(authenticationData, card.MkmId);
+                        }
                     }
                 }
             });
@@ -159,7 +182,7 @@ namespace MtgInventory.Service
             }
         }
 
-        private void DownloadMkmAdditionalData(
+        private bool DownloadMkmAdditionalData(
             MkmAuthenticationData authenticationData,
             string cardName,
             bool exactNameMatch)
@@ -170,44 +193,21 @@ namespace MtgInventory.Service
 
             if (productData.Length == 0)
             {
-                return;
+                return false;
             }
 
-            var remaining = productData.Length;
-            foreach (var product in productData)
-            {
-                var detailArray = _cardDatabase?.MagicCards
-                    ?.Query()
-                    ?.Where(c => c.MkmId == product.IdProduct)
-                    ?.ToArray();
+            UpdateFromMkmProducts(productData);
 
-                foreach (var details in detailArray)
-                {
-                    _logger.LogInformation($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
+            return true;
+        }
 
-                    if (details != null)
-                    {
-                        details.UpdateFromMkm(product);
-                        _cardDatabase?.MagicCards?.Update(details);
-                    }
-
-                    var additional = _cardDatabase?.MkmAdditionalInfo
-                        ?.Query()
-                        ?.Where(c => c.MkmId == product.IdProduct)
-                        ?.FirstOrDefault();
-
-                    if (additional == null)
-                    {
-                        additional = new MkmAdditionalCardInfo() { MkmId = product.IdProduct };
-                        _cardDatabase?.MkmAdditionalInfo?.Insert(additional);
-                    }
-
-                    additional.UpdateFromProduct(product);
-                    _cardDatabase?.MkmAdditionalInfo?.Update(additional);
-                }
-            }
-
-      
+        private void DownloadMkmAdditionalDataById(
+            MkmAuthenticationData authenticationData,
+            string mkmId)
+        {
+            _logger.LogInformation($"Downloading MKM data for id '{mkmId}'");
+            var productData = _mkmRequest.GetProductData(authenticationData, mkmId);
+            UpdateFromMkmProducts(new[] { productData });
         }
 
         private void DownloadScryfallCardsForSet(DetailedSetInfo set)
@@ -353,6 +353,43 @@ namespace MtgInventory.Service
             {
                 stopwatch.Stop();
                 _logger.LogInformation($" Finished auto download in {stopwatch.Elapsed}");
+            }
+        }
+
+        private void UpdateFromMkmProducts(Product[] productData)
+        {
+            var remaining = productData.Length;
+            foreach (var product in productData)
+            {
+                var detailArray = _cardDatabase?.MagicCards
+                    ?.Query()
+                    ?.Where(c => c.MkmId == product.IdProduct)
+                    ?.ToArray();
+
+                foreach (var details in detailArray)
+                {
+                    _logger.LogInformation($"remaining: {--remaining}: Updating details for '{details?.SetCode}' '{product.NameEn}'");
+
+                    if (details != null)
+                    {
+                        details.UpdateFromMkm(product);
+                        _cardDatabase?.MagicCards?.Update(details);
+                    }
+
+                    var additional = _cardDatabase?.MkmAdditionalInfo
+                        ?.Query()
+                        ?.Where(c => c.MkmId == product.IdProduct)
+                        ?.FirstOrDefault();
+
+                    if (additional == null)
+                    {
+                        additional = new MkmAdditionalCardInfo() { MkmId = product.IdProduct };
+                        _cardDatabase?.MkmAdditionalInfo?.Insert(additional);
+                    }
+
+                    additional.UpdateFromProduct(product);
+                    _cardDatabase?.MkmAdditionalInfo?.Update(additional);
+                }
             }
         }
     }

@@ -473,7 +473,7 @@ namespace MtgInventory.Service
 
             // Now open a browser with the url
             _logger.LogDebug($"{prefix}: Opening MKM product page...");
-            Browser.OpenBrowser(additionalInfo.MkmWebSite);
+            Browser.OpenBrowser(additionalInfo.MkmWebSite.Replace("www.cardmarket.comhttps://www.cardmarket.com", "https://www.cardmarket.com"));
         }
 
         public void RebuildCardsForSet(DetailedSetInfo set)
