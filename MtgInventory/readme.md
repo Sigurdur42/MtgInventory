@@ -36,3 +36,5 @@ Write something fancy here
 
 - view model for stock items
 - Display price in stock items list
+
+- get unmapped cards by looking for empty mkm ID
