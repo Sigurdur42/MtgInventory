@@ -34,8 +34,4 @@
     <ProjectReference Include="..\..\Scryfall\ScryfallApiServices\ScryfallApiServices.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ReferenceData\" />
-  </ItemGroup>
-
 </Project>
