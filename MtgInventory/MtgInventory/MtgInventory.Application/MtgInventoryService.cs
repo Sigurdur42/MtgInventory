@@ -101,6 +101,22 @@ namespace MtgInventory.Service
             _logger.LogInformation($"Updating complete database took {stopwatch.Elapsed}");
         }
 
+        public void DownloadMkmAddtionalData()
+        {
+            const int maxCards = 1000;
+
+            var allMkmCards = _cardDatabase.MagicCards.FindAll()
+                .Where(c => c.MkmDetailsRequired)
+                .ToArray();
+
+            _logger.LogInformation($"Found {allMkmCards.Length} with missing MKM details.");
+
+            _autoDownloadCardsAndSets.AutoDownloadMkmDetails(
+                MkmAuthenticationData,
+                allMkmCards.Take(maxCards).ToArray(),
+                "");
+        }
+
         public void DownloadMkmSetsAndProducts()
         {
             _autoDownloadCardsAndSets.DownloadMkmSetsAndProducts();

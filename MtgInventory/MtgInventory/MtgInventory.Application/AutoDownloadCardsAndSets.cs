@@ -72,50 +72,68 @@ namespace MtgInventory.Service
         {
             Task.Factory.StartNew(() =>
             {
-                foreach (var card in cards.Where(c => !string.IsNullOrWhiteSpace(c.MkmId)).Distinct())
+                try
                 {
-                    if (!card.MkmDetailsRequired)
+                    foreach (var card in cards.Where(c => !string.IsNullOrWhiteSpace(c.MkmId)).Distinct())
                     {
-                        // All details do exist
-                        continue;
-                    }
+                        if (!card.MkmDetailsRequired)
+                        {
+                            // All details do exist
+                            continue;
+                        }
 
-                    // refresh to ensure that a previous call did not update this
-                    var refreshed = _cardDatabase.MagicCards.Find(c => c.Id == card.Id).First();
-                    if (!refreshed.MkmDetailsRequired)
-                    {
-                        continue;
-                    }
+                        // refresh to ensure that a previous call did not update this
+                        var refreshed = _cardDatabase.MagicCards.Find(c => c.Id == card.Id).First();
+                        if (!refreshed.MkmDetailsRequired)
+                        {
+                            continue;
+                        }
 
-                    var alreadyKnownEmpty = _knownEmptyLookups.Contains(queryName);
-                    var downloadSuccessful = true;
+                        _logger.LogDebug($"Downloading additional MKM info for {card.SetCodeMkm} - {card.NameEn}");
 
-                    if (alreadyKnownEmpty)
-                    {
-                        DownloadMkmAdditionalDataById(authenticationData, card.MkmId);
-                        return;
-                    }
+                        var alreadyKnownEmpty = _knownEmptyLookups.Contains(queryName);
+                        var downloadSuccessful = true;
 
-                    // Now download all details for this card:
-                    if (string.IsNullOrWhiteSpace(queryName))
-                    {
-                        downloadSuccessful = DownloadMkmAdditionalData(authenticationData, card.NameEn, true);
-                    }
-                    else
-                    {
-                        downloadSuccessful = DownloadMkmAdditionalData(authenticationData, queryName, false);
-                    }
-
-                    if (!downloadSuccessful)
-                    {
-                        _knownEmptyLookups.Add(queryName);
-                        _knownEmptyLookups.Add(card.NameEn);
-
-                        if (!string.IsNullOrEmpty(card.MkmId))
+                        if (alreadyKnownEmpty && !string.IsNullOrEmpty(queryName))
                         {
                             DownloadMkmAdditionalDataById(authenticationData, card.MkmId);
+                            return;
+                        }
+
+                        // Now download all details for this card:
+                        if (!card.IsBasicLand)
+                        {
+                            if (string.IsNullOrWhiteSpace(queryName))
+                            {
+                                downloadSuccessful = DownloadMkmAdditionalData(authenticationData, card.NameEn, true);
+                            }
+                            else
+                            {
+                                downloadSuccessful = DownloadMkmAdditionalData(authenticationData, queryName, false);
+                            }
+                        }
+                        else
+                        {
+                            downloadSuccessful = false;
+                        }
+
+                        if (!downloadSuccessful)
+                        {
+                            _knownEmptyLookups.Add(queryName);
+                            _knownEmptyLookups.Add(card.NameEn);
+
+                            if (!string.IsNullOrEmpty(card.MkmId))
+                            {
+                                DownloadMkmAdditionalDataById(authenticationData, card.MkmId);
+                            }
                         }
                     }
+
+                    _logger.LogDebug($"Done dlownloading additional MKM info...");
+                }
+                catch (Exception error)
+                {
+                    _logger.LogError($"AutoDownload MKM caught exception: {error}");
                 }
             });
         }

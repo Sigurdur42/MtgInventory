@@ -474,6 +474,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <TextBlock  VerticalAlignment="Center" Width="100">MKM:</TextBlock>
                             <Button Margin="5,0,0,0" Command="{Binding OnDownloadMkmSetsAndCards}">Download Sets And Cards</Button>
+                            <Button Margin="5,0,0,0" Command="{Binding OnDownloadMkmAdditionalInfo}">Download Add Info</Button>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">

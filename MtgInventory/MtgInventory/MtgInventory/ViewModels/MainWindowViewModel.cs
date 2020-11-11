@@ -328,6 +328,7 @@ namespace MtgInventory.ViewModels
         internal void OnGenerateMissingSetData() => MainService?.GenerateMissingSetData();
 
         internal void OnGenerateReferenceCardData() => MainService?.GenerateReferenceCardData();
+        internal void OnDownloadMkmAdditionalInfo() => MainService?.DownloadMkmAddtionalData();
 
         internal void OnGenerateReferenceSetData()
         {
