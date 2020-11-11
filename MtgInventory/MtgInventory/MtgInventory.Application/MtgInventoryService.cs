@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CsvHelper;
 using Microsoft.Extensions.Logging;
 using MkmApi;
+using MoreLinq;
 using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
@@ -323,13 +324,90 @@ namespace MtgInventory.Service
         public void GenerateReferenceCardData()
         {
             var stopwatch = Stopwatch.StartNew();
-            _logger.LogInformation($"Start generating card reference data...");
+            _logger.LogInformation($"Getting all cards into memory...");
 
-            var allCards = _cardDatabase?.MagicCards?.FindAll()
-                ?.Where(c => !c.IsScryfallOnly && !c.MkmDetailsRequired)
-                ?.ToArray() ?? new DetailedMagicCard[0];
+            var mirror = _cardDatabase?.MagicCards?.FindAll();
 
-            var result = allCards.Select(card => card.GenerateReferenceData()).ToList();
+            var referenceDataFolder = Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceData");
+            var alreadyMappedFolder = Path.Combine(referenceDataFolder, "AlreadyMapped");
+            var missingMappedFolder = Path.Combine(referenceDataFolder, "MissingMapped");
+            var autoMappedFolder = Path.Combine(referenceDataFolder, "AutoMapped");
+
+            new DirectoryInfo(alreadyMappedFolder).EnsureExists();
+            new DirectoryInfo(missingMappedFolder).EnsureExists();
+            new DirectoryInfo(autoMappedFolder).EnsureExists();
+
+            var referenceService = new ReferenceDataService();
+            var additionalData = _cardDatabase.MkmAdditionalInfo.FindAll()
+                .DistinctBy(c => c.MkmId)
+                .ToDictionary(c => c.MkmId);
+
+            _logger.LogInformation($"Looking for already mapped data...");
+            var alreadyMappedData = mirror
+                .Where(c => c.IsMappedByReferenceCard)
+                .GroupBy(c => c.SetCodeMkm)
+                .ToArray();
+
+            _logger.LogInformation($"Looking for not mapped data...");
+            var notMappedData = mirror
+                .Where(c => !c.IsMappedByReferenceCard)
+                .ToArray();
+
+            GenerateIntoFile(
+                referenceService,
+                "CardReferenceData-",
+                alreadyMappedFolder,
+                alreadyMappedData,
+                additionalData);
+
+            _logger.LogInformation($"Looking for scryfall only data...");
+            var scryfallOnly = notMappedData
+                .Where(c => string.IsNullOrEmpty(c.MkmId))
+                ////.Where(c => !c.IsScryfallOnly)
+                .Where(c => !c.IsBasicLand)
+                .GroupBy(c => c.SetCodeScryfall)
+                .ToArray();
+
+            GenerateIntoFile(
+                referenceService,
+                "ScryfallOnly-",
+                missingMappedFolder,
+                scryfallOnly,
+                additionalData);
+
+            _logger.LogInformation($"Looking for mkm only data...");
+            var mkmOnly = notMappedData
+                .Where(c => !string.IsNullOrEmpty(c.MkmId) && c.ScryfallId == Guid.Empty)
+                .Where(c => !c.IsMkmOnly)
+                .Where(c => !c.IsToken)
+                .GroupBy(c => c.SetCodeMkm)
+                .ToArray();
+
+            GenerateIntoFile(
+                referenceService,
+                "MkmOnly-",
+                missingMappedFolder,
+                mkmOnly,
+                additionalData);
+
+            _logger.LogInformation($"Looking for auo matched only data...");
+            var autoMatched = notMappedData
+                .Where(c => (!string.IsNullOrEmpty(c.MkmId) && c.ScryfallId != Guid.Empty) || c.IsMkmOnly)
+                .GroupBy(c => c.SetCodeMkm)
+                .ToArray();
+
+            GenerateIntoFile(
+                referenceService,
+                "AutoMapped-",
+                autoMappedFolder,
+                autoMatched,
+                additionalData);
+
+            ////var allCards = mirror
+            ////    ?.Where(c => !c.IsScryfallOnly && !c.MkmDetailsRequired)
+            ////    ?.ToArray() ?? new DetailedMagicCard[0];
+
+            ////var result = allCards.Select(card => card.GenerateReferenceData()).ToList();
 
             ////var reader = new CardReferenceDataReader();
             ////var targetFile = new FileInfo(Path.Combine(SystemFolders.BaseFolder.FullName, "ReferenceData.yaml"));
@@ -338,6 +416,43 @@ namespace MtgInventory.Service
 
             stopwatch.Stop();
             _logger.LogInformation($"Done generating card reference data in {stopwatch.Elapsed}");
+
+            void GenerateIntoFile(
+                ReferenceDataService referenceDataService,
+                string fileNamePrefix,
+                string folder,
+                IGrouping<string, DetailedMagicCard>[] data,
+                IDictionary<string, MkmAdditionalCardInfo> additionalMkmInfo)
+            {
+                foreach (var cardsBySet in data)
+                {
+                    _logger.LogInformation($"Generating {fileNamePrefix} reference for set {cardsBySet.Key}");
+
+                    var cards = cardsBySet
+                        .OrderBy(c => c.MkmId)
+                        .ThenBy(c => c.CollectorNumber)
+                        .Select(c =>
+                        {
+                            var result = new CardReferenceData(c);
+
+                            if (!string.IsNullOrEmpty(result.MkmId)
+                                && string.IsNullOrEmpty(result.MkmWebSite))
+                            {
+                                if (additionalMkmInfo.TryGetValue(result.MkmId, out var found))
+                                {
+                                    result.MkmImageUrl = found.MkmImage;
+                                    result.MkmWebSite = found.MkmWebSite;
+                                }
+                            }
+
+                            return result;
+                        })
+                        .ToArray();
+
+                    var fileName = Path.Combine(folder, $"{fileNamePrefix}{cardsBySet.Key.ToUpperInvariant()}.csv");
+                    referenceDataService.WriteCardReferenceData(cards, fileName);
+                }
+            }
         }
 
         public void GenerateReferenceSetData()

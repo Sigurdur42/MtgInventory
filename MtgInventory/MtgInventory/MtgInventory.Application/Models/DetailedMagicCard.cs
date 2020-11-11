@@ -20,9 +20,11 @@ namespace MtgInventory.Service.Models
         public bool IsInstant { get; set; }
         public bool IsLand { get; set; }
         public bool IsMappedByReferenceCard { get; set; }
-        public bool IsScryfallOnly => string.IsNullOrWhiteSpace(MkmId);
+        public bool IsMkmOnly { get; set; }
+        public bool IsScryfallOnly { get; set; }
         public bool IsSorcery { get; set; }
         public bool IsToken { get; set; }
+        public bool IsEmblem { get; set; }
         public DateTime? LastUpdateMkm { get; set; }
         public DateTime? LastUpdateScryfall { get; set; }
         public CardMigrationStatus MigrationStatus { get; set; } = CardMigrationStatus.Unknown;
@@ -73,6 +75,12 @@ namespace MtgInventory.Service.Models
             {
                 SetReleaseDate = setInfo?.ReleaseDateParsed;
             }
+
+            if (setInfo != null)
+            {
+                IsMkmOnly = setInfo.IsKnownMkmOnlySet;
+                IsScryfallOnly = setInfo.IsKnownScryfallOnlySet;
+            }
         }
 
         public void UpdateFromTypeLine(string typeLine)
@@ -83,9 +91,22 @@ namespace MtgInventory.Service.Models
             IsCreature = IsCreature || typeLine.Contains("Creature", StringComparison.InvariantCulture);
             IsInstant = IsInstant || typeLine.Contains("Instant", StringComparison.InvariantCulture);
             IsSorcery = IsSorcery || typeLine.Contains("Sorcery", StringComparison.InvariantCulture);
+            IsEmblem = IsEmblem || typeLine.Contains("Emblem", StringComparison.InvariantCulture);
 
             // TODO: Improve token detection
             IsToken = IsToken || typeLine.Contains("Token", StringComparison.InvariantCulture);
+        }
+
+        public void UpdateManualMapped(CardReferenceData reference)
+        {
+            MkmWebSite = reference.MkmWebSite;
+            MkmImages = new[]{new ImageLinkUri()
+            {
+                Uri = reference.MkmImageUrl,
+                Category = "normal"
+            }};
+
+            IsMappedByReferenceCard = true;
         }
 
         internal CardReferenceData GenerateReferenceData()
@@ -134,19 +155,6 @@ namespace MtgInventory.Service.Models
                     Uri = "http:" + product.Image,
                 }
             };
-        }
-
-        public void UpdateManualMapped(CardReferenceData reference)
-        {
-            MkmWebSite = reference.MkmWebSite;
-            MkmImages = new []{new ImageLinkUri()
-            {
-                Uri = reference.MkmImageUrl,
-                Category = "normal"
-
-            }};
-
-            IsMappedByReferenceCard = true;
         }
     }
 }

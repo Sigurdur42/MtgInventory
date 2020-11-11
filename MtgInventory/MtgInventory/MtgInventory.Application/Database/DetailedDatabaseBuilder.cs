@@ -374,6 +374,7 @@ namespace MtgInventory.Service.Database
                         ?.Query()
                         ?.Where(c => c.MkmId == manualMapped.MkmId)
                         ?.FirstOrDefault();
+
                     if (found == null)
                     {
                         // Log.Error($"Cannot find manual mapped reference card with mkm id {manualMapped.MkmId}");

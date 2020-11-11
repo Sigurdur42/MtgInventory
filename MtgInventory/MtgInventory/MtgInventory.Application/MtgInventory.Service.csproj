@@ -12,10 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Database\CardReferenceData.csv" />
-    <EmbeddedResource Include="Database\SetReferenceScryfall.txt" />
-    <EmbeddedResource Include="Database\SetReferenceMkm.txt" />
-    <EmbeddedResource Include="Database\SetReferenceData.csv" />
+    <EmbeddedResource Include="Database\ReferenceDataSet\CardReferenceData.csv" />
+    <EmbeddedResource Include="Database\ReferenceDataCards\SetReferenceScryfall.txt" />
+    <EmbeddedResource Include="Database\ReferenceDataCards\SetReferenceMkm.txt" />
+    <EmbeddedResource Include="Database\ReferenceDataCards\SetReferenceData.csv" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="ResourceLoader" Version="3.1.20095.1" />
     <PackageReference Include="YamlDotNet" Version="8.1.2" />

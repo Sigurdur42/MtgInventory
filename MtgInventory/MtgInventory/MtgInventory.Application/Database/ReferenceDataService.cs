@@ -4,7 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace MtgInventory.Service.Database
 {
@@ -74,6 +76,45 @@ namespace MtgInventory.Service.Database
         public bool IsScryfallOnly(string scryfallSetCode)
         {
             return _scryfallOnly.Any(c => c.Equals(scryfallSetCode, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public void WriteCardReferenceData(
+            IEnumerable<CardReferenceData> cardReference,
+            string targetFile)
+        {
+            try
+            {
+                using TextWriter writer = new StreamWriter(targetFile, false, System.Text.Encoding.UTF8);
+                var configuration = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    Delimiter = ",",
+                    Encoding = Encoding.UTF8,
+                    HasHeaderRecord = true,
+                    ShouldQuote = (value, context) =>
+                    {
+                        if (string.IsNullOrEmpty(value))
+                        {
+                            return false;
+                        }
+
+                        if (value.StartsWith("http", StringComparison.InvariantCultureIgnoreCase)
+                        || value.Contains(" ", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    }
+                };
+
+                using var csv = new CsvWriter(writer, configuration);
+                csv.WriteRecords(cardReference);
+                csv.Flush();
+            }
+            catch (Exception error)
+            {
+                // Log.Error($"Cannot load card reference data: {error}");
+            }
         }
 
         private CardReferenceData[] ReadEmbeddedCardReferenceData()

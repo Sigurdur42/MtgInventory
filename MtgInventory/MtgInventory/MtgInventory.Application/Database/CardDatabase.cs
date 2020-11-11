@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using MkmApi;
 using MkmApi.Entities;
 using MtgInventory.Service.Converter;
@@ -14,6 +15,7 @@ namespace MtgInventory.Service.Database
 {
     public sealed class CardDatabase : IDisposable
     {
+        private readonly ILogger<CardDatabase> _logger;
         private LiteDatabase? _cardDatabase;
         private DetailedDatabaseBuilder? _detailedDatabaseBuilder;
         private LiteDatabase? _mkmDatabase;
@@ -32,15 +34,20 @@ namespace MtgInventory.Service.Database
         public ILiteCollection<ScryfallCard>? ScryfallCards { get; private set; }
         public ILiteCollection<ScryfallSet>? ScryfallSets { get; private set; }
 
+        public CardDatabase(ILogger<CardDatabase> logger)
+        {
+            _logger = logger;
+        }
+
         public void ClearDetailedCards()
         {
-            // _// Logger.Information($"{nameof(ClearDetailedCards)}: Cleaning existing detailed card info...");
+            _logger.LogInformation($"{nameof(ClearDetailedCards)}: Cleaning existing detailed card info...");
             MagicCards?.DeleteAll();
         }
 
         public void ClearScryfallCards()
         {
-            // _// Logger.Information($"{nameof(ClearScryfallCards)}: Cleaning existing card info...");
+            _logger.LogInformation($"{nameof(ClearScryfallCards)}: Cleaning existing card info...");
             ScryfallCards?.DeleteAll();
         }
 
@@ -94,8 +101,7 @@ namespace MtgInventory.Service.Database
             return found;
         }
 
-        public void Initialize(
-                                            DirectoryInfo folder)
+        public void Initialize(DirectoryInfo folder)
         {
             // _// Logger.Information($"{nameof(Initialize)}: Initializing database service...");
             _detailedDatabaseBuilder = new DetailedDatabaseBuilder(this);
@@ -135,7 +141,7 @@ namespace MtgInventory.Service.Database
             IEnumerable<ProductInfo> products,
             IEnumerable<Expansion> expansions)
         {
-            // _// Logger.Information($"{nameof(InsertProductInfo)}: Cleaning existing product info...");
+            _logger.LogInformation($"{nameof(InsertProductInfo)}: Cleaning existing product info...");
             MkmProductInfo?.DeleteAll();
 
             var orderedExpansions = expansions.ToDictionary(_ => _.IdExpansion.ToString(CultureInfo.InvariantCulture) ?? "");
@@ -159,7 +165,7 @@ namespace MtgInventory.Service.Database
                 if (temp.Count >= pageSize)
                 {
                     total += temp.Count;
-                    // _// Logger.Information($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total})...");
+                    _logger.LogInformation($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total})...");
 
                     BulkInsertProductInfo(temp);
 
@@ -168,7 +174,7 @@ namespace MtgInventory.Service.Database
             }
 
             total += temp.Count;
-            // _// Logger.Information($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total})...");
+            _logger.LogInformation($"{nameof(InsertProductInfo)}: Inserting {temp.Count} products (total: {total})...");
             BulkInsertProductInfo(temp);
         }
 
@@ -199,7 +205,7 @@ namespace MtgInventory.Service.Database
 
         public void ShutDown()
         {
-            // _// Logger.Information($"{nameof(ShutDown)}: Shutting down database service...");
+            _logger.LogInformation($"{nameof(ShutDown)}: Shutting down database service...");
 
             IsInitialized = false;
             _cardDatabase?.Dispose();
@@ -334,20 +340,20 @@ namespace MtgInventory.Service.Database
             {
                 ClearDetailedCards();
 
-                // Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM card data...");
+                _logger.LogDebug($"{nameof(RebuildDetailedDatabase)} - rebuilding MKM card data...");
 
                 foreach (var mkm in MkmExpansion?.FindAll().OrderBy(c => c.Abbreviation))
                 {
                     _detailedDatabaseBuilder?.RebuildMkmCardsForSet(mkm.Abbreviation);
                 }
 
-                // Log.Debug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall card data...");
+                _logger.LogDebug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall card data...");
                 foreach (var scryfall in ScryfallSets?.FindAll()?.OrderBy(c => c.Code)?.ToArray() ?? new ScryfallSet[0])
                 {
                     _detailedDatabaseBuilder?.RebuildScryfallCardsForSet(scryfall.Code);
                 }
 
-                // Log.Debug($"{nameof(RebuildDetailedDatabase)} - Done rebuilding Scryfall card data...");
+                _logger.LogDebug($"{nameof(RebuildDetailedDatabase)} - Done rebuilding Scryfall card data...");
             }
             finally
             {
