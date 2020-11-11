@@ -135,6 +135,10 @@ namespace MtgInventory.Service
                 {
                     _logger.LogError($"AutoDownload MKM caught exception: {error}");
                 }
+                finally
+                {
+                    this.CardsUpdated?.Invoke(this, EventArgs.Empty);
+                }
             });
         }
 
