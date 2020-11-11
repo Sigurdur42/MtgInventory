@@ -345,7 +345,7 @@ namespace MtgInventory.Service
             _logger.LogInformation($"Looking for already mapped data...");
             var alreadyMappedData = mirror
                 .Where(c => c.IsMappedByReferenceCard)
-                .GroupBy(c => c.SetCodeMkm)
+                .GroupBy(c => c.SetNameMkm)
                 .ToArray();
 
             _logger.LogInformation($"Looking for not mapped data...");
@@ -365,7 +365,7 @@ namespace MtgInventory.Service
                 .Where(c => string.IsNullOrEmpty(c.MkmId))
                 ////.Where(c => !c.IsScryfallOnly)
                 .Where(c => !c.IsBasicLand)
-                .GroupBy(c => c.SetCodeScryfall)
+                .GroupBy(c => c.SetNameScryfall)
                 .ToArray();
 
             GenerateIntoFile(
@@ -380,7 +380,7 @@ namespace MtgInventory.Service
                 .Where(c => !string.IsNullOrEmpty(c.MkmId) && c.ScryfallId == Guid.Empty)
                 .Where(c => !c.IsMkmOnly)
                 .Where(c => !c.IsToken)
-                .GroupBy(c => c.SetCodeMkm)
+                .GroupBy(c => c.SetNameMkm)
                 .ToArray();
 
             GenerateIntoFile(
@@ -393,7 +393,7 @@ namespace MtgInventory.Service
             _logger.LogInformation($"Looking for auo matched only data...");
             var autoMatched = notMappedData
                 .Where(c => (!string.IsNullOrEmpty(c.MkmId) && c.ScryfallId != Guid.Empty) || c.IsMkmOnly)
-                .GroupBy(c => c.SetCodeMkm)
+                .GroupBy(c => c.SetNameMkm)
                 .ToArray();
 
             GenerateIntoFile(
@@ -449,7 +449,12 @@ namespace MtgInventory.Service
                         })
                         .ToArray();
 
-                    var fileName = Path.Combine(folder, $"{fileNamePrefix}{cardsBySet.Key.ToUpperInvariant()}.csv");
+                    var name = cardsBySet.Key.ToUpperInvariant()
+                        .Replace("/", "_")
+                        .Replace("\\", "_")
+                        .Replace(":", "_");
+
+                    var fileName = Path.Combine(folder, $"{fileNamePrefix}{name}.csv");
                     referenceDataService.WriteCardReferenceData(cards, fileName);
                 }
             }
