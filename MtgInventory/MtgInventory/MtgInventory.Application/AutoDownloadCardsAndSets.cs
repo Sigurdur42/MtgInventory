@@ -129,7 +129,11 @@ namespace MtgInventory.Service
                         }
                     }
 
-                    _logger.LogDebug($"Done dlownloading additional MKM info...");
+                    var allMkmCards = _cardDatabase.MagicCards.FindAll()
+                        .Where(c => c.MkmDetailsRequired)
+                        .ToArray();
+
+                    _logger.LogDebug($"Done dlownloading additional MKM info ({allMkmCards.Length} remaining)...");
                 }
                 catch (Exception error)
                 {
