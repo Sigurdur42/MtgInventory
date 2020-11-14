@@ -452,21 +452,21 @@ namespace MtgInventory.Service.Database
                 //        break;
                 //}
 
-                switch (card.Id.ToString().ToUpperInvariant())
-                {
-                    case "7240709D-A469-4801-82BD-F5DB50859763":
-                        cardsToUpdate.Add(FindByMkmIdAndUpdate("9374", card, setInfo, false));
-                        break;
+                ////switch (card.Id.ToString().ToUpperInvariant())
+                ////{
+                ////    case "7240709D-A469-4801-82BD-F5DB50859763":
+                ////        cardsToUpdate.Add(FindByMkmIdAndUpdate("9374", card, setInfo, false));
+                ////        break;
 
-                    case "73D28603-B116-4948-A46F-B95AE9118D9E":
-                        cardsToUpdate.Add(FindByMkmIdAndUpdate("9374", card, setInfo, true));
-                        break;
+                ////    case "73D28603-B116-4948-A46F-B95AE9118D9E":
+                ////        cardsToUpdate.Add(FindByMkmIdAndUpdate("9374", card, setInfo, true));
+                ////        break;
 
-                    default:
-                        // Use standard mapping for this card
-                        result.Add(card);
-                        break;
-                }
+                ////    default:
+                ////        // Use standard mapping for this card
+                ////        result.Add(card);
+                ////        break;
+                ////}
             }
 
             return result;

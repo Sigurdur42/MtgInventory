@@ -6,16 +6,19 @@
 
   <ItemGroup>
     <None Remove="Database\CardReferenceData.csv" />
+    <None Remove="Database\ReferenceDataCards\AKH-CardReferenceData.csv" />
+    <None Remove="Database\ReferenceDataCards\CardReferenceDataFileList.txt" />
     <None Remove="Database\SetReferenceData.csv" />
     <None Remove="Database\SetReferenceMkm.txt" />
     <None Remove="Database\SetReferenceScryfall.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Database\ReferenceDataSet\CardReferenceData.csv" />
-    <EmbeddedResource Include="Database\ReferenceDataCards\SetReferenceScryfall.txt" />
-    <EmbeddedResource Include="Database\ReferenceDataCards\SetReferenceMkm.txt" />
-    <EmbeddedResource Include="Database\ReferenceDataCards\SetReferenceData.csv" />
+    <EmbeddedResource Include="Database\ReferenceDataCards\AKH-CardReferenceData.csv" />
+    <EmbeddedResource Include="Database\ReferenceDataCards\CardReferenceDataFileList.txt" />
+    <EmbeddedResource Include="Database\ReferenceDataSet\SetReferenceScryfall.txt" />
+    <EmbeddedResource Include="Database\ReferenceDataSet\SetReferenceMkm.txt" />
+    <EmbeddedResource Include="Database\ReferenceDataSet\SetReferenceData.csv" />
   </ItemGroup>
 
   <ItemGroup>

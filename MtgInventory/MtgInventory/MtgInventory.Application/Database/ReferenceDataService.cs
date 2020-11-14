@@ -119,27 +119,39 @@ namespace MtgInventory.Service.Database
 
         private CardReferenceData[] ReadEmbeddedCardReferenceData()
         {
-            try
+            var resourceLoader = new ResourceLoader();
+            var fileList = resourceLoader.GetEmbeddedResourceString(
+                GetType().Assembly,
+                "CardReferenceDataFileList.txt")
+                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .ToArray();
+
+            var referenceData = new List<CardReferenceData>();
+            foreach (var file in fileList)
             {
-                var resourceLoader = new ResourceLoader();
-                var yaml = resourceLoader.GetEmbeddedResourceString(
-                    GetType().Assembly,
-                    "CardReferenceData.csv");
+                try
+                {
+                    var yaml = resourceLoader.GetEmbeddedResourceString(
+                        GetType().Assembly,
+                        file);
 
-                using var stringReader = new StringReader(yaml);
-                using var csv = new CsvReader(stringReader, CultureInfo.InvariantCulture);
+                    using var stringReader = new StringReader(yaml);
+                    using var csv = new CsvReader(stringReader, CultureInfo.InvariantCulture);
 
-                csv.Configuration.HasHeaderRecord = true;
-                csv.Configuration.Delimiter = ",";
-                csv.Configuration.BadDataFound = (context) => { };
+                    csv.Configuration.HasHeaderRecord = true;
+                    csv.Configuration.Delimiter = ",";
+                    csv.Configuration.BadDataFound = (context) => { };
 
-                return csv.GetRecords<CardReferenceData>().ToArray();
+                    referenceData.AddRange(csv.GetRecords<CardReferenceData>().ToArray());
+                }
+                catch (Exception error)
+                {
+                    // Log.Error($"Cannot load card reference data: {error}");
+                    // return new CardReferenceData[0];
+                }
             }
-            catch (Exception error)
-            {
-                // Log.Error($"Cannot load card reference data: {error}");
-                return new CardReferenceData[0];
-            }
+
+            return referenceData.ToArray();
         }
 
         private string[] ReadEmbeddedMkmOnly(string resourceName)

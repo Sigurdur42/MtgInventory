@@ -400,6 +400,7 @@ namespace MtgInventory.Service
                 .Where(c => !string.IsNullOrEmpty(c.MkmId) && c.ScryfallId == Guid.Empty)
                 .Where(c => !c.IsMkmOnly)
                 .Where(c => !c.IsToken)
+                .Where(c => !c.IsEmblem)
                 .GroupBy(c => c.SetNameMkm)
                 .ToArray();
 

@@ -25,6 +25,9 @@ namespace MtgInventory.Service.Models
         public bool IsSorcery { get; set; }
         public bool IsToken { get; set; }
         public bool IsEmblem { get; set; }
+        public bool IsPunchCard { get; set; }
+        public bool IsTipCard { get; set; }
+
         public DateTime? LastUpdateMkm { get; set; }
         public DateTime? LastUpdateScryfall { get; set; }
         public CardMigrationStatus MigrationStatus { get; set; } = CardMigrationStatus.Unknown;
@@ -69,6 +72,7 @@ namespace MtgInventory.Service.Models
             PrimaryMultiverseId = card.MultiverseIds.FirstOrDefault();
             ScryfallImages = card.Images;
 
+            UpdateFromName(card.Name);
             UpdateFromTypeLine(card.TypeLine);
 
             if (setInfo?.ReleaseDateParsed != null)
@@ -91,10 +95,29 @@ namespace MtgInventory.Service.Models
             IsCreature = IsCreature || typeLine.Contains("Creature", StringComparison.InvariantCulture);
             IsInstant = IsInstant || typeLine.Contains("Instant", StringComparison.InvariantCulture);
             IsSorcery = IsSorcery || typeLine.Contains("Sorcery", StringComparison.InvariantCulture);
-            IsEmblem = IsEmblem || typeLine.Contains("Emblem", StringComparison.InvariantCulture);
+            IsEmblem = IsEmblem || typeLine.EndsWith(" Emblem", StringComparison.InvariantCulture);
 
             // TODO: Improve token detection
             IsToken = IsToken || typeLine.Contains("Token", StringComparison.InvariantCulture);
+        }
+
+        public void UpdateFromName(string name)
+        {
+            UpdateToken(name);
+            IsEmblem = IsEmblem || name.EndsWith(" Emblem", StringComparison.InvariantCulture);
+            IsPunchCard = IsPunchCard || name.EndsWith(" Punch Card", StringComparison.InvariantCulture);
+            IsTipCard = IsTipCard || name.StartsWith("Tip: ", StringComparison.InvariantCulture);
+        }
+
+        public void UpdateToken(string name)
+        {
+            IsToken = IsToken
+                || name.Contains("Token", StringComparison.InvariantCulture)
+                || name.Equals("Energy Reserve", StringComparison.InvariantCultureIgnoreCase)
+                || name.Equals("The Monarch", StringComparison.InvariantCultureIgnoreCase)
+                || name.Equals("Poison Counter", StringComparison.InvariantCultureIgnoreCase)
+                || name.Equals("Experience Counter", StringComparison.InvariantCultureIgnoreCase)
+                ;
         }
 
         public void UpdateManualMapped(CardReferenceData reference)
@@ -141,6 +164,7 @@ namespace MtgInventory.Service.Models
                 SetReleaseDate = setInfo?.ReleaseDateParsed;
             }
 
+            UpdateFromName(card.Name);
             UpdateFromTypeLine(card.Name);
         }
 

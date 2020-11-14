@@ -20,12 +20,33 @@ namespace MtgInventory.Application.Tests
             bool isCreature,
             bool isArtifact)
         {
-            // TODO: SpecFlow Test?
             var target = new DetailedMagicCard();
             target.UpdateFromTypeLine(typeLine);
             Assert.AreEqual(isBasicLand, target.IsBasicLand, nameof(target.IsBasicLand));
             Assert.AreEqual(isCreature, target.IsCreature, nameof(target.IsCreature));
             Assert.AreEqual(isArtifact, target.IsArtifact, nameof(target.IsArtifact));
+        }
+
+        [TestCase("Amonkhet Punch Card", true, false, false, false)]
+        [TestCase("Gideon of the Trials Emblem", false, true, false, false)]
+        [TestCase("Energy reserve", false, false, true, false)]
+        [TestCase("The Monarch", false, false, true, false)]
+        [TestCase("Experience Counter", false, false, true, false)]
+        [TestCase("Poison Counter", false, false, true, false)]
+        [TestCase("Tip: Decks", false, false, false, true)]
+        public void VerifyUpdateFromName(
+            string name,
+            bool isPunchCard,
+            bool isEmblem,
+            bool isToken,
+            bool isTipCard)
+        {
+            var target = new DetailedMagicCard();
+            target.UpdateFromName(name);
+            Assert.AreEqual(isPunchCard, target.IsPunchCard, nameof(target.IsPunchCard));
+            Assert.AreEqual(isEmblem, target.IsEmblem, nameof(target.IsEmblem));
+            Assert.AreEqual(isToken, target.IsToken, nameof(target.IsToken));
+            Assert.AreEqual(isTipCard, target.IsTipCard, nameof(target.IsTipCard));
         }
     }
 }
