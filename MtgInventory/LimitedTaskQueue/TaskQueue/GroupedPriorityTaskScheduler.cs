@@ -1,27 +1,37 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Logging;
 
 namespace TaskQueue
 {
-    public class GroupedPriorityTaskScheduler
+    public interface IGroupedPriorityTaskScheduler
+    {
+        void CancelAll();
+
+        void CancelGroup(
+            string groupName);
+
+        void Enqueue(
+            TaskGroupPriority groupPriority,
+            Action taskAction);
+    }
+
+    public class GroupedPriorityTaskScheduler : IGroupedPriorityTaskScheduler
     {
         private readonly ILogger<GroupedPriorityTaskScheduler> _logger;
+        private readonly PriorityTaskQueue _taskQueue;
 
-
-        public GroupedPriorityTaskScheduler(ILogger<GroupedPriorityTaskScheduler> logger)
+        public GroupedPriorityTaskScheduler(
+            ILogger<GroupedPriorityTaskScheduler> logger,
+            PriorityTaskQueue taskQueue)
         {
             _logger = logger;
+            _taskQueue = taskQueue;
         }
 
         // TODO: Configure
         // TODO: Add max degree
 
-        public void Enqueue(
-            TaskGroupPriority groupPriority,
-            Action taskAction)
+        public void CancelAll()
         {
             throw new NotImplementedException("TODO: Implement this");
         }
@@ -32,9 +42,11 @@ namespace TaskQueue
             throw new NotImplementedException("TODO: Implement this");
         }
 
-        public void CancelAll()
+        public void Enqueue(
+            TaskGroupPriority groupPriority,
+            Action taskAction)
         {
-            throw new NotImplementedException("TODO: Implement this");
+            _taskQueue.Enqueue(new PriorityTaskAction(taskAction, groupPriority.ToString()));
         }
     }
 }

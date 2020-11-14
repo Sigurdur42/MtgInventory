@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\LimitedTaskQueue\TaskQueue\TaskQueue.csproj" />
     <ProjectReference Include="..\..\Mkm\MkmApi\MkmApi.csproj" />
     <ProjectReference Include="..\..\Scryfall\ScryfallApiServices\ScryfallApiServices.csproj" />
   </ItemGroup>

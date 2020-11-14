@@ -14,6 +14,7 @@ namespace MtgInventory.Service
         {
             serviceCollection.AddMkmApi();
             serviceCollection.AddScryfallApi();
+            serviceCollection.AddGroupedScheduler();
 
             serviceCollection.AddSingleton<CardDatabase>();
             serviceCollection.AddSingleton<ITextDeckReader, TextDeckReader>();

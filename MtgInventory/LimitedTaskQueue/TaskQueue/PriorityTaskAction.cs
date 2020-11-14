@@ -2,7 +2,7 @@
 
 namespace TaskQueue
 {
-    internal class PriorityTaskAction
+    public class PriorityTaskAction
     {
         public PriorityTaskAction(
             Action actionToExecute,

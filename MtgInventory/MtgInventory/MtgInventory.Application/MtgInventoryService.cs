@@ -15,6 +15,7 @@ using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
 using MtgInventory.Service.Settings;
 using ScryfallApiServices;
+using TaskQueue;
 
 namespace MtgInventory.Service
 {
@@ -27,6 +28,7 @@ namespace MtgInventory.Service
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IMkmRequest _mkmRequest;
+        private readonly IGroupedPriorityTaskScheduler _priorityTaskScheduler;
         private readonly IScryfallService _scryfallService;
         private readonly ISettingsService _settingsService;
         private AutoDownloadCardsAndSets _autoDownloadCardsAndSets;
@@ -41,7 +43,8 @@ namespace MtgInventory.Service
             IAutoScryfallService autoScryfallService,
             IApiCallStatistic mkmApiCallStatistic,
             IScryfallApiCallStatistic scryfallApiCallStatistic,
-            IMkmRequest mkmRequest)
+            IMkmRequest mkmRequest,
+            IGroupedPriorityTaskScheduler priorityTaskScheduler)
         {
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger<MtgInventoryService>();
@@ -52,6 +55,7 @@ namespace MtgInventory.Service
             MkmApiCallStatistic = mkmApiCallStatistic;
             ScryfallApiCallStatistic = scryfallApiCallStatistic;
             _mkmRequest = mkmRequest;
+            _priorityTaskScheduler = priorityTaskScheduler;
 
             SystemFolders = new SystemFolders();
             SetsUpdated += (sender, e) => { };
