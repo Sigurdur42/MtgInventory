@@ -27,6 +27,7 @@ namespace MtgInventory.Service.Models
         public bool IsEmblem { get; set; }
         public bool IsPunchCard { get; set; }
         public bool IsTipCard { get; set; }
+        public bool IsOnlineCode { get; set; }
 
         public DateTime? LastUpdateMkm { get; set; }
         public DateTime? LastUpdateScryfall { get; set; }
@@ -58,7 +59,7 @@ namespace MtgInventory.Service.Models
 
         public void UpdateFromScryfall(ScryfallCard card, DetailedSetInfo? setInfo)
         {
-            NameEn = card.Name;
+            NameEn = string.IsNullOrEmpty(NameEn) ? card.Name : NameEn;
             ScryfallId = card.Id;
             SetCode = card.Set;
             SetName = card.SetName;
@@ -106,7 +107,14 @@ namespace MtgInventory.Service.Models
             UpdateToken(name);
             IsEmblem = IsEmblem || name.EndsWith(" Emblem", StringComparison.InvariantCulture);
             IsPunchCard = IsPunchCard || name.EndsWith(" Punch Card", StringComparison.InvariantCulture);
-            IsTipCard = IsTipCard || name.StartsWith("Tip: ", StringComparison.InvariantCulture);
+            IsTipCard = IsTipCard 
+                        || name.StartsWith("Tip: ", StringComparison.InvariantCulture)
+                        || name.StartsWith("Rules Tip: ", StringComparison.InvariantCulture)
+                ;
+            IsOnlineCode = IsOnlineCode
+                           || name.StartsWith("Magic Online Code", StringComparison.InvariantCulture)
+                           || name.StartsWith("Arena Code ", StringComparison.InvariantCulture)
+                ;
         }
 
         public void UpdateToken(string name)
@@ -141,6 +149,7 @@ namespace MtgInventory.Service.Models
                 MkmWebSite = MkmWebSite,
                 ScryfallCollectorNumber = CollectorNumber,
                 ScryfallSetCode = SetCodeScryfall,
+                ScryfallId = ScryfallId,
                 MkmImageUrl = MkmImages?.FirstOrDefault()?.Uri ?? "",
             };
         }

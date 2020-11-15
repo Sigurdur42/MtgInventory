@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using MtgInventory.Service.Models;
 
 namespace MtgInventory.Service.Database
@@ -17,6 +18,7 @@ namespace MtgInventory.Service.Database
             Name = c.NameEn;
             ScryfallSetCode = c.SetCodeScryfall;
             ScryfallCollectorNumber = c.CollectorNumber;
+            ScryfallId = c.ScryfallId;
         }
 
         public string MkmId { get; set; } = "";
@@ -24,6 +26,7 @@ namespace MtgInventory.Service.Database
         public string Name { get; set; } = "";
         public string ScryfallCollectorNumber { get; set; } = "";
         public string ScryfallSetCode { get; set; } = "";
+        public Guid ScryfallId { get; set; } = Guid.Empty;
         public string MkmImageUrl { get; set; } = "";
         public string MkmWebSite { get; set; } = "";
 

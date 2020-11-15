@@ -34,12 +34,16 @@ namespace MtgInventory.Application.Tests
         [TestCase("Experience Counter", false, false, true, false)]
         [TestCase("Poison Counter", false, false, true, false)]
         [TestCase("Tip: Decks", false, false, false, true)]
+        [TestCase("Rules Tip: Legends Cards", false, false, false, true)]
+        [TestCase("Arena Code (Kaleidoscope Killers)", false, false, false, false, true)]
+        [TestCase("Magic Online Code (Secret Lair Drop Bundle)", false, false, false, false, true)]
         public void VerifyUpdateFromName(
             string name,
-            bool isPunchCard,
-            bool isEmblem,
-            bool isToken,
-            bool isTipCard)
+            bool isPunchCard = false,
+            bool isEmblem = false,
+            bool isToken = false,
+            bool isTipCard = false,
+            bool isOnlineCode = false)
         {
             var target = new DetailedMagicCard();
             target.UpdateFromName(name);
@@ -47,6 +51,7 @@ namespace MtgInventory.Application.Tests
             Assert.AreEqual(isEmblem, target.IsEmblem, nameof(target.IsEmblem));
             Assert.AreEqual(isToken, target.IsToken, nameof(target.IsToken));
             Assert.AreEqual(isTipCard, target.IsTipCard, nameof(target.IsTipCard));
+            Assert.AreEqual(isOnlineCode, target.IsOnlineCode, nameof(target.IsOnlineCode));
         }
     }
 }

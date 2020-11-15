@@ -15,6 +15,7 @@ namespace MtgInventory.Service.Database
 {
     public sealed class CardDatabase : IDisposable
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<CardDatabase> _logger;
         private LiteDatabase? _cardDatabase;
         private DetailedDatabaseBuilder? _detailedDatabaseBuilder;
@@ -34,9 +35,10 @@ namespace MtgInventory.Service.Database
         public ILiteCollection<ScryfallCard>? ScryfallCards { get; private set; }
         public ILiteCollection<ScryfallSet>? ScryfallSets { get; private set; }
 
-        public CardDatabase(ILogger<CardDatabase> logger)
+        public CardDatabase(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<CardDatabase>();
         }
 
         public void ClearDetailedCards()
@@ -104,7 +106,7 @@ namespace MtgInventory.Service.Database
         public void Initialize(DirectoryInfo folder)
         {
             // _// Logger.Information($"{nameof(Initialize)}: Initializing database service...");
-            _detailedDatabaseBuilder = new DetailedDatabaseBuilder(this);
+            _detailedDatabaseBuilder = new DetailedDatabaseBuilder(this, _loggerFactory);
 
             folder.EnsureExists();
             var databaseFile = Path.Combine(folder.FullName, "CardDatabase.db");
@@ -299,6 +301,7 @@ namespace MtgInventory.Service.Database
             MagicCards?.EnsureIndex(c => c.SetName);
             MagicCards?.EnsureIndex(c => c.IsBasicLand);
             MagicCards?.EnsureIndex(c => c.IsToken);
+            MagicCards?.EnsureIndex(c => c.IsMappedByReferenceCard);
         }
 
         internal void EnsureSetIndex()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using MkmApi.Entities;
 using MtgInventory.Service.Models;
 
@@ -10,14 +11,17 @@ namespace MtgInventory.Service.Database
     internal class DetailedDatabaseBuilder
     {
         private readonly CardDatabase _database;
+        private readonly ILogger<DetailedDatabaseBuilder> _logger;
         private readonly object _sync = new object();
-        private bool _buildingInProgress;
         private readonly ReferenceDataService _referenceService = new ReferenceDataService();
+        private bool _buildingInProgress;
 
         public DetailedDatabaseBuilder(
-            CardDatabase database)
+            CardDatabase database,
+            ILoggerFactory loggerFactory)
         {
             _database = database;
+            _logger = loggerFactory.CreateLogger<DetailedDatabaseBuilder>();
         }
 
         public void BuildMkmSetData()
@@ -118,14 +122,15 @@ namespace MtgInventory.Service.Database
 
         internal void RebuildMkmCardsForSet(DetailedSetInfo lastSet)
         {
-            // Log.Debug($"Rebuilding MKM card data for set code {lastSet.SetCodeMkm} {lastSet?.SetName}...");
+            _logger.LogDebug($"Rebuilding MKM card data for set code {lastSet.SetCodeMkm} {lastSet?.SetName}...");
 
             var indexedCards = _database?.MagicCards
                                         ?.Query()
                                         ?.Where(c => lastSet.SetCodeMkm == c.SetCode)
                                         ?.ToArray()
                                         ?.GroupBy(c => c.NameEn)
-                                        ?.ToDictionary(c => c.Key);
+                                        ?.ToDictionary(c => c.Key)
+                ?? new Dictionary<string, IGrouping<string, DetailedMagicCard>>();
 
             var allMkmCards = _database?.MkmProductInfo
                                        ?.Query()
@@ -133,7 +138,8 @@ namespace MtgInventory.Service.Database
                                        ?.OrderBy(c => c.MetacardId)
                                        ?.ToArray()
                                        ?.GroupBy(c => c.Name)
-                                       ?.ToArray();
+                                       ?.ToArray()
+                ?? new IGrouping<string, MkmProductInfo>[0];
 
             lastSet.MkmCardCount = allMkmCards?.Length ?? 0;
             _database?.MagicSets?.Update(lastSet);
@@ -143,14 +149,40 @@ namespace MtgInventory.Service.Database
 
             foreach (var mkm in allMkmCards)
             {
+                // Resolve all manual mapped first:
+                var manualMatched = new List<DetailedMagicCard>();
+                foreach (var mkmManualMapped in mkm)
+                {
+                    var detailedCard = UpdateDetailsFromManualMapped(_referenceService.GetMappedCard(mkmManualMapped.Id));
+                    if (detailedCard != null)
+                    {
+                        manualMatched.Add(detailedCard);
+                        cardsToUpdate.Add(detailedCard);
+                    }
+                }
+
+                if (manualMatched.Count == mkm.Count())
+                {
+                    // all cards have been manual matched - skip this section
+                    _logger.LogTrace($"All {mkm.Key} have been manually mapped - skipping auto detection");
+                    continue;
+                }
+
+                var manualMatchedIds = manualMatched.Select(c => c.MkmId).ToDictionary(c => c);
+
                 if (indexedCards.TryGetValue(mkm.Key, out var indexed))
                 {
+                    var remainingCards = indexed
+                        .Where(i => !manualMatchedIds.ContainsKey(i.MkmId))
+                        .ToList();
+
                     // Found this group - update all cards
-                    if (indexed.Count() == mkm.Count())
+                    if (remainingCards.Count() == mkm.Count())
                     {
+                        _logger.LogTrace($"{mkm.Key}: MKM and Scryfall card count are identical");
                         // Easy path - card count matches. Simply update all
                         var i = 0;
-                        foreach (var card in indexed.OrderBy(c => c.CollectorNumber))
+                        foreach (var card in remainingCards.OrderBy(c => c.CollectorNumber))
                         {
                             card.UpdateFromMkm(mkm.ElementAt(i), lastSet);
                             i++;
@@ -161,11 +193,11 @@ namespace MtgInventory.Service.Database
                     {
                         // Something is off here - card count mismatch
                         // TODO: Handle this specificly
-                        // Log.Debug($"MKM different card count {mkm.Key}_{lastSet.SetCodeMkm}: MKM: {mkm.Count()}, internal: {indexed.Count()}...");
+                        _logger.LogDebug($"MKM different card count {mkm.Key}_{lastSet.SetCodeMkm}: MKM: {mkm.Count()}, internal: {indexed.Count()}...");
 
-                        var max = Math.Min(indexed.Count(), mkm.Count());
+                        var max = Math.Min(remainingCards.Count(), mkm.Count());
 
-                        var ordered = indexed.OrderBy(c => c.CollectorNumber).ToArray();
+                        var ordered = remainingCards.OrderBy(c => c.CollectorNumber).ToArray();
                         for (var index = 0; index < max; ++index)
                         {
                             var card = ordered.ElementAt(index);
@@ -176,6 +208,8 @@ namespace MtgInventory.Service.Database
                 }
                 else
                 {
+                    _logger.LogTrace($"{mkm.Key}: Card does not exist in Scryfall");
+
                     // The card does not exist - add it
                     var cards = mkm
                         .Select(
@@ -225,13 +259,13 @@ namespace MtgInventory.Service.Database
             var lastSet = lastSets.FirstOrDefault() ?? new DetailedSetInfo();
             var allSetCodes = lastSets.Select(s => s.SetCode).ToArray();
 
-            // Log.Debug($"Rebuilding Scryfall card data for set code {scryfallSetId} {lastSet.SetName} ({lastSets.Length} sets)...");
+            _logger.LogDebug($"Rebuilding Scryfall card data for set code {scryfallSetId} {lastSet.SetName} ({lastSets.Length} sets)...");
 
             var indexedCards = _database?.MagicCards
                                         ?.Query()
                                         ?.Where(c => allSetCodes.Contains(c.SetCode))
                                         ?.ToArray()
-                                        ?.GroupBy(c => c.NameEn)
+                                        ?.GroupBy(c => NormalizeName(c.NameEn))
                                         ?.ToDictionary(c => c.Key) ?? new Dictionary<string, IGrouping<string, DetailedMagicCard>>();
 
             var allScryfallCards = _database.ScryfallCards
@@ -239,7 +273,7 @@ namespace MtgInventory.Service.Database
                                             .Where(c => c.Set == scryfallSetId)
                                             .OrderBy(c => c.CollectorNumber)
                                             .ToArray()
-                                            .GroupBy(c => c.Name)
+                                            .GroupBy(c => NormalizeName(c.Name))
                                             .ToArray();
 
             var cardsToInsert = new List<DetailedMagicCard>();
@@ -287,7 +321,7 @@ namespace MtgInventory.Service.Database
                             Environment.NewLine,
                             indexed.Select(s => $"MKM id: {s.MkmId}"));
 
-                        // Log.Debug($"Scryfall different card count {key}_{scryfallSetId}: Scryfall: {remainingCardsOfSet.Count()}, internal: {indexed.Count()}...{Environment.NewLine}{debugData}{Environment.NewLine}{debugDataMkm}");
+                        _logger.LogDebug($"Scryfall different card count {key}_{scryfallSetId}: Scryfall: {remainingCardsOfSet.Count()}, internal: {indexed.Count()}...{Environment.NewLine}{debugData}{Environment.NewLine}{debugDataMkm}");
                         var max = Math.Min(indexed.Count(), remainingCardsOfSet.Count());
                         var ordered = indexed.OrderBy(c => c.CollectorNumber).ToArray();
                         for (var index = 0; index < max; ++index)
@@ -317,6 +351,14 @@ namespace MtgInventory.Service.Database
             _database.MagicCards.InsertBulk(cardsToInsert);
             _database.MagicCards.Update(cardsToUpdate);
             _database.EnsureMagicCardsIndex();
+        }
+
+        private static string NormalizeName(string name)
+        {
+            return name
+                       ?.Replace("Æ", "Ae")
+                       // ?.Replace("Æ", "ae")
+                       ?? "";
         }
 
         private static string GetCollectorNumber(string existingNumber)
@@ -350,6 +392,33 @@ namespace MtgInventory.Service.Database
             return found;
         }
 
+        private DetailedMagicCard? UpdateDetailsFromManualMapped(
+            CardReferenceData? manualMapped)
+        {
+            if (manualMapped != null)
+            {
+                var found = _database?.MagicCards
+                    ?.Query()
+                    ?.Where(c => c.MkmId == manualMapped.MkmId)
+                    ?.FirstOrDefault();
+
+                if (found == null)
+                {
+                    _logger.LogError($"Cannot find manual mapped reference card with mkm id {manualMapped.MkmId}");
+                }
+                else
+                {
+                    found.UpdateManualMapped(manualMapped);
+                }
+
+                return found;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         private IEnumerable<ScryfallCard> ResolveSpecialScryfallCard(
             IEnumerable<ScryfallCard> cards,
             IList<DetailedMagicCard> cardsToUpdate,
@@ -365,7 +434,21 @@ namespace MtgInventory.Service.Database
             foreach (var card in cardsArray.OrderBy(c => GetCollectorNumber(c.CollectorNumber)))
             {
                 ++index;
-                
+
+                // Look for already mapped
+                var alreadyManualMapped = _database?.MagicCards
+                    ?.Query()
+                    // ?.Where(c => c.IsMappedByReferenceCard)
+                    ?.Where(c => c.ScryfallId == card.Id)
+                    ?.FirstOrDefault();
+                if (alreadyManualMapped?.IsMappedByReferenceCard ?? false)
+                {
+                    // This card already has a manual mapping
+                    // Just update here
+                    alreadyManualMapped.UpdateFromScryfall(card, setInfo);
+                    continue;
+                }
+
                 // Look for manual mapped cards here
                 var manualMapped = _referenceService.GetMappedCard(card.CollectorNumber, card.Set);
                 if (manualMapped != null)
@@ -383,9 +466,12 @@ namespace MtgInventory.Service.Database
                     {
                         found.UpdateFromScryfall(card, setInfo);
                         found.UpdateManualMapped(manualMapped);
+                        cardsToUpdate.Add(found);
+                        continue;
                     }
                 }
 
+                // TODO: Add special handling for double faced cards here
 
                 if (cardsCount == 2 && index == 2)
                 {
@@ -404,69 +490,7 @@ namespace MtgInventory.Service.Database
                     }
                 }
 
-                // Commander oversized - Scryfall does not know oversized cards
-                //switch (card.Set)
-                //{
-                //    case "OC13":
-                //    case "OC14":
-                //    case "OC15":
-                //    case "OC16":
-                //    case "OC17":
-                //    case "OC18":
-                //    case "OC19":
-                //    case "OC20":
-                //        {
-                //            var found = _database?.MagicCards
-                //                ?.Query()
-                //                ?.Where(c => c.NameEn == card.Name && c.SetCode == card.Set)
-                //                ?.OrderByDescending(c => c.CollectorNumber)
-                //                ?.FirstOrDefault();
-
-                //            if (found != null)
-                //            {
-                //                found.UpdateFromScryfall(card, null);
-                //                cardsToUpdate.Add(found);
-                //                continue;
-                //            }
-                //        }
-                //        break;
-
-                //    case "PWAR":
-                //        if (card.CollectorNumber.Contains("S", StringComparison.InvariantCultureIgnoreCase)
-                //            || (card.CollectorNumber.Contains("★", StringComparison.InvariantCultureIgnoreCase)))
-                //        {
-                //            // This is japanese alt art. MKM has a differnt set for this
-                //            var found = _database?.MagicCards
-                //                ?.Query()
-                //                ?.Where(c => c.NameEn == card.Name && c.SetCodeMkm == "JWAR")
-                //                ?.OrderByDescending(c => c.CollectorNumber)
-                //                ?.FirstOrDefault();
-
-                //            if (found != null)
-                //            {
-                //                found.UpdateFromScryfall(card, null);
-                //                cardsToUpdate.Add(found);
-                //                continue;
-                //            }
-                //        }
-                //        break;
-                //}
-
-                ////switch (card.Id.ToString().ToUpperInvariant())
-                ////{
-                ////    case "7240709D-A469-4801-82BD-F5DB50859763":
-                ////        cardsToUpdate.Add(FindByMkmIdAndUpdate("9374", card, setInfo, false));
-                ////        break;
-
-                ////    case "73D28603-B116-4948-A46F-B95AE9118D9E":
-                ////        cardsToUpdate.Add(FindByMkmIdAndUpdate("9374", card, setInfo, true));
-                ////        break;
-
-                ////    default:
-                ////        // Use standard mapping for this card
-                ////        result.Add(card);
-                ////        break;
-                ////}
+                result.Add(card);
             }
 
             return result;

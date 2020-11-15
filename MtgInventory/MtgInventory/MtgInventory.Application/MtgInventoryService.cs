@@ -401,6 +401,9 @@ namespace MtgInventory.Service
                 .Where(c => !c.IsMkmOnly)
                 .Where(c => !c.IsToken)
                 .Where(c => !c.IsEmblem)
+                .Where(c => !c.IsPunchCard)
+                .Where(c => !c.IsTipCard)
+                .Where(c => !c.IsOnlineCode)
                 .GroupBy(c => c.SetNameMkm)
                 .ToArray();
 

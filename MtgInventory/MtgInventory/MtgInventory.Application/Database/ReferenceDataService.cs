@@ -7,12 +7,13 @@ using System.Reflection;
 using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
+using MoreLinq;
 
 namespace MtgInventory.Service.Database
 {
     internal class ReferenceDataService
     {
-        private readonly Dictionary<string, CardReferenceData> _cardReferenceData;
+        private readonly Dictionary<string, CardReferenceData> _cardReferenceDataByMkmId;
         private readonly Dictionary<string, CardReferenceData> _cardReferenceDataByScryfall;
         private readonly Dictionary<string, SetReferenceData> _mkmIndexedSetData;
         private readonly string[] _mkmOnly;
@@ -22,14 +23,14 @@ namespace MtgInventory.Service.Database
         public ReferenceDataService()
         {
             var rawSetData = ReadEmbeddedSetReferenceData();
-            _mkmIndexedSetData = rawSetData.ToDictionary(s => s.MkmCode);
-            _scryfallIndexedSetData = rawSetData.ToDictionary(s => s.ScryfallCode);
+            _mkmIndexedSetData = rawSetData.DistinctBy(s => s.MkmCode).ToDictionary(s => s.MkmCode);
+            _scryfallIndexedSetData = rawSetData.DistinctBy(s => s.ScryfallCode).ToDictionary(s => s.ScryfallCode);
 
             _mkmOnly = ReadEmbeddedMkmOnly("SetReferenceMkm.txt");
             _scryfallOnly = ReadEmbeddedMkmOnly("SetReferenceScryfall.txt");
 
             var rawCardData = ReadEmbeddedCardReferenceData();
-            _cardReferenceData = rawCardData.ToDictionary(c => c.MkmId);
+            _cardReferenceDataByMkmId = rawCardData.ToDictionary(c => c.MkmId);
             _cardReferenceDataByScryfall = rawCardData.ToDictionary(c => c.GetScryfallIndexKey());
         }
 
@@ -39,6 +40,17 @@ namespace MtgInventory.Service.Database
         {
             var key = CardReferenceData.MakeScryfallKey(collectorNumber, scryfallSetCode);
             if (_cardReferenceDataByScryfall.TryGetValue(key, out var found))
+            {
+                return found;
+            }
+
+            return null;
+        }
+
+        public CardReferenceData? GetMappedCard(
+            string mkmId)
+        {
+            if (_cardReferenceDataByMkmId.TryGetValue(mkmId, out var found))
             {
                 return found;
             }
