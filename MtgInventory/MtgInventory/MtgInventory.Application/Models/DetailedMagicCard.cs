@@ -28,6 +28,7 @@ namespace MtgInventory.Service.Models
         public bool IsPunchCard { get; set; }
         public bool IsTipCard { get; set; }
         public bool IsOnlineCode { get; set; }
+        public bool IsCheckList { get; set; }
 
         public DateTime? LastUpdateMkm { get; set; }
         public DateTime? LastUpdateScryfall { get; set; }
@@ -61,8 +62,8 @@ namespace MtgInventory.Service.Models
         {
             NameEn = string.IsNullOrEmpty(NameEn) ? card.Name : NameEn;
             ScryfallId = card.Id;
-            SetCode = card.Set;
-            SetName = card.SetName;
+            SetCode = string.IsNullOrEmpty(SetCode) ? card.Set : SetCode;
+            SetName = string.IsNullOrEmpty(SetName) ? card.SetName : SetName;
             SetCodeScryfall = card.Set;
             SetNameScryfall = card.SetName;
             TypeLine = card.TypeLine;
@@ -115,6 +116,11 @@ namespace MtgInventory.Service.Models
                            || name.StartsWith("Magic Online Code", StringComparison.InvariantCulture)
                            || name.StartsWith("Arena Code ", StringComparison.InvariantCulture)
                 ;
+
+            IsCheckList = IsCheckList
+                          || name.EndsWith("Checklist", StringComparison.InvariantCulture)
+                ;
+
         }
 
         public void UpdateToken(string name)

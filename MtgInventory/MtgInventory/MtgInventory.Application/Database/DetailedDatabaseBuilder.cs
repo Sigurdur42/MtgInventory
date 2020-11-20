@@ -334,17 +334,47 @@ namespace MtgInventory.Service.Database
                 }
                 else
                 {
-                    // The card does not exist - add it
-                    var cards = remainingCardsOfSet
-                        .Select(
-                            c =>
+                    foreach (var remainingCard in remainingCardsOfSet)
+                    {
+                        // This could be a double faced card. Scryfall has them only with
+                        // the front half registered
+                        var found = indexedCards
+                            .Where(c => c.Key.StartsWith(remainingCard.Name, StringComparison.InvariantCultureIgnoreCase) && c.Key.Contains("/", StringComparison.InvariantCultureIgnoreCase))
+                            .ToArray();
+
+                        var haveAdded = false;
+                        if (found.Any())
+                        {
+                            if (found.Length != 1)
                             {
-                                var card = new DetailedMagicCard();
-                                card.UpdateFromScryfall(c, lastSet);
-                                return card;
-                            })
-                        .ToArray();
-                    cardsToInsert.AddRange(cards);
+                                // TODO: What do we do here?
+                                _logger.LogWarning($"Unexpected card count found for card {remainingCard.Set} - {remainingCard.Name}: {found.Length}");
+                            }
+
+                            var firstCard = found.First().Value;
+                            if (firstCard.Count() != 1)
+                            {
+                                // TODO: What do we do here?
+                                _logger.LogWarning($"Unexpected card count found for card {remainingCard.Set} - {remainingCard.Name}: {firstCard.Count()}");
+                            }
+                            else
+                            {
+                                var card = firstCard.First();
+                                card.UpdateFromScryfall(remainingCard, lastSet);
+                                cardsToUpdate.Add(card);
+
+                                haveAdded = true;
+                            }
+                        }
+
+                        if (!haveAdded)
+                        {
+                            // The card does not exist - add it
+                            var card = new DetailedMagicCard();
+                            card.UpdateFromScryfall(remainingCard, lastSet);
+                            cardsToInsert.Add(card);
+                        }
+                    }
                 }
             }
 
@@ -357,7 +387,7 @@ namespace MtgInventory.Service.Database
         {
             return name
                        ?.Replace("Æ", "Ae")
-                       // ?.Replace("Æ", "ae")
+                       ?.Replace("//", "/")
                        ?? "";
         }
 

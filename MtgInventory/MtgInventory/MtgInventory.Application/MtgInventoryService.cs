@@ -404,6 +404,7 @@ namespace MtgInventory.Service
                 .Where(c => !c.IsPunchCard)
                 .Where(c => !c.IsTipCard)
                 .Where(c => !c.IsOnlineCode)
+                .Where(c => !c.IsCheckList)
                 .GroupBy(c => c.SetNameMkm)
                 .ToArray();
 

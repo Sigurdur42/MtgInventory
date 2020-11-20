@@ -134,7 +134,7 @@ namespace MtgInventory.Service.Database
             var resourceLoader = new ResourceLoader();
             var fileList = resourceLoader.GetEmbeddedResourceString(
                 GetType().Assembly,
-                "CardReferenceDataFileList.txt")
+                "_CardReferenceDataFileList.txt")
                 .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
                 .ToArray();
 
