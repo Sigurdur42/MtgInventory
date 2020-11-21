@@ -9,7 +9,6 @@ using CsvHelper;
 using Microsoft.Extensions.Logging;
 using MkmApi;
 using MoreLinq;
-using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;

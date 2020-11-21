@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Models;
 using MtgInventory.Service.Settings;
+using ScryfallApiServices;
 
 namespace MtgInventory.Service
 {

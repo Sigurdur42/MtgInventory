@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using MtgBinder.Domain.Scryfall;
 
 namespace ScryfallApiServices
 {

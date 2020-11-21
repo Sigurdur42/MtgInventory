@@ -1,7 +1,7 @@
 using MtgInventory.Service.Models;
 using NUnit.Framework;
 
-namespace MtgInventory.Application.Tests
+namespace MtgInventory.Service.Tests
 {
     [TestFixture]
     public class DetailedMagicCardTests

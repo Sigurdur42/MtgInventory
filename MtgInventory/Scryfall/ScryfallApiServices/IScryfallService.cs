@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ScryfallApi.Client.Models;
 
-namespace MtgBinder.Domain.Scryfall
+namespace ScryfallApiServices
 {
     public interface IScryfallService
     {

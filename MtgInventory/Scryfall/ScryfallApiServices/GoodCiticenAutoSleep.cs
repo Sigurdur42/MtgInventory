@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace MtgBinder.Domain.Scryfall
+namespace ScryfallApiServices
 {
     public class GoodCiticenAutoSleep
     {

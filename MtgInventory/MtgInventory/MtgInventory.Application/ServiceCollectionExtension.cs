@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MkmApi;
-using MtgBinder.Domain.Scryfall;
 using MtgInventory.Service.Database;
 using MtgInventory.Service.Decks;
 using MtgInventory.Service.Settings;
 using ScryfallApiServices;
+using TaskQueue;
 
 namespace MtgInventory.Service
 {

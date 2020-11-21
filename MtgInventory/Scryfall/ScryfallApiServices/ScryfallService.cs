@@ -4,9 +4,8 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
-using ScryfallApiServices;
 
-namespace MtgBinder.Domain.Scryfall
+namespace ScryfallApiServices
 {
     public class ScryfallService : IScryfallService
     {

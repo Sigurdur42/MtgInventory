@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TaskQueue;
 
-namespace MtgInventory.Service
+namespace TaskQueue
 {
     public static class ServiceCollectionExtension
     {

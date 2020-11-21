@@ -1,5 +1,6 @@
 ﻿using System;
 using MkmApi;
+using MkmApi.Entities;
 
 namespace MtgInventory.Service.Models
 {

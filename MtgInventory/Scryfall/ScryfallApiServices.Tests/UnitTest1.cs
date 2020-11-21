@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace ScryfallApi.Tests
+namespace ScryfallApiServices.Tests
 {
     public class Tests
     {

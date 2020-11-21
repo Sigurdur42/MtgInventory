@@ -1,6 +1,6 @@
 using CsvHelper.Configuration.Attributes;
 
-namespace MkmApi
+namespace MkmApi.Entities
 {
     public class ProductInfo
     {
