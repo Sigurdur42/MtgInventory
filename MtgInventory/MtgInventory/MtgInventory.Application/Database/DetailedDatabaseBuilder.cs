@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using MkmApi.Entities;
 using MtgInventory.Service.Models;
+using ScryfallApiServices.Models;
 
 namespace MtgInventory.Service.Database
 {

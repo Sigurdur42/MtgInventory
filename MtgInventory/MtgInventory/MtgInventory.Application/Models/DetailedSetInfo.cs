@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using MkmApi.Entities;
 using MtgInventory.Service.Database;
+using ScryfallApiServices.Models;
 
 namespace MtgInventory.Service.Models
 {

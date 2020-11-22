@@ -10,6 +10,7 @@ using MkmApi.Entities;
 using MtgInventory.Service.Converter;
 using MtgInventory.Service.Models;
 using ScryfallApiServices;
+using ScryfallApiServices.Models;
 
 namespace MtgInventory.Service.Database
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using MkmApi.Entities;
+using ScryfallApiServices.Models;
 
 namespace MtgInventory.Service.Models
 {

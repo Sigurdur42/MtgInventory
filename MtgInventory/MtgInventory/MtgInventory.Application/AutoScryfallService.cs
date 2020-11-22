@@ -5,6 +5,7 @@ using MtgInventory.Service.Database;
 using MtgInventory.Service.Models;
 using MtgInventory.Service.Settings;
 using ScryfallApiServices;
+using ScryfallApiServices.Models;
 
 namespace MtgInventory.Service
 {

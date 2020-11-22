@@ -14,6 +14,7 @@ using MtgInventory.Service.Decks;
 using MtgInventory.Service.Models;
 using MtgInventory.Service.Settings;
 using ScryfallApiServices;
+using ScryfallApiServices.Models;
 using TaskQueue;
 
 namespace MtgInventory.Service

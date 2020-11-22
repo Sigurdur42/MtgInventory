@@ -2,7 +2,7 @@
 using System.Linq;
 using ScryfallApi.Client.Models;
 
-namespace MtgInventory.Service.Models
+namespace ScryfallApiServices.Models
 {
     public class ScryfallCard : Card
     {
