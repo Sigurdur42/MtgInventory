@@ -82,6 +82,11 @@ namespace ScryfallApiConsole
                 logger = serviceProvider.GetService<ILogger<Program>>();
 
                 logger.LogInformation("This is log message.");
+
+                // configure service
+                var service = serviceProvider.GetService<IScryfallService>();
+                var provider = serviceProvider.GetService<IConfigurationFolderProvider>();
+                service.Configure(provider.BaseFolder);
             }
             catch (Exception error)
             {

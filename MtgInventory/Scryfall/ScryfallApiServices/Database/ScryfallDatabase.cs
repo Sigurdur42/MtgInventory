@@ -38,6 +38,7 @@ namespace ScryfallApiServices.Database
             {
                 folder.Create();
             }
+
             _scryfallDatabase = new LiteDatabase(Path.Combine(folder.FullName, "ScryfallDatabase.db"));
             ScryfallCards = _scryfallDatabase.GetCollection<ScryfallCard>();
             ScryfallSets = _scryfallDatabase.GetCollection<ScryfallSet>();
@@ -53,12 +54,16 @@ namespace ScryfallApiServices.Database
 
         public void ClearScryfallCards()
         {
+            VerifyConfigured();
+
             _logger.LogDebug($"Cleaning existing card info...");
             ScryfallCards?.DeleteAll();
         }
         
         public void InsertScryfallCards(IEnumerable<ScryfallCard> cards)
         {
+            VerifyConfigured();
+
             // _// Logger.Information($"Inserting {cards.Count()} new scryfall cards...");
             ScryfallCards?.InsertBulk(cards);
 
@@ -68,6 +73,7 @@ namespace ScryfallApiServices.Database
 
         public void InsertScryfallSets(IEnumerable<ScryfallSet> sets)
         {
+            VerifyConfigured();
             // _// Logger.Information($"{nameof(InsertScryfallSets)}: Cleaning existing set info...");
             ScryfallSets?.DeleteAll();
             ScryfallSets?.InsertBulk(sets);

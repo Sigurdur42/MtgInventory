@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
+using ScryfallApiServices.Database;
 
 namespace ScryfallApiServices
 {
@@ -12,11 +13,14 @@ namespace ScryfallApiServices
     {
         private readonly ScryfallApiClient _apiClient;
         private readonly IScryfallApiCallStatistic _apiCallStatistic;
+        private readonly IScryfallDatabase _database;
         private readonly GoodCiticenAutoSleep _autoSleep = new GoodCiticenAutoSleep();
+        private readonly ILogger<ScryfallService> _logger;
 
         public ScryfallService(
             ILoggerFactory loggerFactory,
-            IScryfallApiCallStatistic scryfallApiCallStatistic)
+            IScryfallApiCallStatistic scryfallApiCallStatistic,
+            IScryfallDatabase database)
         {
             _apiClient = new ScryfallApiClient(new System.Net.Http.HttpClient()
             {
@@ -24,10 +28,19 @@ namespace ScryfallApiServices
             }, loggerFactory?.CreateLogger<ScryfallApiClient>(), null);
 
             _apiCallStatistic = scryfallApiCallStatistic;
+            _database = database;
+            _logger = loggerFactory.CreateLogger<ScryfallService>();
+        }
+
+        public void ShutDown()
+        {
+            _database.ShutDown();
         }
 
         public void Configure(DirectoryInfo folder)
         {
+            _logger.LogDebug($"Configuring service using '{folder.FullName}'");
+            _database.Configure(folder);
         }
 
         public IEnumerable<Set> RetrieveSets()
@@ -72,7 +85,7 @@ namespace ScryfallApiServices
                 var page = 1;
                 ResultList<Card> cards;
 
-                var searchOptions = new SearchOptions() {Mode = rollupMode, IncludeExtras = true, Direction = SearchOptions.SortDirection.Asc, Sort = SearchOptions.CardSort.Name};
+                var searchOptions = new SearchOptions() { Mode = rollupMode, IncludeExtras = true, Direction = SearchOptions.SortDirection.Asc, Sort = SearchOptions.CardSort.Name };
 
                 var result = new List<Card>();
                 do
@@ -101,7 +114,7 @@ namespace ScryfallApiServices
             }
             catch (Exception error)
             {
-                // Log.Error($"Cannot run search for {lookupPattern}: {error}");
+                _logger.LogError($"Cannot run search for {lookupPattern}: {error}");
                 return Array.Empty<Card>();
             }
         }

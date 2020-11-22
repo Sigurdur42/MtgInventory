@@ -10,6 +10,7 @@ namespace ScryfallApiServices
             serviceCollection.AddSingleton<IScryfallApiCallStatistic, ScryfallApiCallStatistic>();
             serviceCollection.AddSingleton<IScryfallDatabase, ScryfallDatabase>();
             serviceCollection.AddSingleton<IScryfallService, ScryfallService>();
+            serviceCollection.AddSingleton<IConfigurationFolderProvider, ConfigurationFolderProvider>();
 
             return serviceCollection;
         }
