@@ -176,7 +176,6 @@ namespace MtgInventory.Service
             var scryfallSets = _scryfallService.RetrieveSets()
                 .Where(s => !s.IsDigital)
                 .OrderByDescending(s => s.Name)
-                .Select(s => new ScryfallSet(s))
                 .ToArray();
 
             //_cardDatabase.InsertScryfallSets(scryfallSets);

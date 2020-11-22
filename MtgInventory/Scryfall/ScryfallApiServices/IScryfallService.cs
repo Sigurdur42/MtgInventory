@@ -1,20 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using ScryfallApi.Client.Models;
+using ScryfallApiServices.Models;
 
 namespace ScryfallApiServices
 {
     public interface IScryfallService
     {
-        IEnumerable<Set> RetrieveSets();
+        IEnumerable<ScryfallSet> RetrieveSets();
 
-        Card[] RetrieveCardsForSetCode(string setCode);
+        ScryfallCard[] RetrieveCardsForSetCode(string setCode);
 
-        Card[] RetrieveCardsByCardName(string cardName, SearchOptions.RollupMode rollupMode);
+        ScryfallCard[] RetrieveCardsByCardName(string cardName, SearchOptions.RollupMode rollupMode);
 
-        Card[] RetrieveCardsByCardNameAndSet(string cardName, string setCode, SearchOptions.RollupMode rollupMode);
+        ScryfallCard[] RetrieveCardsByCardNameAndSet(string cardName, string setCode, SearchOptions.RollupMode rollupMode);
 
         void Configure(DirectoryInfo folder);
+        
         void ShutDown();
+        void RefreshLocalMirror(bool cleanDatabase);
     }
 }

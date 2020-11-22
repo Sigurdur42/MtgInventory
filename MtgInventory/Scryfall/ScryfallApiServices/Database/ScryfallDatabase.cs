@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using ScryfallApiServices.Models;
@@ -13,9 +14,9 @@ namespace ScryfallApiServices.Database
         ILiteCollection<ScryfallSet>? ScryfallSets { get; }
         void Configure(DirectoryInfo folder);
         void ShutDown();
-        void ClearScryfallCards();
-        void InsertScryfallCards(IEnumerable<ScryfallCard> cards);
-        void InsertScryfallSets(IEnumerable<ScryfallSet> sets);
+        void ClearDatabase();
+        void InsertScryfallCards(ScryfallCard[] cards);
+        void InsertScryfallSets(ScryfallSet[] sets);
     }
 
     public class ScryfallDatabase : IScryfallDatabase
@@ -26,12 +27,12 @@ namespace ScryfallApiServices.Database
         public ScryfallDatabase(ILogger<ScryfallDatabase> logger)
         {
             _logger = logger;
-            
         }
+
+        public bool IsInitialized { get; private set; }
         public ILiteCollection<ScryfallCard>? ScryfallCards { get; private set; }
         public ILiteCollection<ScryfallSet>? ScryfallSets { get; private set; }
-        public bool IsInitialized { get; private set; }
-        
+
         public void Configure(DirectoryInfo folder)
         {
             if (!folder.Exists)
@@ -52,37 +53,64 @@ namespace ScryfallApiServices.Database
             _scryfallDatabase = null;
         }
 
-        public void ClearScryfallCards()
+        public void ClearDatabase()
         {
             VerifyConfigured();
 
-            _logger.LogDebug($"Cleaning existing card info...");
+            _logger.LogDebug("Cleaning existing card info...");
             ScryfallCards?.DeleteAll();
         }
-        
-        public void InsertScryfallCards(IEnumerable<ScryfallCard> cards)
+
+        public void InsertScryfallCards(ScryfallCard[] cards)
         {
             VerifyConfigured();
 
-            // _// Logger.Information($"Inserting {cards.Count()} new scryfall cards...");
-            ScryfallCards?.InsertBulk(cards);
+            _logger.LogTrace($"Inserting {cards.Count()} new scryfall cards...");
+            var cardsToInsert = new List<ScryfallCard>();
+            var cardsToUpdate = new List<ScryfallCard>();
+            foreach (var card in cards)
+            {
+                var found = ScryfallCards?.Query()?.Where(c => c.Id == card.Id)?.FirstOrDefault();
+                if (found == null)
+                {
+                    cardsToInsert.Add(card);
+                    continue;
+                }
+                
+                cardsToUpdate.Add(card);
+            }
+
+
+            if (cardsToInsert.Any())
+            {
+                ScryfallCards?.InsertBulk(cardsToInsert);
+            }
+            
+            if (cardsToUpdate.Any())
+            {
+                ScryfallCards?.Update(cardsToUpdate);
+            }
 
             ScryfallCards?.EnsureIndex(e => e.Set);
             ScryfallCards?.EnsureIndex(e => e.Name);
+            ScryfallCards?.EnsureIndex(e => e.UpdateDateUtc);
         }
 
-        public void InsertScryfallSets(IEnumerable<ScryfallSet> sets)
+        public void InsertScryfallSets(ScryfallSet[] sets)
         {
             VerifyConfigured();
-            // _// Logger.Information($"{nameof(InsertScryfallSets)}: Cleaning existing set info...");
+            _logger.LogInformation("Cleaning existing set info...");
             ScryfallSets?.DeleteAll();
+
+            _logger.LogInformation($"Inserting {sets.Count()} sets...");
             ScryfallSets?.InsertBulk(sets);
 
             ScryfallSets?.EnsureIndex(e => e.Code);
             ScryfallSets?.EnsureIndex(e => e.Name);
+            ScryfallSets?.EnsureIndex(e => e.UpdateDateUtc);
         }
-        
-        internal void VerifyConfigured()
+
+        private void VerifyConfigured()
         {
             if (!IsInitialized)
             {

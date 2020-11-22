@@ -1,20 +1,25 @@
 ﻿using Microsoft.Extensions.Logging;
+using ScryfallApiServices;
 
 namespace ScryfallApiConsole
 {
     public class ApiAction
     {
         private readonly ILogger<ApiAction> _logger;
+        private readonly IScryfallService _scryfallService;
 
 
-        public ApiAction(ILogger<ApiAction> logger)
+        public ApiAction(
+            ILogger<ApiAction> logger,
+            IScryfallService scryfallService)
         {
             _logger = logger;
+            _scryfallService = scryfallService;
         }
 
         public int RunAction(ApiOptions options)
         {
-            _logger.LogInformation($"inside my action");
+            _scryfallService.RefreshLocalMirror(options.Clear);
             return -1;
         }
     }
