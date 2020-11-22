@@ -1,4 +1,4 @@
-﻿namespace MtgInventory.Service.Models
+﻿namespace ScryfallApiServices.Models
 {
     public class ImageLinkUri
     {

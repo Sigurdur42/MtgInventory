@@ -179,7 +179,7 @@ namespace MtgInventory.Service
                 .Select(s => new ScryfallSet(s))
                 .ToArray();
 
-            _cardDatabase.InsertScryfallSets(scryfallSets);
+            //_cardDatabase.InsertScryfallSets(scryfallSets);
 
             _cardDatabase.UpdateScryfallStatistics(_scryfallApiCallStatistic);
 
@@ -245,7 +245,7 @@ namespace MtgInventory.Service
             }
 
             // Delete Scryfall cards for this set
-            _cardDatabase?.ScryfallCards?.DeleteMany(c => c.Set == set.SetCodeScryfall);
+            //_cardDatabase?.ScryfallCards?.DeleteMany(c => c.Set == set.SetCodeScryfall);
 
             // Download new cards
             var cards = _scryfallService.RetrieveCardsForSetCode(set.SetCodeScryfall)
@@ -258,7 +258,7 @@ namespace MtgInventory.Service
                 return;
             }
 
-            _cardDatabase.InsertScryfallCards(cards);
+           // _cardDatabase.InsertScryfallCards(cards);
 
             var prices = cards.Select(c => new CardPrice(c));
             _cardDatabase?.CardPrices?.InsertBulk(prices);

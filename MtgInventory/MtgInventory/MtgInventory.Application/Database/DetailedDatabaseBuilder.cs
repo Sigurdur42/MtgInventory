@@ -78,35 +78,35 @@ namespace MtgInventory.Service.Database
             var setsToUpdate = new List<DetailedSetInfo>();
 
             // Log.Debug("Rebuilding Scryfall Set data...");
-            foreach (var scryfall in _database.ScryfallSets.FindAll())
-            {
-                if (scryfall.Code == null)
-                {
-                    continue;
-                }
-
-                var scryfallKey = scryfall.Code?.ToUpperInvariant() ?? "";
-                var key = _referenceService.GetMkmSetCode(scryfallKey);
-                if (string.IsNullOrEmpty(key))
-                {
-                    key = scryfallKey;
-                }
-                if (!indexedSets.TryGetValue(key, out var found))
-                {
-                    found = new DetailedSetInfo();
-                    indexedSets.Add(key, found);
-                    setsToInsert.Add(found);
-                }
-                else
-                {
-                    setsToUpdate.Add(found);
-                }
-
-                found.UpdateFromScryfall(key, scryfall);
-                found.IsKnownScryfallOnlySet = _referenceService.IsScryfallOnly(scryfallKey);
-
-                UpdateSetMigrationStatus(found);
-            }
+            // foreach (var scryfall in _database.ScryfallSets.FindAll())
+            // {
+            //     if (scryfall.Code == null)
+            //     {
+            //         continue;
+            //     }
+            //
+            //     var scryfallKey = scryfall.Code?.ToUpperInvariant() ?? "";
+            //     var key = _referenceService.GetMkmSetCode(scryfallKey);
+            //     if (string.IsNullOrEmpty(key))
+            //     {
+            //         key = scryfallKey;
+            //     }
+            //     if (!indexedSets.TryGetValue(key, out var found))
+            //     {
+            //         found = new DetailedSetInfo();
+            //         indexedSets.Add(key, found);
+            //         setsToInsert.Add(found);
+            //     }
+            //     else
+            //     {
+            //         setsToUpdate.Add(found);
+            //     }
+            //
+            //     found.UpdateFromScryfall(key, scryfall);
+            //     found.IsKnownScryfallOnlySet = _referenceService.IsScryfallOnly(scryfallKey);
+            //
+            //     UpdateSetMigrationStatus(found);
+            // }
 
             if (setsToInsert.Any())
             {
@@ -269,115 +269,115 @@ namespace MtgInventory.Service.Database
                                         ?.GroupBy(c => NormalizeName(c.NameEn))
                                         ?.ToDictionary(c => c.Key) ?? new Dictionary<string, IGrouping<string, DetailedMagicCard>>();
 
-            var allScryfallCards = _database.ScryfallCards
-                                            .Query()
-                                            .Where(c => c.Set == scryfallSetId)
-                                            .OrderBy(c => c.CollectorNumber)
-                                            .ToArray()
-                                            .GroupBy(c => NormalizeName(c.Name))
-                                            .ToArray();
+            // var allScryfallCards = _database.ScryfallCards
+            //                                 .Query()
+            //                                 .Where(c => c.Set == scryfallSetId)
+            //                                 .OrderBy(c => c.CollectorNumber)
+            //                                 .ToArray()
+            //                                 .GroupBy(c => NormalizeName(c.Name))
+            //                                 .ToArray();
 
             var cardsToInsert = new List<DetailedMagicCard>();
             var cardsToUpdate = new List<DetailedMagicCard>();
 
-            foreach (var scryfallPerSet in allScryfallCards)
-            {
-                var key = scryfallPerSet.Key;
-                var remainingCardsOfSet = ResolveSpecialScryfallCard(
-                        scryfallPerSet,
-                        cardsToUpdate,
-                        cardsToInsert,
-                        lastSet)
-                    .ToArray();
-
-                if (!remainingCardsOfSet.Any())
-                {
-                    // All cards are already processed
-                    continue;
-                }
-
-                if (indexedCards.TryGetValue(key, out var indexed))
-                {
-                    // Found this group - update all cards
-                    if (indexed.Count() == remainingCardsOfSet.Count())
-                    {
-                        // Easy path - card count matches. Simply update all
-                        var i = 0;
-                        foreach (var card in indexed.OrderBy(c => c.CollectorNumber))
-                        {
-                            card.UpdateFromScryfall(remainingCardsOfSet.ElementAt(i), lastSet);
-                            i++;
-                            cardsToUpdate.Add(card);
-                        }
-                    }
-                    else
-                    {
-                        // Something is off here - card count mismatch
-                        // TODO: Handle this specificly
-                        var debugData = string.Join(
-                            Environment.NewLine,
-                            remainingCardsOfSet.Select(s => $"'Id: {s.Id}' CollectorNr: '{s.CollectorNumber}' Set: '{s.Set}' Name: '{s.Name}'"));
-
-                        var debugDataMkm = string.Join(
-                            Environment.NewLine,
-                            indexed.Select(s => $"MKM id: {s.MkmId}"));
-
-                        _logger.LogDebug($"Scryfall different card count {key}_{scryfallSetId}: Scryfall: {remainingCardsOfSet.Count()}, internal: {indexed.Count()}...{Environment.NewLine}{debugData}{Environment.NewLine}{debugDataMkm}");
-                        var max = Math.Min(indexed.Count(), remainingCardsOfSet.Count());
-                        var ordered = indexed.OrderBy(c => c.CollectorNumber).ToArray();
-                        for (var index = 0; index < max; ++index)
-                        {
-                            var card = ordered.ElementAt(index);
-                            card.UpdateFromScryfall(remainingCardsOfSet.ElementAt(index), lastSet);
-                            cardsToUpdate.Add(card);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var remainingCard in remainingCardsOfSet)
-                    {
-                        // This could be a double faced card. Scryfall has them only with
-                        // the front half registered
-                        var found = indexedCards
-                            .Where(c => c.Key.StartsWith(remainingCard.Name, StringComparison.InvariantCultureIgnoreCase) && c.Key.Contains("/", StringComparison.InvariantCultureIgnoreCase))
-                            .ToArray();
-
-                        var haveAdded = false;
-                        if (found.Any())
-                        {
-                            if (found.Length != 1)
-                            {
-                                // TODO: What do we do here?
-                                _logger.LogWarning($"Unexpected card count found for card {remainingCard.Set} - {remainingCard.Name}: {found.Length}");
-                            }
-
-                            var firstCard = found.First().Value;
-                            if (firstCard.Count() != 1)
-                            {
-                                // TODO: What do we do here?
-                                _logger.LogWarning($"Unexpected card count found for card {remainingCard.Set} - {remainingCard.Name}: {firstCard.Count()}");
-                            }
-                            else
-                            {
-                                var card = firstCard.First();
-                                card.UpdateFromScryfall(remainingCard, lastSet);
-                                cardsToUpdate.Add(card);
-
-                                haveAdded = true;
-                            }
-                        }
-
-                        if (!haveAdded)
-                        {
-                            // The card does not exist - add it
-                            var card = new DetailedMagicCard();
-                            card.UpdateFromScryfall(remainingCard, lastSet);
-                            cardsToInsert.Add(card);
-                        }
-                    }
-                }
-            }
+            // foreach (var scryfallPerSet in allScryfallCards)
+            // {
+            //     var key = scryfallPerSet.Key;
+            //     var remainingCardsOfSet = ResolveSpecialScryfallCard(
+            //             scryfallPerSet,
+            //             cardsToUpdate,
+            //             cardsToInsert,
+            //             lastSet)
+            //         .ToArray();
+            //
+            //     if (!remainingCardsOfSet.Any())
+            //     {
+            //         // All cards are already processed
+            //         continue;
+            //     }
+            //
+            //     if (indexedCards.TryGetValue(key, out var indexed))
+            //     {
+            //         // Found this group - update all cards
+            //         if (indexed.Count() == remainingCardsOfSet.Count())
+            //         {
+            //             // Easy path - card count matches. Simply update all
+            //             var i = 0;
+            //             foreach (var card in indexed.OrderBy(c => c.CollectorNumber))
+            //             {
+            //                 card.UpdateFromScryfall(remainingCardsOfSet.ElementAt(i), lastSet);
+            //                 i++;
+            //                 cardsToUpdate.Add(card);
+            //             }
+            //         }
+            //         else
+            //         {
+            //             // Something is off here - card count mismatch
+            //             // TODO: Handle this specificly
+            //             var debugData = string.Join(
+            //                 Environment.NewLine,
+            //                 remainingCardsOfSet.Select(s => $"'Id: {s.Id}' CollectorNr: '{s.CollectorNumber}' Set: '{s.Set}' Name: '{s.Name}'"));
+            //
+            //             var debugDataMkm = string.Join(
+            //                 Environment.NewLine,
+            //                 indexed.Select(s => $"MKM id: {s.MkmId}"));
+            //
+            //             _logger.LogDebug($"Scryfall different card count {key}_{scryfallSetId}: Scryfall: {remainingCardsOfSet.Count()}, internal: {indexed.Count()}...{Environment.NewLine}{debugData}{Environment.NewLine}{debugDataMkm}");
+            //             var max = Math.Min(indexed.Count(), remainingCardsOfSet.Count());
+            //             var ordered = indexed.OrderBy(c => c.CollectorNumber).ToArray();
+            //             for (var index = 0; index < max; ++index)
+            //             {
+            //                 var card = ordered.ElementAt(index);
+            //                 card.UpdateFromScryfall(remainingCardsOfSet.ElementAt(index), lastSet);
+            //                 cardsToUpdate.Add(card);
+            //             }
+            //         }
+            //     }
+            //     else
+            //     {
+            //         foreach (var remainingCard in remainingCardsOfSet)
+            //         {
+            //             // This could be a double faced card. Scryfall has them only with
+            //             // the front half registered
+            //             var found = indexedCards
+            //                 .Where(c => c.Key.StartsWith(remainingCard.Name, StringComparison.InvariantCultureIgnoreCase) && c.Key.Contains("/", StringComparison.InvariantCultureIgnoreCase))
+            //                 .ToArray();
+            //
+            //             var haveAdded = false;
+            //             if (found.Any())
+            //             {
+            //                 if (found.Length != 1)
+            //                 {
+            //                     // TODO: What do we do here?
+            //                     _logger.LogWarning($"Unexpected card count found for card {remainingCard.Set} - {remainingCard.Name}: {found.Length}");
+            //                 }
+            //
+            //                 var firstCard = found.First().Value;
+            //                 if (firstCard.Count() != 1)
+            //                 {
+            //                     // TODO: What do we do here?
+            //                     _logger.LogWarning($"Unexpected card count found for card {remainingCard.Set} - {remainingCard.Name}: {firstCard.Count()}");
+            //                 }
+            //                 else
+            //                 {
+            //                     var card = firstCard.First();
+            //                     card.UpdateFromScryfall(remainingCard, lastSet);
+            //                     cardsToUpdate.Add(card);
+            //
+            //                     haveAdded = true;
+            //                 }
+            //             }
+            //
+            //             if (!haveAdded)
+            //             {
+            //                 // The card does not exist - add it
+            //                 var card = new DetailedMagicCard();
+            //                 card.UpdateFromScryfall(remainingCard, lastSet);
+            //                 cardsToInsert.Add(card);
+            //             }
+            //         }
+            //     }
+            // }
 
             _database.MagicCards.InsertBulk(cardsToInsert);
             _database.MagicCards.Update(cardsToUpdate);

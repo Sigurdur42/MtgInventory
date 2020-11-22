@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using ScryfallApi.Client;
@@ -23,6 +24,10 @@ namespace ScryfallApiServices
             }, loggerFactory?.CreateLogger<ScryfallApiClient>(), null);
 
             _apiCallStatistic = scryfallApiCallStatistic;
+        }
+
+        public void Configure(DirectoryInfo folder)
+        {
         }
 
         public IEnumerable<Set> RetrieveSets()

@@ -60,7 +60,7 @@ namespace MtgInventory.Service
 
                 if (result.Any())
                 {
-                    _cardDatabase.CardPrices.Insert(result);
+                    _cardDatabase.CardPrices?.Insert(result);
                     _cardDatabase.EnsureCardPriceIndex();
                 }
 

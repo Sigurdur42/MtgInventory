@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ScryfallApiServices.Database;
 
 namespace ScryfallApiServices
 {
@@ -7,6 +8,7 @@ namespace ScryfallApiServices
         public static IServiceCollection AddScryfallApi(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IScryfallApiCallStatistic, ScryfallApiCallStatistic>();
+            serviceCollection.AddSingleton<IScryfallDatabase, ScryfallDatabase>();
             serviceCollection.AddSingleton<IScryfallService, ScryfallService>();
 
             return serviceCollection;

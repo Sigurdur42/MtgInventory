@@ -22,7 +22,7 @@ namespace MtgInventory.Service.Database
         private DetailedDatabaseBuilder? _detailedDatabaseBuilder;
         private LiteDatabase? _mkmDatabase;
         private LiteDatabase? _priceDatabase;
-        private LiteDatabase? _scryfallDatabase;
+        
         public ILiteCollection<CardPrice>? CardPrices { get; private set; }
         public bool IsInitialized { get; private set; }
 
@@ -33,8 +33,7 @@ namespace MtgInventory.Service.Database
         public ILiteCollection<Expansion>? MkmExpansion { get; private set; }
         public ILiteCollection<MkmProductInfo>? MkmProductInfo { get; private set; }
         public ILiteCollection<ScryfallApiCallStatistic>? ScryfallApiCallStatistics { get; private set; }
-        public ILiteCollection<ScryfallCard>? ScryfallCards { get; private set; }
-        public ILiteCollection<ScryfallSet>? ScryfallSets { get; private set; }
+   
 
         public CardDatabase(ILoggerFactory loggerFactory)
         {
@@ -48,11 +47,7 @@ namespace MtgInventory.Service.Database
             MagicCards?.DeleteAll();
         }
 
-        public void ClearScryfallCards()
-        {
-            _logger.LogInformation($"{nameof(ClearScryfallCards)}: Cleaning existing card info...");
-            ScryfallCards?.DeleteAll();
-        }
+       
 
         public void Dispose()
         {
@@ -112,8 +107,7 @@ namespace MtgInventory.Service.Database
             folder.EnsureExists();
             var databaseFile = Path.Combine(folder.FullName, "CardDatabase.db");
             _cardDatabase = new LiteDatabase(databaseFile);
-
-            _scryfallDatabase = new LiteDatabase(Path.Combine(folder.FullName, "ScryfallDatabase.db"));
+            
             _mkmDatabase = new LiteDatabase(Path.Combine(folder.FullName, "MkmDatabase.db"));
             _priceDatabase = new LiteDatabase(Path.Combine(folder.FullName, "PriceDatabase.db"));
 
@@ -124,8 +118,7 @@ namespace MtgInventory.Service.Database
             MkmAdditionalInfo = _mkmDatabase.GetCollection<MkmAdditionalCardInfo>();
             CardPrices = _priceDatabase.GetCollection<CardPrice>();
 
-            ScryfallCards = _scryfallDatabase.GetCollection<ScryfallCard>();
-            ScryfallSets = _scryfallDatabase.GetCollection<ScryfallSet>();
+
 
             MagicSets = _cardDatabase.GetCollection<DetailedSetInfo>();
             MagicCards = _cardDatabase.GetCollection<DetailedMagicCard>();
@@ -181,24 +174,7 @@ namespace MtgInventory.Service.Database
             BulkInsertProductInfo(temp);
         }
 
-        public void InsertScryfallCards(IEnumerable<ScryfallCard> cards)
-        {
-            // _// Logger.Information($"Inserting {cards.Count()} new scryfall cards...");
-            ScryfallCards?.InsertBulk(cards);
-
-            ScryfallCards?.EnsureIndex(e => e.Set);
-            ScryfallCards?.EnsureIndex(e => e.Name);
-        }
-
-        public void InsertScryfallSets(IEnumerable<ScryfallSet> sets)
-        {
-            // _// Logger.Information($"{nameof(InsertScryfallSets)}: Cleaning existing set info...");
-            ScryfallSets?.DeleteAll();
-            ScryfallSets?.InsertBulk(sets);
-
-            ScryfallSets?.EnsureIndex(e => e.Code);
-            ScryfallSets?.EnsureIndex(e => e.Name);
-        }
+      
 
         public void RebuildDetailedDatabase()
         {
@@ -213,8 +189,7 @@ namespace MtgInventory.Service.Database
             IsInitialized = false;
             _cardDatabase?.Dispose();
             _cardDatabase = null;
-            _scryfallDatabase?.Dispose();
-            _scryfallDatabase = null;
+
             _mkmDatabase?.Dispose();
             _mkmDatabase = null;
             _priceDatabase?.Dispose();
@@ -337,7 +312,7 @@ namespace MtgInventory.Service.Database
         internal void RebuildDetailedCardData()
         {
             _cardDatabase?.Pragma("CHECKPOINT", 10000);
-            _scryfallDatabase?.Pragma("CHECKPOINT", 10000);
+          ////  _scryfallDatabase?.Pragma("CHECKPOINT", 10000);
             _mkmDatabase?.Pragma("CHECKPOINT", 10000);
 
             try
@@ -351,18 +326,18 @@ namespace MtgInventory.Service.Database
                     _detailedDatabaseBuilder?.RebuildMkmCardsForSet(mkm.Abbreviation);
                 }
 
-                _logger.LogDebug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall card data...");
-                foreach (var scryfall in ScryfallSets?.FindAll()?.OrderBy(c => c.Code)?.ToArray() ?? new ScryfallSet[0])
-                {
-                    _detailedDatabaseBuilder?.RebuildScryfallCardsForSet(scryfall.Code);
-                }
+                // _logger.LogDebug($"{nameof(RebuildDetailedDatabase)} - rebuilding Scryfall card data...");
+                // foreach (var scryfall in ScryfallSets?.FindAll()?.OrderBy(c => c.Code)?.ToArray() ?? new ScryfallSet[0])
+                // {
+                //     _detailedDatabaseBuilder?.RebuildScryfallCardsForSet(scryfall.Code);
+                // }
 
                 _logger.LogDebug($"{nameof(RebuildDetailedDatabase)} - Done rebuilding Scryfall card data...");
             }
             finally
             {
                 _cardDatabase?.Pragma("CHECKPOINT", 1000);
-                _scryfallDatabase?.Pragma("CHECKPOINT", 1000);
+              ////  _scryfallDatabase?.Pragma("CHECKPOINT", 1000);
                 _mkmDatabase?.Pragma("CHECKPOINT", 1000);
             }
         }

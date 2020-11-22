@@ -171,21 +171,21 @@ namespace MtgInventory.Service
 
         public void DownloadScryfallCardData()
         {
-            _cardDatabase.ClearScryfallCards();
-            var scryfallSets = _cardDatabase.ScryfallSets.FindAll().ToArray();
-            var remainingSets = scryfallSets.Length;
-            foreach (var set in scryfallSets)
-            {
-                _logger.LogDebug($"{nameof(DownloadAllProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
-                var cards = _scryfallService.RetrieveCardsForSetCode(set.Code).Select(c => new ScryfallCard(c)).ToArray();
-                _cardDatabase.InsertScryfallCards(cards);
-                remainingSets--;
-                // Insert prices from Scryfall
-                var prices = cards.Select(c => new CardPrice(c));
-                _cardDatabase.CardPrices.InsertBulk(prices);
-            }
-            _cardDatabase.EnsureCardPriceIndex();
-            _logger.LogDebug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
+            // _cardDatabase.ClearScryfallCards();
+            // var scryfallSets = _cardDatabase.ScryfallSets.FindAll().ToArray();
+            // var remainingSets = scryfallSets.Length;
+            // foreach (var set in scryfallSets)
+            // {
+            //     _logger.LogDebug($"{nameof(DownloadAllProducts)}: Loading Scryfall cards for set {set.Code} ({remainingSets} remaining)...");
+            //     var cards = _scryfallService.RetrieveCardsForSetCode(set.Code).Select(c => new ScryfallCard(c)).ToArray();
+            //     _cardDatabase.InsertScryfallCards(cards);
+            //     remainingSets--;
+            //     // Insert prices from Scryfall
+            //     var prices = cards.Select(c => new CardPrice(c));
+            //     _cardDatabase.CardPrices.InsertBulk(prices);
+            // }
+            // _cardDatabase.EnsureCardPriceIndex();
+            // _logger.LogDebug($"{nameof(DownloadAllProducts)}: Done loading Scryfall cards ...");
         }
 
         public ScryfallSet[] DownloadScryfallSetsData()
@@ -725,7 +725,7 @@ namespace MtgInventory.Service
         private void UpdateProductSummary()
         {
             MkmProductsSummary = $"{_cardDatabase.MkmProductInfo.Count()} products in {_cardDatabase.MkmExpansion.Count()} sets";
-            ScryfallProductsSummary = $"{_cardDatabase.ScryfallCards.Count()} cards in {_cardDatabase.ScryfallSets.Count()} sets";
+           // ScryfallProductsSummary = $"{_cardDatabase.ScryfallCards.Count()} cards in {_cardDatabase.ScryfallSets.Count()} sets";
             InternalProductsSummary = $"{_cardDatabase.MagicCards.Count()} cards";
         }
     }
