@@ -39,6 +39,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskQueue.Tests", "LimitedT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScryfallApiConsole", "Scryfall\ScryfallApiConsole\ScryfallApiConsole.csproj", "{888CC4B7-73C8-49FF-B755-2F822AFCF067}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgDatabase", "MtgDatabase\MtgDatabase.csproj", "{3544A87F-D9FB-47D1-AA76-4BAA161E3B8C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MtgDatabase", "MtgDatabase", "{1D3E02CF-ACCD-461D-8CCD-F806DA7A0906}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +97,10 @@ Global
 		{888CC4B7-73C8-49FF-B755-2F822AFCF067}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{888CC4B7-73C8-49FF-B755-2F822AFCF067}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{888CC4B7-73C8-49FF-B755-2F822AFCF067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3544A87F-D9FB-47D1-AA76-4BAA161E3B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3544A87F-D9FB-47D1-AA76-4BAA161E3B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3544A87F-D9FB-47D1-AA76-4BAA161E3B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3544A87F-D9FB-47D1-AA76-4BAA161E3B8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +114,7 @@ Global
 		{15767726-9723-4D24-AABF-0EF50DB23F91} = {839E9949-517B-445D-9BDD-20B40402E7CE}
 		{EF6306EE-8409-46FB-9576-9439C8B42AE7} = {839E9949-517B-445D-9BDD-20B40402E7CE}
 		{888CC4B7-73C8-49FF-B755-2F822AFCF067} = {72B7C620-1C36-4F32-9738-A5877109BE49}
+		{3544A87F-D9FB-47D1-AA76-4BAA161E3B8C} = {1D3E02CF-ACCD-461D-8CCD-F806DA7A0906}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {54E19809-5A03-4D4E-8C34-EF5F9BBFF040}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using LiteDB;
 using Microsoft.Extensions.Logging;
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
@@ -215,5 +216,9 @@ namespace ScryfallApiServices
             _apiCallStatistic.ScryfallCountToday += 1;
             _apiCallStatistic.ScryfallCountTotal += 1;
         }
+
+        public ILiteCollection<ScryfallCard>? ScryfallCards => _database.ScryfallCards;
+
+        public ILiteCollection<ScryfallSet>? ScryfallSets => _database.ScryfallSets;
     }
 }

@@ -2,11 +2,12 @@
 using System.IO;
 using System.Threading.Tasks;
 using ScryfallApi.Client.Models;
+using ScryfallApiServices.Database;
 using ScryfallApiServices.Models;
 
 namespace ScryfallApiServices
 {
-    public interface IScryfallService
+    public interface IScryfallService : IScryfallData
     {
         IEnumerable<ScryfallSet> RetrieveSets();
 

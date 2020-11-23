@@ -8,10 +8,14 @@ using ScryfallApiServices.Models;
 
 namespace ScryfallApiServices.Database
 {
-    public interface IScryfallDatabase
+    public interface IScryfallData
     {
         ILiteCollection<ScryfallCard>? ScryfallCards { get; }
         ILiteCollection<ScryfallSet>? ScryfallSets { get; }
+    }
+
+    public interface IScryfallDatabase : IScryfallData
+    {
         void Configure(DirectoryInfo folder);
         void ShutDown();
         void ClearDatabase();
