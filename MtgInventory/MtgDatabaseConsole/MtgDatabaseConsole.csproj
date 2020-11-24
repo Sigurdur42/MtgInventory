@@ -3,6 +3,10 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <AssemblyName>MtgDatabaseConsole</AssemblyName>
+        <RootNamespace>MtgDatabaseConsole</RootNamespace>
+        <Company>MtgDatabaseConsole</Company>
+        <Product>MtgDatabaseConsole</Product>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,7 +27,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ScryfallApiServices\ScryfallApiServices.csproj" />
+      <ProjectReference Include="..\MtgDatabase\MtgDatabase.csproj" />
+      <ProjectReference Include="..\Scryfall\ScryfallApiServices\ScryfallApiServices.csproj" />
     </ItemGroup>
 
 </Project>

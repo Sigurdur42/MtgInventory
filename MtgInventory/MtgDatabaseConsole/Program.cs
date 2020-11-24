@@ -4,6 +4,7 @@ using CommandLine;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MtgDatabase;
 using ScryfallApiServices;
 
 namespace ScryfallApiConsole
@@ -71,7 +72,7 @@ namespace ScryfallApiConsole
                 // Add other DI
 
                 serviceCollection
-                    .AddScryfallApi()
+                    .AddMtgDatabase()
                     .AddSingleton<ApiAction>();
 
                 serviceProvider = serviceCollection.BuildServiceProvider();
@@ -84,7 +85,7 @@ namespace ScryfallApiConsole
                 logger.LogInformation("This is log message.");
 
                 // configure service
-                var service = serviceProvider.GetService<IScryfallService>();
+                var service = serviceProvider.GetService<IMtgDatabaseService>();
                 var provider = serviceProvider.GetService<IConfigurationFolderProvider>();
                 service.Configure(provider.BaseFolder);
             }
