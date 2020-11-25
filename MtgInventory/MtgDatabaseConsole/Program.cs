@@ -18,7 +18,7 @@ namespace ScryfallApiConsole
             try
             {
                 var serviceProvider = InitializeDI();
-                logger = serviceProvider.GetService<ILogger>();
+                logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<Program>();
                 new Parser(with =>
                     {
                         with.CaseInsensitiveEnumValues = true;

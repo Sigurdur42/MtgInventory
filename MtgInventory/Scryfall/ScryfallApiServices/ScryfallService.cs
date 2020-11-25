@@ -51,12 +51,21 @@ namespace ScryfallApiServices
                 _database.ClearDatabase();
             }
 
-            DownloadSetData();
+            DownloadSetData(false);
             DownloadCardsForAllSets();
         }
 
         private void DownloadCardsForAllSets()
         {
+            // TODO: Make the cache time configurable
+            var updateDate = GetOldestCardByUpdateDate() ?? DateTime.MinValue;
+            var download = DateTime.Now.Date.AddDays(-28) > updateDate;
+            if (!download)
+            {
+                _logger.LogTrace($"All cards are up to date - skipping download");
+                return;
+            }
+            
             var stopwatch = Stopwatch.StartNew();
             var allSets = _database.ScryfallSets?.FindAll()?.ToArray() ?? Array.Empty<ScryfallSet>();
             foreach (var scryfallSet in allSets)
@@ -78,6 +87,25 @@ namespace ScryfallApiServices
 
             return found?.UpdateDateUtc;
         }
+        
+        private DateTime? GetOldestCardByUpdateDate()
+        {
+            var found = _database.ScryfallCards
+                ?.Query()
+                ?.OrderBy(c => c.UpdateDateUtc)
+                ?.FirstOrDefault();
+
+            return found?.UpdateDateUtc;
+        }
+
+        private DateTime? GetOldestSetByUpdateDate()
+        {
+            var found = _database.ScryfallSets
+                ?.Query()
+                ?.OrderBy(c => c.UpdateDateUtc)
+                ?.FirstOrDefault();
+            return found?.UpdateDateUtc;
+        } 
         
         private void DownloadCardsForSet(ScryfallSet set)
         {
@@ -110,16 +138,29 @@ namespace ScryfallApiServices
                 _logger.LogInformation($"Download for set {set.Name} took {stopwatch.Elapsed}");
             }
         }
-        private void DownloadSetData()
+        private void DownloadSetData(bool forceRetrieve)
         {
-            var stopwatch = Stopwatch.StartNew();
-            var scryfallSets = RetrieveSets()
-                .OrderByDescending(s => s.Name)
-                .ToArray();
+            if (!forceRetrieve)
+            {
+                var updateDate = GetOldestSetByUpdateDate() ?? DateTime.MinValue;
+                forceRetrieve = DateTime.Now.Date.AddDays(-7) > updateDate;
+            }
 
-            _database.InsertScryfallSets(scryfallSets);
-            stopwatch.Stop();
-            _logger.LogInformation($"Download {scryfallSets.Length} took {stopwatch.Elapsed}");
+            if (forceRetrieve)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                var scryfallSets = RetrieveSets()
+                    .OrderByDescending(s => s.Name)
+                    .ToArray();
+
+                _database.InsertScryfallSets(scryfallSets);
+                stopwatch.Stop();
+                _logger.LogInformation($"Download {scryfallSets.Length} took {stopwatch.Elapsed}");
+            }
+            else
+            {
+                _logger?.LogTrace($"Sets are not yet outdated - skipping download");
+            }
         }
 
         public void Configure(DirectoryInfo folder)
