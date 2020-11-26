@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ScryfallApiServices.Models;
 
@@ -10,16 +11,36 @@ namespace MtgDatabase.Models
         {
             var allCards = cards.ToArray();
             var card = allCards.First();
-            
+
+            var legalities = CalculateLegalities(allCards);
+            var reprintInfos = CalculateReprints(allCards);
             var result = new QueryableMagicCard()
             {
                 Name = card.Name,
                 TypeLine = card.TypeLine,
-                ReprintInfos = CalculateReprints(allCards),
-                Legalities = CalculateLegalities(allCards),
+                ReprintInfos = reprintInfos,
+                Legalities = legalities,
+                
+                IsBasicLand = reprintInfos.Any(r=>r.Rarity == Rarity.BasicLand),
             };
 
+            UpdateFromTypeLine(result, card.TypeLine);
             return result;
+        }
+
+        public void UpdateFromTypeLine(QueryableMagicCard card, string typeLine)
+        {
+            card.IsCreature = typeLine.Contains("creature", StringComparison.InvariantCultureIgnoreCase);
+            card.IsInstant = typeLine.Contains("instant", StringComparison.InvariantCultureIgnoreCase);
+            card.IsSorcery = typeLine.Contains("sorcery", StringComparison.InvariantCultureIgnoreCase);
+            card.IsArtefact = typeLine.Contains("artefact", StringComparison.InvariantCultureIgnoreCase);
+            card.IsLand = typeLine.Contains("land", StringComparison.InvariantCultureIgnoreCase);
+            card.IsToken = typeLine.EndsWith("token", StringComparison.InvariantCultureIgnoreCase);
+            card.IsEmblem = typeLine.EndsWith("emblem", StringComparison.InvariantCultureIgnoreCase);
+            card.IsEnchantment = typeLine.Contains("enchantment", StringComparison.InvariantCultureIgnoreCase);
+            card.IsLegendary = typeLine.Contains("legendary", StringComparison.InvariantCultureIgnoreCase);
+            // ReSharper disable once StringLiteralTypo
+            card.IsPlaneswalker = typeLine.Contains("planeswalker", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public ReprintInfo[] CalculateReprints(ScryfallCard[] cards)

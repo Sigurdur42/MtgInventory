@@ -51,6 +51,14 @@ namespace MtgDatabase
             _logger.LogTrace($"Found {groupedByName.Length} distinct cards in {stopwatch.Elapsed}");
             stopwatch.Restart();
 
+            // TEST ONLY
+            var groupedTypelines = allCards
+                .GroupBy(c => c.TypeLine)
+                .OrderBy(c=>c.Key)
+                .Select(c=>c.Key)
+                .ToArray();
+            var dummy = string.Join(Environment.NewLine, groupedTypelines);
+            File.WriteAllText(@"C:\temp\typelines.txt", dummy);
             var cardFactory = new QueryableMagicCardFactory();
             var cardsToInsert = new List<QueryableMagicCard>();
             foreach (var group in groupedByName)
