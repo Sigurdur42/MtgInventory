@@ -11,16 +11,39 @@ namespace MtgDatabase.Models
             var allCards = cards.ToArray();
             var card = allCards.First();
             
-            // TODO: Reprints here
-            // TODO: Legalities here
-            
             var result = new QueryableMagicCard()
             {
                 Name = card.Name,
+                ReprintInfos = CalculateReprints(allCards),
+                Legalities = CalculateLegalities(allCards),
             };
 
             return result;
         }
-        
+
+        public ReprintInfo[] CalculateReprints(ScryfallCard[] cards)
+        {
+            return cards.Select(c => new ReprintInfo()
+            {
+                Rarity = c.Rarity.ToRarity(),
+                SetCode = c.Set,
+                CollectorNumber = c.CollectorNumber,
+            }).ToArray();
+        }
+
+        public Legality[] CalculateLegalities(ScryfallCard[] cards)
+        {
+            var legalities = cards
+                .SelectMany(c => c.Legalities)
+                .OrderBy(l=>l.Key)
+                .ToArray();
+            
+            return legalities.Select(c => new Legality()
+                {
+                    Format = c.Key.ToSanctionedFormat(),
+                    IsLegal = c.Value.ToLegalityState(),
+                })
+                .ToArray();
+        }
     }
 }

@@ -1,8 +1,12 @@
-﻿namespace MtgDatabase.Models
+﻿using System;
+
+namespace MtgDatabase.Models
 {
     public class Legality
     {
         public SanctionedFormat Format { get; set; } = SanctionedFormat.Unknown;
-        public bool IsLegal { get; set; } = false;
+        public LegalityState IsLegal { get; set; } = LegalityState.Unknown;
     }
+
+   
 }
