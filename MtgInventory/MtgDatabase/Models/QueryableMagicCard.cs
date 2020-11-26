@@ -8,6 +8,7 @@ namespace MtgDatabase.Models
         public Guid Id { get; set; } = Guid.NewGuid();
 
         public string Name { get; set; } = "";
+        public string TypeLine { get; set; } = "";
 
         public ReprintInfo[] ReprintInfos { get; set; } = Array.Empty<ReprintInfo>();
 

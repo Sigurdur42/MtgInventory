@@ -15,8 +15,13 @@ namespace MtgDatabase.Models
     
     public static class RarityConverter
     {
-        public static Rarity ToRarity(this string value)
+        public static Rarity ToRarity(this string value, string? argTypeLine)
         {
+            if (argTypeLine?.Contains("Basic Land", StringComparison.InvariantCultureIgnoreCase) ?? false)
+            {
+                return Rarity.BasicLand;
+            }
+            
             return value?.ToUpperInvariant() switch
             {
                 "COMMON" => Rarity.Common,

@@ -43,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MtgDatabase", "MtgDatabase"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgDatabaseConsole", "MtgDatabaseConsole\MtgDatabaseConsole.csproj", "{34974CD2-C610-4D50-B7CF-94AE05B311B9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgDatabase.Tests", "MtgDatabase.Tests\MtgDatabase.Tests.csproj", "{7795893E-7F1C-4349-AF9E-F509456C1B5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,10 @@ Global
 		{34974CD2-C610-4D50-B7CF-94AE05B311B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34974CD2-C610-4D50-B7CF-94AE05B311B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34974CD2-C610-4D50-B7CF-94AE05B311B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7795893E-7F1C-4349-AF9E-F509456C1B5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7795893E-7F1C-4349-AF9E-F509456C1B5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7795893E-7F1C-4349-AF9E-F509456C1B5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7795893E-7F1C-4349-AF9E-F509456C1B5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,6 +121,7 @@ Global
 		{EF6306EE-8409-46FB-9576-9439C8B42AE7} = {839E9949-517B-445D-9BDD-20B40402E7CE}
 		{3544A87F-D9FB-47D1-AA76-4BAA161E3B8C} = {1D3E02CF-ACCD-461D-8CCD-F806DA7A0906}
 		{34974CD2-C610-4D50-B7CF-94AE05B311B9} = {1D3E02CF-ACCD-461D-8CCD-F806DA7A0906}
+		{7795893E-7F1C-4349-AF9E-F509456C1B5F} = {1D3E02CF-ACCD-461D-8CCD-F806DA7A0906}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {54E19809-5A03-4D4E-8C34-EF5F9BBFF040}

@@ -14,6 +14,7 @@ namespace MtgDatabase.Models
             var result = new QueryableMagicCard()
             {
                 Name = card.Name,
+                TypeLine = card.TypeLine,
                 ReprintInfos = CalculateReprints(allCards),
                 Legalities = CalculateLegalities(allCards),
             };
@@ -25,7 +26,7 @@ namespace MtgDatabase.Models
         {
             return cards.Select(c => new ReprintInfo()
             {
-                Rarity = c.Rarity.ToRarity(),
+                Rarity = c.Rarity.ToRarity(c.TypeLine),
                 SetCode = c.Set,
                 CollectorNumber = c.CollectorNumber,
             }).ToArray();
