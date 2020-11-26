@@ -4,7 +4,12 @@ using MtgDatabase.Models;
 
 namespace MtgDatabase.Database
 {
-    public class MtgDatabase
+    public interface IQueryableCardsProvider
+    {
+        ILiteCollection<QueryableMagicCard>? Cards { get; }
+    }
+
+    public class MtgDatabase : IQueryableCardsProvider
     {
         private LiteDatabase? _database;
 
@@ -21,9 +26,18 @@ namespace MtgDatabase.Database
 
             _database = new LiteDatabase(Path.Combine(folder.FullName, "MtgDatabase.db"));
             Cards = _database.GetCollection<QueryableMagicCard>();
+            
+            var mapper = BsonMapper.Global;
 
-
+            mapper.Entity<QueryableMagicCard>()
+                .Id(x => x.Name);
+            
             IsInitialized = true;
+        }
+
+        internal void EnsureIndex()
+        {
+            Cards?.EnsureIndex(c => c.Name);
         }
 
         public void ShutDown()

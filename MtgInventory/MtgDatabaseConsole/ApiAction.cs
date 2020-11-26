@@ -25,7 +25,7 @@ namespace ScryfallApiConsole
         {
             // _scryfallService.RefreshLocalMirror(options.Clear);
             
-            _mtgDatabaseService.CreateDatabase(options.Clear);
+            _mtgDatabaseService.CreateDatabase(options.Clear, options.Clear);
             
             // TODO: Create complete database here
             return -1;
