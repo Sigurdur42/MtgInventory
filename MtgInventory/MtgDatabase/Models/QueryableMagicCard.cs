@@ -26,6 +26,7 @@ namespace MtgDatabase.Models
         public bool IsEnchantment { get; set; }
         public bool IsLegendary { get; set; }
         public bool IsPlaneswalker { get; set; }
+        public bool IsSnow { get; set; }
 
         // TODO: More properties
     }
