@@ -76,6 +76,7 @@ namespace MtgDatabase
             //     .ToArray();
             // var dummy = string.Join(Environment.NewLine, groupedTypelines);
             // File.WriteAllText(@"C:\temp\typelines.txt", dummy);
+            
             var cardFactory = new QueryableMagicCardFactory();
             var cardsToInsert = new List<QueryableMagicCard>();
             var cardsToUpdate = new List<QueryableMagicCard>();

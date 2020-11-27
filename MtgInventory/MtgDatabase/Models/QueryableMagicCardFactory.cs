@@ -20,8 +20,7 @@ namespace MtgDatabase.Models
                 TypeLine = card.TypeLine,
                 ReprintInfos = reprintInfos,
                 Legalities = legalities,
-                
-                IsBasicLand = reprintInfos.Any(r=>r.Rarity == Rarity.BasicLand),
+                IsBasicLand = reprintInfos.Any(r => r.Rarity == Rarity.BasicLand),
             };
 
             UpdateFromTypeLine(result, card.TypeLine);
@@ -48,24 +47,57 @@ namespace MtgDatabase.Models
         {
             return cards.Select(c => new ReprintInfo()
             {
-                Rarity = c.Rarity.ToRarity(c.TypeLine),
-                SetCode = c.Set,
-                CollectorNumber = c.CollectorNumber,
+                Rarity = c.Rarity.ToRarity(c.TypeLine), SetCode = c.Set, CollectorNumber = c.CollectorNumber, Images = CalculateImages(c),
             }).ToArray();
+        }
+
+        public CardImages CalculateImages(ScryfallCard card)
+        {
+            var result = new CardImages();
+            foreach (var image in card.Images)
+            {
+                switch (image.Category?.ToLowerInvariant() ?? "")
+                {
+                    case "normal":
+                        result.Normal = image.Uri;
+                        break;
+
+                    case "small":
+                        result.Small = image.Uri;
+                        break;
+                    case "large":
+                        result.Large = image.Uri;
+                        break;
+                    case "png":
+                        result.Png = image.Uri;
+                        break;
+                    case "art_crop":
+                        result.ArtCrop = image.Uri;
+                        break;
+                    case "border_crop":
+                        result.BorderCrop = image.Uri;
+                        break;
+                    
+                    default:
+                        // TODO: log this
+                        break;
+                }
+            }
+
+
+         
+
+            return result;
         }
 
         public Legality[] CalculateLegalities(ScryfallCard[] cards)
         {
             var legalities = cards
                 .SelectMany(c => c.Legalities)
-                .OrderBy(l=>l.Key)
+                .OrderBy(l => l.Key)
                 .ToArray();
-            
-            return legalities.Select(c => new Legality()
-                {
-                    Format = c.Key.ToSanctionedFormat(),
-                    IsLegal = c.Value.ToLegalityState(),
-                })
+
+            return legalities.Select(c => new Legality() {Format = c.Key.ToSanctionedFormat(), IsLegal = c.Value.ToLegalityState(),})
                 .ToArray();
         }
     }
