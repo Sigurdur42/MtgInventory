@@ -17,7 +17,7 @@ namespace ScryfallApiServices
 
         ScryfallCard[] RetrieveCardsByCardNameAndSet(string cardName, string setCode, SearchOptions.RollupMode rollupMode);
 
-        void Configure(DirectoryInfo folder);
+        void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
         
         void ShutDown();
         void RefreshLocalMirror(bool cleanDatabase);

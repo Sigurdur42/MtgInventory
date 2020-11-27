@@ -59,7 +59,7 @@ namespace ScryfallApiServices
         {
             // TODO: Make the cache time configurable
             var updateDate = GetOldestCardByUpdateDate() ?? DateTime.MinValue;
-            var download = DateTime.Now.Date.AddDays(-28) > updateDate;
+            var download = DateTime.Now.Date.AddDays(-1 * _configuration.UpdateCardCacheInDays) > updateDate;
             if (!download)
             {
                 _logger.LogTrace($"All cards are up to date - skipping download");
@@ -143,7 +143,7 @@ namespace ScryfallApiServices
             if (!forceRetrieve)
             {
                 var updateDate = GetOldestSetByUpdateDate() ?? DateTime.MinValue;
-                forceRetrieve = DateTime.Now.Date.AddDays(-7) > updateDate;
+                forceRetrieve = DateTime.Now.Date.AddDays(-1 * _configuration.UpdateSetCacheInDays) > updateDate;
             }
 
             if (forceRetrieve)
@@ -163,9 +163,11 @@ namespace ScryfallApiServices
             }
         }
 
-        public void Configure(DirectoryInfo folder)
+        private ScryfallConfiguration _configuration = new ScryfallConfiguration(); 
+        public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
         {
             _logger.LogDebug($"Configuring service using '{folder.FullName}'");
+            _configuration = configuration;
             _database.Configure(folder);
         }
 

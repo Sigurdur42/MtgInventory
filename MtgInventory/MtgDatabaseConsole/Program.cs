@@ -87,7 +87,7 @@ namespace ScryfallApiConsole
                 // configure service
                 var service = serviceProvider.GetService<IMtgDatabaseService>();
                 var provider = serviceProvider.GetService<IConfigurationFolderProvider>();
-                service.Configure(provider.BaseFolder);
+                service.Configure(provider.BaseFolder, new ScryfallConfiguration());
             }
             catch (Exception error)
             {

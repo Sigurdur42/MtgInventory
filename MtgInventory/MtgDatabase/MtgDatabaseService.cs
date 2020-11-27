@@ -14,7 +14,7 @@ namespace MtgDatabase
 {
     public interface IMtgDatabaseService : IQueryableCardsProvider, IDisposable
     {
-        void Configure(DirectoryInfo folder);
+        void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
         void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
     }
 
@@ -41,9 +41,9 @@ namespace MtgDatabase
             RebuildInternalDatabase(clearMtgDatabase);
         }
 
-        public void Configure(DirectoryInfo folder)
+        public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
         {
-            _scryfallService.Configure(folder);
+            _scryfallService.Configure(folder, configuration);
             _database.Configure(folder);
         }
 
