@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazored.Toast;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -35,6 +36,7 @@ namespace MtgInventoryBlazor
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<MtgInventoryService>();
             services.AddMtgDatabase();
+            services.AddBlazoredToast();
 
             services.AddLogging(cfg =>
             {

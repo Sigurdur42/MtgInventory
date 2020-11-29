@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Scryfall\ScryfallApiServices\ScryfallApiServices.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Blazored.Toast" Version="3.1.2" />
+  </ItemGroup>
+
 </Project>
