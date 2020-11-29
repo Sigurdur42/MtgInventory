@@ -54,7 +54,7 @@ namespace ScryfallApiConsole
             {
                 var builder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json");
+                    .AddJsonFile("AppSettings.json");
 
                 var configuration = builder.Build();
 
