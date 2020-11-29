@@ -14,4 +14,8 @@
       <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="readme.md" />
+    </ItemGroup>
+
 </Project>

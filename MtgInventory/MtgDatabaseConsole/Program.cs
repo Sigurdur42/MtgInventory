@@ -85,9 +85,9 @@ namespace ScryfallApiConsole
                 logger.LogInformation("This is log message.");
 
                 // configure service
+                var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
                 var service = serviceProvider.GetService<IMtgDatabaseService>();
-                var provider = serviceProvider.GetService<IConfigurationFolderProvider>();
-                service.Configure(provider.BaseFolder, new ScryfallConfiguration());
+                service.Configure(baseFolder, new ScryfallConfiguration());
             }
             catch (Exception error)
             {

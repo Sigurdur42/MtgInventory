@@ -1,7 +1,23 @@
 ﻿@page "/"
+@inject MtgInventoryService InventoryService
+@using MtgInventoryBlazor
 
-<h1>Hello, world!</h1>
+<h1>@totalCount</h1>
+Database initialized: @InventoryService.IsDatabaseInitialized
 
 Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code
+{
+    private string totalCount = "not set";
+
+    private void CalculateCardCount()
+    {
+        totalCount = InventoryService.Dummy;
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        CalculateCardCount();
+    }
+}

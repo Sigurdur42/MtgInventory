@@ -43,6 +43,7 @@ namespace MtgDatabase
 
         public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
         {
+            _logger.LogInformation($"Configuring {nameof(Database.MtgDatabase)} in {folder.FullName} with {Environment.NewLine}{configuration.DumpSettings()}");
             _scryfallService.Configure(folder, configuration);
             _database.Configure(folder);
         }

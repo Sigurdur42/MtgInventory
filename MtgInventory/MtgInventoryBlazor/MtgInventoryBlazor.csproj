@@ -4,4 +4,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LimitedTaskQueue\TaskQueue\TaskQueue.csproj" />
+    <ProjectReference Include="..\MtgDatabase\MtgDatabase.csproj" />
+    <ProjectReference Include="..\Scryfall\ScryfallApiServices\ScryfallApiServices.csproj" />
+  </ItemGroup>
+
 </Project>

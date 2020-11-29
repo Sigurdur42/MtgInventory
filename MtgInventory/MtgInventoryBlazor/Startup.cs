@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -9,7 +10,10 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MtgDatabase;
 using MtgInventoryBlazor.Data;
+using ScryfallApiServices;
 
 namespace MtgInventoryBlazor
 {
@@ -29,6 +33,16 @@ namespace MtgInventoryBlazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<MtgInventoryService>();
+            services.AddMtgDatabase();
+
+            services.AddLogging(cfg =>
+            {
+                cfg.AddConfiguration(Configuration.GetSection("Logging"));
+                cfg.AddConsole();
+                cfg.AddDebug();
+                //// cfg.AddProvider(new PanelLogSinkProvider());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +69,14 @@ namespace MtgInventoryBlazor
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+            
+            // Initialize mtg app service
+            var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
+            var service = app.ApplicationServices.GetService<IMtgDatabaseService>();
+            service.Configure(baseFolder, new ScryfallConfiguration());
+
+            var mtgService = app.ApplicationServices.GetService<MtgInventoryService>();
+            Task.Factory.StartNew(() => mtgService.CreateDatabase());
         }
     }
 }
