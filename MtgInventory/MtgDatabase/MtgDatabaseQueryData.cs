@@ -2,7 +2,7 @@ namespace MtgDatabase
 {
     public class MtgDatabaseQueryData
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         public bool ContainsValidSearch()
         {

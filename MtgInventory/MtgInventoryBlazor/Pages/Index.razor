@@ -1,21 +1,49 @@
 ﻿@page "/"
 @using MtgDatabase
+@using MtgDatabase.Models
+@using System.Collections.ObjectModel
 @inject MtgInventoryService InventoryService
 
 Database initialized: @InventoryService.IsDatabaseInitialized
+<p>Result count: @resultCount</p>
 
 Welcome to your new app.
 
-<EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearch">
-    <div class="col-12 row">
-        <label class="col-2 font-weight-bold">Card Name:</label>
-        <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
-    </div> 
-    <div class="col-12 row">
-        <span class="col-2"/>
-        <input type="submit" class="form-control col-1 btn-primary" value="Search!"/>
-    </div>
-</EditForm>
+<p>
+    <EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearchAsync">
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Card Name:</label>
+            <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
+        </div>
+        <div class="col-12 row">
+            <span class="col-2"/>
+            <input type="submit" class="form-control col-1 btn-primary" value="Search!"/>
+        </div>
+    </EditForm>
+</p>
+<hr/>
+<p>
+    <p>Result count: @resultCount</p>
+    <table class="table" id="searchResult">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type Line</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var card in _queryResult)
+        {
+            <tr>
+                <td>@card.Name</td>
+                <td>@card.TypeLine</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+
+</p>
 
 
 @* <P> *@
@@ -24,12 +52,38 @@ Welcome to your new app.
 
 @code
 {
-    private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();  
-    
+    private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();
 
+    private int resultCount = 0;
+
+    public ObservableCollection<QueryableMagicCard> _queryResult = new ObservableCollection<QueryableMagicCard>();
+
+    private async void StartSearchAsync()
+    {
+        var result = await InventoryService.SearchCardsAsync(_databaseQueryData);
+        _queryResult.Clear();
+        foreach (var res in result)
+        {
+            _queryResult.Add(res);
+        }
+    
+        resultCount = result.Length;
+    // _queryResult.AddRange(result);
+        
+        StateHasChanged();
+    }
+    
     private void StartSearch()
     {
-        // TODO: Implement search
-        InventoryService.SearchCardsAsync(_databaseQueryData);
+        var result = InventoryService.SearchCards(_databaseQueryData);
+        _queryResult.Clear();
+        foreach (var res in result)
+        {
+            _queryResult.Add(res);
+        }
+
+        resultCount = result.Length;
+    // _queryResult.AddRange(result);
     }
+
 }

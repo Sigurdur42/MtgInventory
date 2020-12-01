@@ -31,13 +31,14 @@ namespace MtgInventoryBlazor
 
         public MtgDatabaseQueryData DatabaseQueryData { get; set; } = new MtgDatabaseQueryData();
 
-        public event EventHandler DatabaseInitialised;
-        public event EventHandler<RequestToastToDisplayEventArgs> RequestToastToDisplay;
+        public event EventHandler DatabaseInitialised = (sender, args) => { };
+        public event EventHandler<RequestToastToDisplayEventArgs> RequestToastToDisplay = (sender, args) => { };
         public bool IsDatabaseInitialized { get; private set; }
 
         public void Test()
         {
-            RequestToastToDisplay?.Invoke(this,
+            RequestToastToDisplay?.Invoke(
+                this,
                 new RequestToastToDisplayEventArgs() {Category = ToastCategory.Success, Header = "Init DB", Message = "Finished DB init"});
         }
 
@@ -89,18 +90,23 @@ namespace MtgInventoryBlazor
             }
         }
 
-        public QueryableMagicCard[] SearchCardsAsync(MtgDatabaseQueryData queryData)
+        public async Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
         {
             RequestToastInfo("Starting card search", "Card search");
-            try
-            {
-                // TODO: Make this async
-                return Array.Empty<QueryableMagicCard>();
-            }
-            finally
-            {
-                RequestToastSuccess("Finished card search", "Card search");
-            }
+
+            var task = _mtgDatabaseService.SearchCardsAsync(queryData);
+            await task.ContinueWith((t) => RequestToastSuccess($"Finished card search with {t.Result.Length} cards", "Card search"));
+            return await task;
         }
+        
+        public QueryableMagicCard[] SearchCards(MtgDatabaseQueryData queryData)
+        {
+            RequestToastInfo("Starting card search", "Card search");
+
+            var task = _mtgDatabaseService.SearchCardsAsync(queryData);
+            task.ContinueWith((t) => RequestToastSuccess($"Finished card search with {t.Result.Length} cards", "Card search"));
+
+            return task.GetAwaiter().GetResult();
+        }        
     }
 }

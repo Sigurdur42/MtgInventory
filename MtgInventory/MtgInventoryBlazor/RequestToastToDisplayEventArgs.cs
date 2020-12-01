@@ -13,8 +13,8 @@ namespace MtgInventoryBlazor
 
     public class RequestToastToDisplayEventArgs : EventArgs
     {
-        public string Message { get; set; }
+        public string Message { get; set; } = "";
         public ToastCategory Category { get; set; }
-        public string Header { get; set; }
+        public string Header { get; set; } = "";
     }
 }

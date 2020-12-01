@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using MtgDatabase.Database;
@@ -16,6 +17,8 @@ namespace MtgDatabase
     {
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
         void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
+
+        Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -52,6 +55,25 @@ namespace MtgDatabase
 
         public ILiteCollection<QueryableMagicCard>? Cards => _database?.Cards;
 
+        public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
+        {
+            return Task.Run(() =>
+            {
+                if (!(queryData?.ContainsValidSearch() ?? false))
+                {
+                    return Array.Empty<QueryableMagicCard>();
+                }
+
+                var query = Cards?.Query();
+                if (!string.IsNullOrWhiteSpace(queryData.Name))
+                {
+                    query = query?.Where(c => c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                }
+
+                return query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
+            });
+        }
+
         private void RebuildInternalDatabase(bool clearDatabase)
         {
             if (clearDatabase)
@@ -77,7 +99,7 @@ namespace MtgDatabase
             //     .ToArray();
             // var dummy = string.Join(Environment.NewLine, groupedTypelines);
             // File.WriteAllText(@"C:\temp\typelines.txt", dummy);
-            
+
             var cardFactory = new QueryableMagicCardFactory();
             var cardsToInsert = new List<QueryableMagicCard>();
             var cardsToUpdate = new List<QueryableMagicCard>();
