@@ -1,6 +1,5 @@
 ﻿@page "/"
 @inject MtgInventoryService InventoryService
-@using MtgInventoryBlazor
 @inject IToastService toastService
 
 <h1>@totalCount</h1>
@@ -12,6 +11,10 @@ Welcome to your new app.
 <button class="btn btn-success" @onclick="@(() => toastService.ShowSuccess("You are sign up successfully!"))">Success Toast</button>
 <button class="btn btn-warning" @onclick="@(() => toastService.ShowWarning("You are about to leave website!"))">Warning Toast</button>
 <button class="btn btn-danger" @onclick="@(() => toastService.ShowError("Oops! Error has occured"))">Error Toast</button>
+
+<P>
+    <button class="btn btn-danger" @onclick="@(() => InventoryService.Test())">TEST</button>
+</P>
 @code
 {
     private string totalCount = "not set";

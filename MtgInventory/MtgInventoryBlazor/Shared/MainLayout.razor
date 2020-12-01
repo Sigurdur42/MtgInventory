@@ -1,7 +1,10 @@
 ﻿@inherits LayoutComponentBase
+@using MtgInventoryBlazor
+@inject IToastService ToastService
+@inject MtgInventoryService InventoryService
 
 <div class="sidebar">
-    <NavMenu />
+    <NavMenu/>
 </div>
 
 <div class="main">
@@ -13,4 +16,43 @@
         @Body
     </div>
 </div>
-<BlazoredToasts />
+<BlazoredToasts/>
+
+@code
+{
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender)
+        {
+            // Attach to the event here in Blazor.
+            // This does not work from backend code only
+            InventoryService.RequestToastToDisplay += (sender, e) =>
+            {
+                switch (e.Category)
+                {
+                    case ToastCategory.Error:
+                        ToastService.ShowError(e.Message, e.Header);
+                        break;    
+                    case ToastCategory.Warning:
+                        ToastService.ShowWarning(e.Message, e.Header);
+                        break;
+                    case ToastCategory.Info:
+                        ToastService.ShowInfo(e.Message, e.Header);
+                        break;
+                    case ToastCategory.Success:
+                        ToastService.ShowSuccess(e.Message, e.Header);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            };
+        }
+    }
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //    
+    // }
+}
