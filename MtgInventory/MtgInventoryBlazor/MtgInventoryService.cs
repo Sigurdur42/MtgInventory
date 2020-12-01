@@ -1,7 +1,9 @@
 using System;
+using System.Threading.Tasks;
 using Blazored.Toast.Services;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
+using MtgDatabase.Models;
 
 namespace MtgInventoryBlazor
 {
@@ -17,19 +19,17 @@ namespace MtgInventoryBlazor
     {
         private readonly IMtgDatabaseService _mtgDatabaseService;
         private readonly ILogger<MtgInventoryService> _logger;
-        private readonly IToastService _toastService;
 
         public MtgInventoryService(
             IMtgDatabaseService mtgDatabaseService,
-            ILogger<MtgInventoryService> logger,
-            IToastService toastService)
+            ILogger<MtgInventoryService> logger)
         {
             _mtgDatabaseService = mtgDatabaseService;
             _logger = logger;
-            _toastService = toastService;
         }
 
-        public string Dummy => "My hello world";
+
+        public MtgDatabaseQueryData DatabaseQueryData { get; set; } = new MtgDatabaseQueryData();
 
         public event EventHandler DatabaseInitialised;
         public event EventHandler<RequestToastToDisplayEventArgs> RequestToastToDisplay;
@@ -38,10 +38,7 @@ namespace MtgInventoryBlazor
         public void Test()
         {
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs()
-                {
-                    Category = ToastCategory.Success, Header = "Init DB", Message = "Finished DB init"
-                });
+                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Success, Header = "Init DB", Message = "Finished DB init"});
         }
 
         #region Toast Messages
@@ -50,40 +47,28 @@ namespace MtgInventoryBlazor
         {
             _logger.Log(LogLevel.Error, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs()
-                {
-                    Category = ToastCategory.Error, Header = header, Message = message
-                });
+                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Error, Header = header, Message = message});
         }
 
         public void RequestToastWarning(string message, string header)
         {
             _logger.Log(LogLevel.Warning, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs()
-                {
-                    Category = ToastCategory.Warning, Header = header, Message = message
-                });
+                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Warning, Header = header, Message = message});
         }
 
         public void RequestToastSuccess(string message, string header)
         {
             _logger.Log(LogLevel.Information, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs()
-                {
-                    Category = ToastCategory.Success, Header = header, Message = message
-                });
+                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Success, Header = header, Message = message});
         }
 
         public void RequestToastInfo(string message, string header)
         {
             _logger.Log(LogLevel.Information, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs()
-                {
-                    Category = ToastCategory.Info, Header = header, Message = message
-                });
+                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Info, Header = header, Message = message});
         }
 
         #endregion
@@ -101,6 +86,20 @@ namespace MtgInventoryBlazor
                 DatabaseInitialised?.Invoke(this, EventArgs.Empty);
 
                 RequestToastInfo($"Finished database init...", "DB Init");
+            }
+        }
+
+        public QueryableMagicCard[] SearchCardsAsync(MtgDatabaseQueryData queryData)
+        {
+            RequestToastInfo("Starting card search", "Card search");
+            try
+            {
+                // TODO: Make this async
+                return Array.Empty<QueryableMagicCard>();
+            }
+            finally
+            {
+                RequestToastSuccess("Finished card search", "Card search");
             }
         }
     }

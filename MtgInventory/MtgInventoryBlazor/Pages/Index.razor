@@ -1,31 +1,35 @@
 ﻿@page "/"
+@using MtgDatabase
 @inject MtgInventoryService InventoryService
-@inject IToastService toastService
 
-<h1>@totalCount</h1>
 Database initialized: @InventoryService.IsDatabaseInitialized
 
 Welcome to your new app.
 
-<button class="btn btn-info" @onclick="@(() => toastService.ShowInfo("Welcome to TheCodehubs"))">Info Toast</button>
-<button class="btn btn-success" @onclick="@(() => toastService.ShowSuccess("You are sign up successfully!"))">Success Toast</button>
-<button class="btn btn-warning" @onclick="@(() => toastService.ShowWarning("You are about to leave website!"))">Warning Toast</button>
-<button class="btn btn-danger" @onclick="@(() => toastService.ShowError("Oops! Error has occured"))">Error Toast</button>
+<EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearch">
+    <div class="col-12 row">
+        <label class="col-2 font-weight-bold">Card Name:</label>
+        <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
+    </div> 
+    <div class="col-12 row">
+        <span class="col-2"/>
+        <input type="submit" class="form-control col-1 btn-primary" value="Search!"/>
+    </div>
+</EditForm>
 
-<P>
-    <button class="btn btn-danger" @onclick="@(() => InventoryService.Test())">TEST</button>
-</P>
+
+@* <P> *@
+@*     <button class="btn btn-danger" @onclick="@(() => InventoryService.Test())">TEST</button> *@
+@* </P> *@
+
 @code
 {
-    private string totalCount = "not set";
-
-    private void CalculateCardCount()
-    {
-        totalCount = InventoryService.Dummy;
-    }
+    private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();  
     
-    protected override async Task OnInitializedAsync()
+
+    private void StartSearch()
     {
-        CalculateCardCount();
+        // TODO: Implement search
+        InventoryService.SearchCardsAsync(_databaseQueryData);
     }
 }
