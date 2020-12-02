@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AntDesign" Version="0.4.1" />
     <PackageReference Include="Blazored.Toast" Version="3.1.2" />
   </ItemGroup>
 
