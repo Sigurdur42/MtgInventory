@@ -2,6 +2,9 @@
 
 Write something fancy here
 
+#Links
+- https://github.com/AdrienTorris/awesome-blazor
+
 # Open Tasks - Card Lookup
 
 - Display card image either on click or on hover

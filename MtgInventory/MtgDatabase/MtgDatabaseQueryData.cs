@@ -3,11 +3,15 @@ namespace MtgDatabase
     public class MtgDatabaseQueryData
     {
         public string Name { get; set; } = "";
+        
+        public bool MatchExactName { get; set; }
+        
+        public bool IsToken { get; set; }
 
         public bool ContainsValidSearch()
         {
-            // TODO: Implement actual validation
-            return !string.IsNullOrWhiteSpace(Name);
+            return !string.IsNullOrWhiteSpace(Name)
+                   || IsToken;
         }
     }
 }

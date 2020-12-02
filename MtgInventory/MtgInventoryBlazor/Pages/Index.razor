@@ -16,6 +16,14 @@ Welcome to your new app.
             <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
         </div>
         <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Match exact</label>
+            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
+        </div>
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Token Only</label>
+            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsToken">Token only</InputCheckbox>
+        </div>
+        <div class="col-12 row">
             <span class="col-2"/>
             <input type="submit" class="form-control col-1 btn-primary" value="Search!"/>
         </div>

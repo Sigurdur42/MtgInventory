@@ -67,7 +67,19 @@ namespace MtgDatabase
                 var query = Cards?.Query();
                 if (!string.IsNullOrWhiteSpace(queryData.Name))
                 {
-                    query = query?.Where(c => c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                    if (queryData.MatchExactName)
+                    {
+                        query = query?.Where(c => c.Name.Equals(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                    }
+                    else
+                    {
+                        query = query?.Where(c => c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                    }
+                }
+
+                if (queryData.IsToken)
+                {
+                    query = query?.Where(c => c.IsToken);
                 }
 
                 return query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
