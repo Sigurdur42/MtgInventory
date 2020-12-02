@@ -35,16 +35,20 @@ Welcome to your new app.
     <table class="table" id="searchResult">
         <thead>
         <tr>
+            <th>Image</th>
             <th>Name</th>
             <th>Type Line</th>
+            <th>Reprints</th>
         </tr>
         </thead>
         <tbody>
         @foreach (var card in _queryResult)
         {
             <tr>
+                <td><img src="@card.ReprintInfos?.FirstOrDefault()?.Images?.Normal" width="100">  </td>
                 <td>@card.Name</td>
                 <td>@card.TypeLine</td>
+                <td>@card.ReprintInfos?.Length</td>
             </tr>
         }
         </tbody>
@@ -74,13 +78,13 @@ Welcome to your new app.
         {
             _queryResult.Add(res);
         }
-    
+
         resultCount = result.Length;
     // _queryResult.AddRange(result);
-        
+
         StateHasChanged();
     }
-    
+
     private void StartSearch()
     {
         var result = InventoryService.SearchCards(_databaseQueryData);

@@ -44,8 +44,10 @@ namespace MtgDatabase
             RebuildInternalDatabase(clearMtgDatabase);
         }
 
+        private ScryfallConfiguration? _scryfallConfiguration;
         public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
         {
+            _scryfallConfiguration = configuration;
             _logger.LogInformation($"Configuring {nameof(Database.MtgDatabase)} in {folder.FullName} with {Environment.NewLine}{configuration.DumpSettings()}");
             _scryfallService.Configure(folder, configuration);
             _database.Configure(folder);
@@ -93,8 +95,16 @@ namespace MtgDatabase
                 _database.Cards?.DeleteAll();
             }
 
+            var oldestCard = _scryfallService.ScryfallCards?.Query().OrderBy(c => c.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ?? DateTime.MinValue;
+            var oldestDate = DateTime.Now.AddDays(-1 * _scryfallConfiguration?.UpdateSetCacheInDays ?? 28);
+            if (!clearDatabase && oldestDate <= oldestCard)
+            {
+                // Cards are up to date - skip this
+                _logger.LogTrace($"All cards are up to date - skip rebuild");
+                return;
+            }
+            
             var stopwatch = Stopwatch.StartNew();
-
             var allCards = _scryfallService.ScryfallCards?.FindAll().ToArray() ?? Array.Empty<ScryfallCard>();
             _logger.LogTrace($"Retrieving all cards from cache took {stopwatch.Elapsed} for {allCards.Length} cards");
 
