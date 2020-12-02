@@ -37,7 +37,6 @@ namespace MtgInventoryBlazor
             services.AddSingleton<MtgInventoryService>();
             services.AddMtgDatabase();
             services.AddBlazoredToast();
-            services.AddAntDesign();
 
             services.AddLogging(cfg =>
             {
