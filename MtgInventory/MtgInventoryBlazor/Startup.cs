@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Toast;
+using MatBlazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,7 @@ namespace MtgInventoryBlazor
             services.AddSingleton<MtgInventoryService>();
             services.AddMtgDatabase();
             services.AddBlazoredToast();
+            services.AddMatBlazor();
 
             services.AddLogging(cfg =>
             {
