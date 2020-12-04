@@ -1,20 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Toast;
-using MatBlazor;
+
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
 using MtgInventoryBlazor.Data;
+using Radzen;
 using ScryfallApiServices;
 
 namespace MtgInventoryBlazor
@@ -38,7 +35,11 @@ namespace MtgInventoryBlazor
             services.AddSingleton<MtgInventoryService>();
             services.AddMtgDatabase();
             services.AddBlazoredToast();
-            services.AddMatBlazor();
+
+            services.AddScoped<DialogService>();
+            services.AddScoped<NotificationService>();
+            services.AddScoped<TooltipService>();
+            services.AddScoped<ContextMenuService>();
 
             services.AddLogging(cfg =>
             {
@@ -73,7 +74,7 @@ namespace MtgInventoryBlazor
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
-            
+
             // Initialize mtg app service
             var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
             var service = app.ApplicationServices.GetService<IMtgDatabaseService>();

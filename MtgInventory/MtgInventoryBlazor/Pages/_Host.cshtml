@@ -14,16 +14,16 @@
     <base href="~/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
-    
+
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <link href="css/blazored-toast.css" rel="stylesheet" />
-    
-    <script src="_content/MatBlazor/dist/matBlazor.js"></script>
-    <link href="_content/MatBlazor/dist/matBlazor.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/default-base.css">
+
 </head>
 <body>
     <app>
-        <component type="typeof(App)" render-mode="ServerPrerendered" />
+        <component type="typeof(App)" render-mode="Server" />
     </app>
 
     <div id="blazor-error-ui">
