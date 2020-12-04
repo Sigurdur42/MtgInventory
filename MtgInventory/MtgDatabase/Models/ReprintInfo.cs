@@ -11,6 +11,6 @@ namespace MtgDatabase.Models
         public string CollectorNumber { get; set; } = "";
         
         public CardImages Images { get; set; } = new CardImages();
-        // TODO: Image link
+        
     }
 }

@@ -18,7 +18,7 @@ namespace MtgDatabase
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
         void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
 
-        Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
+        Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -45,10 +45,12 @@ namespace MtgDatabase
         }
 
         private ScryfallConfiguration? _scryfallConfiguration;
+
         public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
         {
             _scryfallConfiguration = configuration;
-            _logger.LogInformation($"Configuring {nameof(Database.MtgDatabase)} in {folder.FullName} with {Environment.NewLine}{configuration.DumpSettings()}");
+            _logger.LogInformation(
+                $"Configuring {nameof(Database.MtgDatabase)} in {folder.FullName} with {Environment.NewLine}{configuration.DumpSettings()}");
             _scryfallService.Configure(folder, configuration);
             _database.Configure(folder);
         }
@@ -57,13 +59,13 @@ namespace MtgDatabase
 
         public ILiteCollection<QueryableMagicCard>? Cards => _database?.Cards;
 
-        public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
+        public Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
         {
             return Task.Run(() =>
             {
                 if (!(queryData?.ContainsValidSearch() ?? false))
                 {
-                    return Array.Empty<QueryableMagicCard>();
+                    return Array.Empty<FoundMagicCard>();
                 }
 
                 var query = Cards?.Query();
@@ -71,11 +73,13 @@ namespace MtgDatabase
                 {
                     if (queryData.MatchExactName)
                     {
-                        query = query?.Where(c => c.Name.Equals(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                        query = query?.Where(c =>
+                            c.Name.Equals(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
                     }
                     else
                     {
-                        query = query?.Where(c => c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                        query = query?.Where(c =>
+                            c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
                     }
                 }
 
@@ -84,7 +88,30 @@ namespace MtgDatabase
                     query = query?.Where(c => c.IsToken);
                 }
 
-                return query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
+                query = query?.OrderBy(c => c.Name);
+
+                var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
+
+                // TODO: Per Art result
+                if (!queryData.ResultPerPrinting)
+                {
+                    return found.Select(c => new FoundMagicCard()
+                    {
+                        Card = c, PrintInfo = c.ReprintInfos?.LastOrDefault() ?? new ReprintInfo()
+                    }).ToArray();
+                }
+
+                var result = new List<FoundMagicCard>();
+                foreach (var card in found)
+                {
+                    result.AddRange(card.ReprintInfos.Select(p=>new FoundMagicCard()
+                    {
+                        Card = card,
+                        PrintInfo = p,
+                    }));
+                }
+
+                return result.ToArray();
             });
         }
 
@@ -95,7 +122,9 @@ namespace MtgDatabase
                 _database.Cards?.DeleteAll();
             }
 
-            var oldestCard = _scryfallService.ScryfallCards?.Query().OrderBy(c => c.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ?? DateTime.MinValue;
+            var oldestCard =
+                _scryfallService.ScryfallCards?.Query().OrderBy(c => c.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ??
+                DateTime.MinValue;
             var oldestDate = DateTime.Now.AddDays(-1 * _scryfallConfiguration?.UpdateSetCacheInDays ?? 28);
             if (!clearDatabase && oldestDate <= oldestCard)
             {
@@ -103,7 +132,7 @@ namespace MtgDatabase
                 _logger.LogTrace($"All cards are up to date - skip rebuild");
                 return;
             }
-            
+
             var stopwatch = Stopwatch.StartNew();
             var allCards = _scryfallService.ScryfallCards?.FindAll().ToArray() ?? Array.Empty<ScryfallCard>();
             _logger.LogTrace($"Retrieving all cards from cache took {stopwatch.Elapsed} for {allCards.Length} cards");
@@ -156,7 +185,8 @@ namespace MtgDatabase
 
             stopwatch.Stop();
 
-            _logger.LogTrace($"Inserted: {cardsToInsert.Count()}, Updated: {cardsToUpdate.Count()} in {stopwatch.Elapsed}");
+            _logger.LogTrace(
+                $"Inserted: {cardsToInsert.Count()}, Updated: {cardsToUpdate.Count()} in {stopwatch.Elapsed}");
         }
     }
 }

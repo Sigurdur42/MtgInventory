@@ -4,6 +4,7 @@ using Blazored.Toast.Services;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
 using MtgDatabase.Models;
+using MtgInventoryBlazor.Data;
 
 namespace MtgInventoryBlazor
 {
@@ -90,23 +91,16 @@ namespace MtgInventoryBlazor
             }
         }
 
-        public async Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
+        public async Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
         {
             RequestToastInfo("Starting card search", "Card search");
 
             var task = _mtgDatabaseService.SearchCardsAsync(queryData);
             await task.ContinueWith((t) => RequestToastSuccess($"Finished card search with {t.Result.Length} cards", "Card search"));
+            
             return await task;
         }
         
-        public QueryableMagicCard[] SearchCards(MtgDatabaseQueryData queryData)
-        {
-            RequestToastInfo("Starting card search", "Card search");
-
-            var task = _mtgDatabaseService.SearchCardsAsync(queryData);
-            task.ContinueWith((t) => RequestToastSuccess($"Finished card search with {t.Result.Length} cards", "Card search"));
-
-            return task.GetAwaiter().GetResult();
-        }        
+         
     }
 }

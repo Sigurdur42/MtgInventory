@@ -13,13 +13,17 @@ Welcome to your new app.
 <MatButton Raised="true">Raised</MatButton>
 <MatButton Unelevated="true">Unelevated</MatButton>
 <MatButton Outlined="true">Outlined</MatButton>
-<MatButton Dense="true">Dense</MatButton> 
+<MatButton Dense="true">Dense</MatButton>
 
 <p>
     <EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearchAsync">
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Card Name:</label>
             <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
+        </div>
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Show results per print</label>
+            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.ResultPerPrinting" displayname="Per printing"></InputCheckbox>
         </div>
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Match exact</label>
@@ -51,16 +55,16 @@ Welcome to your new app.
         @foreach (var card in _queryResult)
         {
             <tr>
-                <td><img src="@card.ReprintInfos?.FirstOrDefault()?.Images?.Normal" width="100">  </td>
-                <td>@card.Name</td>
-                <td>@card.TypeLine</td>
-                <td>@card.ReprintInfos?.Length</td>
+                <td>
+                    <img src="@card.PrintInfo?.Images?.Normal" width="100">
+                </td>
+                <td>@card.Card.Name</td>
+                <td>@card.Card.TypeLine</td>
+                <td>@card.Card.ReprintInfos?.Length</td>
             </tr>
         }
         </tbody>
     </table>
-
-
 </p>
 
 
@@ -74,7 +78,7 @@ Welcome to your new app.
 
     private int resultCount = 0;
 
-    public ObservableCollection<QueryableMagicCard> _queryResult = new ObservableCollection<QueryableMagicCard>();
+    public ObservableCollection<FoundMagicCard> _queryResult = new ObservableCollection<FoundMagicCard>();
 
     private async void StartSearchAsync()
     {
@@ -91,17 +95,6 @@ Welcome to your new app.
         StateHasChanged();
     }
 
-    private void StartSearch()
-    {
-        var result = InventoryService.SearchCards(_databaseQueryData);
-        _queryResult.Clear();
-        foreach (var res in result)
-        {
-            _queryResult.Add(res);
-        }
 
-        resultCount = result.Length;
-    // _queryResult.AddRange(result);
-    }
 
 }
