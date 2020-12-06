@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Toast.Services;
 using Microsoft.Extensions.Logging;
@@ -100,7 +101,8 @@ namespace MtgInventoryBlazor
             
             return await task;
         }
-        
-         
+
+        public SetInfo[] GetAllSets() => _mtgDatabaseService.GetAllSets().OrderBy(s=>s.Name).ToArray();
+
     }
 }

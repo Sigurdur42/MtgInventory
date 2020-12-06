@@ -19,6 +19,7 @@ namespace MtgDatabase
         void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
 
         Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
+        SetInfo[] GetAllSets();
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -58,6 +59,20 @@ namespace MtgDatabase
         public void Dispose() => _database?.ShutDown();
 
         public ILiteCollection<QueryableMagicCard>? Cards => _database?.Cards;
+
+        public SetInfo[] GetAllSets()
+        {
+            return _scryfallService.ScryfallSets
+                ?.FindAll()
+                ?.Select(s => new SetInfo()
+                {
+                    Code = s.Code,
+                    Name = s.Name,
+                })
+                ?.ToArray()
+                ?? Array.Empty<SetInfo>();
+
+        }
 
         public Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
         {

@@ -18,10 +18,28 @@ Welcome to your new app.
             <label class="col-2 font-weight-bold">Card Name:</label>
             <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
         </div>
+        
+        
         <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Sets</label>
+             <div class="col-xl-6">
+                 <RadzenAutoComplete AllowClear="true" TValue="string"
+                                 Data="@_setData"
+                                 TextProperty="Name" 
+                                 ValueProperty="Code" 
+                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                 Change=@(args => OnChange(args, "SetFilter"))
+                 />
+                 </div>
+            <div class="col-xl-2">
+                <label>@_databaseQueryData.SetCode</label>
+            </div>
+
+        </div>
+       <div class="col-12 row">
             <label class="col-2 font-weight-bold">Show results per print</label>
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.ResultPerPrinting" displayname="Per printing"></InputCheckbox>
-        </div>
+       </div>    
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Match exact</label>
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
@@ -65,10 +83,6 @@ Welcome to your new app.
 </p>
 
 
-@* <P> *@
-@*     <button class="btn btn-danger" @onclick="@(() => InventoryService.Test())">TEST</button> *@
-@* </P> *@
-
 @code
 {
     private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();
@@ -92,6 +106,21 @@ Welcome to your new app.
         StateHasChanged();
     }
 
+    private SetInfo[] _setData = Array.Empty<SetInfo>();
 
-
+    protected override void OnInitialized()
+    {
+        _setData = InventoryService.GetAllSets();
+       
+    }
+    
+  
+    void OnChange(object value, string name)
+    {
+        if ("SetFilter".Equals(name))
+        {
+            _databaseQueryData.SetCode = _setData.FirstOrDefault(s => s.Name == (value?.ToString() ?? ""))?.Code ?? "";
+        }
+        // console.Log($"{name} value changed to {value}");
+    }
 }

@@ -5,6 +5,8 @@ namespace MtgDatabase
     public class MtgDatabaseQueryData
     {
         public string Name { get; set; } = "";
+
+        public string SetCode { get; set; } = "";
         
         public bool MatchExactName { get; set; }
         

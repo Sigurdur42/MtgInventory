@@ -16,4 +16,8 @@
     <PackageReference Include="Radzen.Blazor" Version="2.18.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="readme.md" />
+  </ItemGroup>
+
 </Project>
