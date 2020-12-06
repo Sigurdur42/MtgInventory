@@ -42,7 +42,7 @@ namespace MtgDatabase
         {
             _scryfallService.RefreshLocalMirror(clearScryfallMirror);
 
-            RebuildInternalDatabase(clearMtgDatabase);
+            RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
         }
 
         private ScryfallConfiguration? _scryfallConfiguration;
@@ -63,15 +63,10 @@ namespace MtgDatabase
         public SetInfo[] GetAllSets()
         {
             return _scryfallService.ScryfallSets
-                ?.FindAll()
-                ?.Select(s => new SetInfo()
-                {
-                    Code = s.Code,
-                    Name = s.Name,
-                })
-                ?.ToArray()
-                ?? Array.Empty<SetInfo>();
-
+                       ?.FindAll()
+                       ?.Select(s => new SetInfo() {Code = s.Code, Name = s.Name,})
+                       ?.ToArray()
+                   ?? Array.Empty<SetInfo>();
         }
 
         public Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
@@ -83,50 +78,70 @@ namespace MtgDatabase
                     return Array.Empty<FoundMagicCard>();
                 }
 
-                var query = Cards?.Query();
-                if (!string.IsNullOrWhiteSpace(queryData.Name))
+                try
                 {
-                    if (queryData.MatchExactName)
+                    var query = Cards?.Query();
+
+                    if (queryData.IsToken)
                     {
-                        query = query?.Where(c =>
-                            c.Name.Equals(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                        query = query?.Where(c => c.IsToken);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(queryData.Name))
+                    {
+                        if (queryData.MatchExactName)
+                        {
+                            query = query?.Where(c =>
+                                c.Name.Equals(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                        }
+                        else
+                        {
+                            query = query?.Where(c =>
+                                c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(queryData.SetCode))
+                    {
+                        query = query
+                            ?.Where(c =>
+                                c.SetCodes.Contains(queryData.SetCode, StringComparison.InvariantCultureIgnoreCase));
+                    }
+
+
+                    // query = query?.OrderBy(c => c.Name);
+
+                    var result = new List<FoundMagicCard>();
+                    var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
+
+                    if (!queryData.ResultPerPrinting)
+                    {
+                        result = found.Select(c => new FoundMagicCard()
+                        {
+                            Card = c, PrintInfo = c.ReprintInfos?.LastOrDefault() ?? new ReprintInfo()
+                        }).ToList();
                     }
                     else
                     {
-                        query = query?.Where(c =>
-                            c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                        foreach (var card in found)
+                        {
+                            result.AddRange(
+                                card.ReprintInfos.Select(p => new FoundMagicCard() {Card = card, PrintInfo = p,}));
+                        }
                     }
-                }
 
-                if (queryData.IsToken)
-                {
-                    query = query?.Where(c => c.IsToken);
-                }
-
-                query = query?.OrderBy(c => c.Name);
-
-                var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
-
-                // TODO: Per Art result
-                if (!queryData.ResultPerPrinting)
-                {
-                    return found.Select(c => new FoundMagicCard()
+                    return queryData.ResultSortOrder switch
                     {
-                        Card = c, PrintInfo = c.ReprintInfos?.LastOrDefault() ?? new ReprintInfo()
-                    }).ToArray();
+                        ResultSortOrder.ByName => result.OrderBy(c => c.Card.Name).ToArray(),
+                        ResultSortOrder.ByCollectorNumber => result.OrderBy(c => c.Card.CollectorNumber).ToArray(),
+                        _ => result.ToArray()
+                    };
                 }
-
-                var result = new List<FoundMagicCard>();
-                foreach (var card in found)
+                catch (Exception error)
                 {
-                    result.AddRange(card.ReprintInfos.Select(p=>new FoundMagicCard()
-                    {
-                        Card = card,
-                        PrintInfo = p,
-                    }));
+                    _logger.LogError($"Error running query: {error}");
+                    return Array.Empty<FoundMagicCard>();
                 }
-
-                return result.ToArray();
             });
         }
 
@@ -148,6 +163,7 @@ namespace MtgDatabase
                 return;
             }
 
+            _logger.LogTrace($"Retrieving all cards from cache...");
             var stopwatch = Stopwatch.StartNew();
             var allCards = _scryfallService.ScryfallCards?.FindAll().ToArray() ?? Array.Empty<ScryfallCard>();
             _logger.LogTrace($"Retrieving all cards from cache took {stopwatch.Elapsed} for {allCards.Length} cards");
@@ -172,6 +188,7 @@ namespace MtgDatabase
             foreach (var group in groupedByName)
             {
                 var card = cardFactory.Create(group);
+
                 var found = _database.Cards?.Query()?.Where(c => c.Name == card.Name)?.FirstOrDefault();
                 if (found == null)
                 {

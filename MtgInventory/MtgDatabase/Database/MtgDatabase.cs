@@ -41,6 +41,8 @@ namespace MtgDatabase.Database
             Cards?.EnsureIndex(c => c.IsBasicLand);
             Cards?.EnsureIndex(c => c.IsToken);
             Cards?.EnsureIndex(c => c.IsCreature);
+            
+            // Cards?.EnsureIndex(c => c.SetCodes);
         }
 
         public void ShutDown()

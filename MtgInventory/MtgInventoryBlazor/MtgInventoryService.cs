@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Blazored.Toast.Services;
@@ -96,8 +97,13 @@ namespace MtgInventoryBlazor
         {
             RequestToastInfo("Starting card search", "Card search");
 
+            var stopwatch = Stopwatch.StartNew();
             var task = _mtgDatabaseService.SearchCardsAsync(queryData);
-            await task.ContinueWith((t) => RequestToastSuccess($"Finished card search with {t.Result.Length} cards", "Card search"));
+            await task.ContinueWith((t) =>
+            {
+                stopwatch.Stop();
+                RequestToastSuccess($"Finished card search with {t.Result.Length} cards in {stopwatch.Elapsed}", "Card search");
+            });
             
             return await task;
         }

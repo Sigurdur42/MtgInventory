@@ -21,6 +21,9 @@ namespace MtgDatabase.Models
                 ReprintInfos = reprintInfos,
                 Legalities = legalities,
                 IsBasicLand = reprintInfos.Any(r => r.Rarity == Rarity.BasicLand),
+                CollectorNumber = card.CollectorNumber,
+                SetCodes = string.Join("", allCards.Select(r => $" {r.Set} ")),
+                OracleText = card.OracleText,
             };
 
             UpdateFromTypeLine(result, card.TypeLine);
@@ -47,7 +50,10 @@ namespace MtgDatabase.Models
         {
             return cards.Select(c => new ReprintInfo()
             {
-                Rarity = c.Rarity.ToRarity(c.TypeLine), SetCode = c.Set, CollectorNumber = c.CollectorNumber, Images = CalculateImages(c),
+                Rarity = c.Rarity.ToRarity(c.TypeLine),
+                SetCode = c.Set,
+                CollectorNumber = c.CollectorNumber,
+                Images = CalculateImages(c),
             }).ToArray();
         }
 
@@ -77,15 +83,13 @@ namespace MtgDatabase.Models
                     case "border_crop":
                         result.BorderCrop = image.Uri;
                         break;
-                    
+
                     default:
                         // TODO: log this
                         break;
                 }
             }
 
-
-         
 
             return result;
         }
@@ -97,7 +101,8 @@ namespace MtgDatabase.Models
                 .OrderBy(l => l.Key)
                 .ToArray();
 
-            return legalities.Select(c => new Legality() {Format = c.Key.ToSanctionedFormat(), IsLegal = c.Value.ToLegalityState(),})
+            return legalities.Select(c =>
+                    new Legality() {Format = c.Key.ToSanctionedFormat(), IsLegal = c.Value.ToLegalityState(),})
                 .ToArray();
         }
     }

@@ -4,22 +4,13 @@
 @using System.Collections.ObjectModel
 @inject MtgInventoryService InventoryService
 
-Database initialized: @InventoryService.IsDatabaseInitialized
-<p>Result count: @resultCount</p>
-
-Welcome to your new app.
-
-
-<RadzenButton >My Radzen button</RadzenButton>
-
 <p>
     <EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearchAsync">
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Card Name:</label>
             <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
         </div>
-        
-        
+
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Sets</label>
              <div class="col-xl-6">
@@ -56,7 +47,15 @@ Welcome to your new app.
 </p>
 <hr/>
 <p>
-    <p>Result count: @resultCount</p>
+    <p>Result count: @resultCount
+        <RadzenRadioButtonList @bind-Value="@_imageWidth" TValue="int" >
+            <Items>
+                <RadzenRadioButtonListItem Text="Small" Value="100" />
+                <RadzenRadioButtonListItem Text="Medium" Value="200" />
+                <RadzenRadioButtonListItem Text="Large" Value="300" />
+            </Items>
+        </RadzenRadioButtonList>
+        </p>
     <table class="table" id="searchResult">
         <thead>
         <tr>
@@ -71,10 +70,10 @@ Welcome to your new app.
         {
             <tr>
                 <td>
-                    <img src="@card.PrintInfo?.Images?.Normal" width="100">
+                    <img src="@card.PrintInfo?.Images?.Normal" width="@_imageWidth"/>
                 </td>
                 <td>@card.Card.Name</td>
-                <td>@card.Card.TypeLine</td>
+                <td>@card.Card.TypeLine<br/>@card.Card.OracleText</td>
                 <td>@card.Card.ReprintInfos?.Length</td>
             </tr>
         }
@@ -88,6 +87,7 @@ Welcome to your new app.
     private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();
 
     private int resultCount = 0;
+    private int _imageWidth = 100;
 
     public ObservableCollection<FoundMagicCard> _queryResult = new ObservableCollection<FoundMagicCard>();
 

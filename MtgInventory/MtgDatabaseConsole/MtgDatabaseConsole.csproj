@@ -7,6 +7,7 @@
         <RootNamespace>MtgDatabaseConsole</RootNamespace>
         <Company>MtgDatabaseConsole</Company>
         <Product>MtgDatabaseConsole</Product>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

@@ -12,7 +12,7 @@ Write something fancy here
     * Set mapper required
 - Add search options
     - by commander identity
-    - by set
+    - by set (missing fast lookup)
     - for sorcery
     - for instant
     - for creature

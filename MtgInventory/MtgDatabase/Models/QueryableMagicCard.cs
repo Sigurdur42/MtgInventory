@@ -12,7 +12,13 @@ namespace MtgDatabase.Models
 
         public ReprintInfo[] ReprintInfos { get; set; } = Array.Empty<ReprintInfo>();
 
+        public string SetCodes { get; set; } = "";
+
+        public string OracleText { get; set; } = "";
+
         public Legality[] Legalities { get; set; } = Array.Empty<Legality>();
+
+        public string CollectorNumber { get; set; } = "";
         
         public bool IsBasicLand { get; set; }
 
