@@ -52,6 +52,7 @@ namespace MtgDatabase.Models
             {
                 Rarity = c.Rarity.ToRarity(c.TypeLine),
                 SetCode = c.Set,
+                SetName = c.SetName,
                 CollectorNumber = c.CollectorNumber,
                 Images = CalculateImages(c),
             }).ToArray();

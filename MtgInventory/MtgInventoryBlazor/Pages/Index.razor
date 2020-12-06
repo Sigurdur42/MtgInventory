@@ -3,6 +3,7 @@
 @using MtgDatabase.Models
 @using System.Collections.ObjectModel
 @inject MtgInventoryService InventoryService
+@inject IMkmMapper MkmMapper
 
 <p>
     <EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearchAsync">
@@ -13,24 +14,23 @@
 
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Sets</label>
-             <div class="col-xl-6">
-                 <RadzenAutoComplete AllowClear="true" TValue="string"
-                                 Data="@_setData"
-                                 TextProperty="Name" 
-                                 ValueProperty="Code" 
-                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                 Change=@(args => OnChange(args, "SetFilter"))
-                 />
-                 </div>
+            <div class="col-xl-6">
+                <RadzenAutoComplete AllowClear="true" TValue="string"
+                                    Data="@_setData"
+                                    TextProperty="Name"
+                                    ValueProperty="Code"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    Change=@(args => OnChange(args, "SetFilter"))/>
+            </div>
             <div class="col-xl-2">
                 <label>@_databaseQueryData.SetCode</label>
             </div>
 
         </div>
-       <div class="col-12 row">
+        <div class="col-12 row">
             <label class="col-2 font-weight-bold">Show results per print</label>
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.ResultPerPrinting" displayname="Per printing"></InputCheckbox>
-       </div>    
+        </div>
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Match exact</label>
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
@@ -47,15 +47,16 @@
 </p>
 <hr/>
 <p>
-    <p>Result count: @resultCount
-        <RadzenRadioButtonList @bind-Value="@_imageWidth" TValue="int" >
+    <p>
+        Result count: @resultCount
+        <RadzenRadioButtonList @bind-Value="@_imageWidth" TValue="int">
             <Items>
-                <RadzenRadioButtonListItem Text="Small" Value="100" />
-                <RadzenRadioButtonListItem Text="Medium" Value="200" />
-                <RadzenRadioButtonListItem Text="Large" Value="300" />
+                <RadzenRadioButtonListItem Text="Small" Value="100"/>
+                <RadzenRadioButtonListItem Text="Medium" Value="200"/>
+                <RadzenRadioButtonListItem Text="Large" Value="300"/>
             </Items>
         </RadzenRadioButtonList>
-        </p>
+    </p>
     <table class="table" id="searchResult">
         <thead>
         <tr>
@@ -72,8 +73,16 @@
                 <td>
                     <img src="@card.PrintInfo?.Images?.Normal" width="@_imageWidth"/>
                 </td>
-                <td>@card.Card.Name</td>
-                <td>@card.Card.TypeLine<br/>@card.Card.OracleText</td>
+                <td>
+                    <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank"/>
+                    <br/>
+                    @card.Card.Name
+                    <br/>
+                    @card.PrintInfo.SetName
+                </td>
+                <td>
+                    @card.Card.TypeLine<br/>@card.Card.OracleText
+                </td>
                 <td>@card.Card.ReprintInfos?.Length</td>
             </tr>
         }
@@ -111,16 +120,15 @@
     protected override void OnInitialized()
     {
         _setData = InventoryService.GetAllSets();
-       
     }
-    
-  
+
+
     void OnChange(object value, string name)
     {
         if ("SetFilter".Equals(name))
         {
             _databaseQueryData.SetCode = _setData.FirstOrDefault(s => s.Name == (value?.ToString() ?? ""))?.Code ?? "";
         }
-        // console.Log($"{name} value changed to {value}");
+    // console.Log($"{name} value changed to {value}");
     }
 }
