@@ -18,7 +18,7 @@ namespace MtgDatabase
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
         void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
 
-        Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
+        Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
         SetInfo[] GetAllSets();
     }
 
@@ -69,13 +69,13 @@ namespace MtgDatabase
                    ?? Array.Empty<SetInfo>();
         }
 
-        public Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
+        public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
         {
             return Task.Run(() =>
             {
                 if (!(queryData?.ContainsValidSearch() ?? false))
                 {
-                    return Array.Empty<FoundMagicCard>();
+                    return Array.Empty<QueryableMagicCard>();
                 }
 
                 try
@@ -106,36 +106,38 @@ namespace MtgDatabase
                         query = query?.Where(c => c.SetCode.Equals(queryData.SetCode, StringComparison.InvariantCultureIgnoreCase));
                     }
 
-                    var result = new List<FoundMagicCard>();
-                    var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
+                  
+                    // var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
 
-                    if (!queryData.ResultPerPrinting)
-                    {
-                        result = found.Select(c => new FoundMagicCard()
-                        {
-                            Card = c, PrintInfo = c.ReprintInfos?.LastOrDefault() ?? new ReprintInfo()
-                        }).ToList();
-                    }
-                    else
-                    {
-                        foreach (var card in found)
-                        {
-                            result.AddRange(
-                                card.ReprintInfos.Select(p => new FoundMagicCard() {Card = card, PrintInfo = p,}));
-                        }
-                    }
+                    // if (!queryData.ResultPerPrinting)
+                    // {
+                    //     result = found.Select(c => new FoundMagicCard()
+                    //     {
+                    //         Card = c, PrintInfo = c.ReprintInfos?.LastOrDefault() ?? new ReprintInfo()
+                    //     }).ToList();
+                    // }
+                    // else
+                    // {
+                    //     foreach (var card in found)
+                    //     {
+                    //         result.AddRange(
+                    //             card.ReprintInfos.Select(p => new FoundMagicCard() {Card = card, PrintInfo = p,}));
+                    //     }
+                    // }
 
-                    return queryData.ResultSortOrder switch
+                    var result= queryData.ResultSortOrder switch
                     {
-                        ResultSortOrder.ByName => result.OrderBy(c => c.Card.Name).ToArray(),
-                        ResultSortOrder.ByCollectorNumber => result.OrderBy(c => c.Card.CollectorNumber).ToArray(),
-                        _ => result.ToArray()
+                        ResultSortOrder.ByName => query?.OrderBy(c => c.Name)?.ToArray(),
+                        ResultSortOrder.ByCollectorNumber => query?.OrderBy(c => c.CollectorNumber)?.ToArray(),
+                        _ => query?.ToArray()
                     };
+
+                    return result ?? Array.Empty<QueryableMagicCard>();
                 }
                 catch (Exception error)
                 {
                     _logger.LogError($"Error running query: {error}");
-                    return Array.Empty<FoundMagicCard>();
+                    return Array.Empty<QueryableMagicCard>();
                 }
             });
         }

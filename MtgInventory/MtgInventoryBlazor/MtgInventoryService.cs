@@ -93,7 +93,7 @@ namespace MtgInventoryBlazor
             }
         }
 
-        public async Task<FoundMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
+        public async Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
         {
             RequestToastInfo("Starting card search", "Card search");
 

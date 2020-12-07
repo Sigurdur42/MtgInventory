@@ -71,21 +71,21 @@
         {
             <tr>
                 <td>
-                    <img src="@card.Card?.Images?.Normal" width="@_imageWidth"/>
+                    <img src="@card?.Images?.Normal" width="@_imageWidth"/>
                 </td>
                 <td>
                     <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank"/>
                     <br/>
-                    @card.Card.Name
+                    @card.Name
                     <br/>
-                    @card.Card.SetCode
+                    @card.SetCode
                     <br/>
-                    @card.Card.SetName
+                    @card.SetName
                 </td>
                 <td>
-                    @card.Card.TypeLine<br/>@card.Card.OracleText
+                    @card.TypeLine<br/>@card.OracleText
                 </td>
-                <td>@card.Card.ReprintInfos?.Length</td>
+                <td>@card.ReprintInfos?.Length</td>
             </tr>
         }
         </tbody>
@@ -100,7 +100,7 @@
     private int resultCount = 0;
     private int _imageWidth = 300;
 
-    public ObservableCollection<FoundMagicCard> _queryResult = new ObservableCollection<FoundMagicCard>();
+    public ObservableCollection<QueryableMagicCard> _queryResult = new ObservableCollection<QueryableMagicCard>();
 
     private async void StartSearchAsync()
     {
