@@ -30,7 +30,7 @@ namespace MtgDatabase.Database
             var mapper = BsonMapper.Global;
 
             mapper.Entity<QueryableMagicCard>()
-                .Id(x => x.Name);
+                .Id(x => x.Id);
             
             IsInitialized = true;
         }
@@ -41,6 +41,8 @@ namespace MtgDatabase.Database
             Cards?.EnsureIndex(c => c.IsBasicLand);
             Cards?.EnsureIndex(c => c.IsToken);
             Cards?.EnsureIndex(c => c.IsCreature);
+            
+            Cards?.EnsureIndex(c => c.SetCode);
             
             // Cards?.EnsureIndex(c => c.SetCodes);
         }

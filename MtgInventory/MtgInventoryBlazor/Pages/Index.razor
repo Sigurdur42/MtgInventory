@@ -71,14 +71,16 @@
         {
             <tr>
                 <td>
-                    <img src="@card.PrintInfo?.Images?.Normal" width="@_imageWidth"/>
+                    <img src="@card.Card?.Images?.Normal" width="@_imageWidth"/>
                 </td>
                 <td>
                     <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank"/>
                     <br/>
                     @card.Card.Name
                     <br/>
-                    @card.PrintInfo.SetName
+                    @card.Card.SetCode
+                    <br/>
+                    @card.Card.SetName
                 </td>
                 <td>
                     @card.Card.TypeLine<br/>@card.Card.OracleText
@@ -96,7 +98,7 @@
     private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();
 
     private int resultCount = 0;
-    private int _imageWidth = 100;
+    private int _imageWidth = 300;
 
     public ObservableCollection<FoundMagicCard> _queryResult = new ObservableCollection<FoundMagicCard>();
 

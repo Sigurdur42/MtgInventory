@@ -7,25 +7,26 @@ namespace MtgDatabase.Models
 {
     public class QueryableMagicCardFactory
     {
-        public QueryableMagicCard Create(IEnumerable<ScryfallCard> cards)
+        public QueryableMagicCard Create(ScryfallCard card)
         {
-            var allCards = cards.ToArray();
-            var card = allCards.First();
-
-            var legalities = CalculateLegalities(allCards);
-            var reprintInfos = CalculateReprints(allCards);
+            // var legalities = CalculateLegalities(allCards);
+            // var reprintInfos = CalculateReprints(card);
             var result = new QueryableMagicCard()
             {
                 Name = card.Name,
                 TypeLine = card.TypeLine,
-                ReprintInfos = reprintInfos,
-                Legalities = legalities,
-                IsBasicLand = reprintInfos.Any(r => r.Rarity == Rarity.BasicLand),
+                Rarity = card.Rarity.ToRarity(card.TypeLine),
+                // ReprintInfos = reprintInfos,
+                // Legalities = legalities,
+                // IsBasicLand = reprintInfos.Any(r => r.Rarity == Rarity.BasicLand),
                 CollectorNumber = card.CollectorNumber,
-                SetCodes = string.Join("", allCards.Select(r => $" {r.Set} ")),
                 OracleText = card.OracleText,
+                Images = CalculateImages(card),
+                SetCode = card.Set,
+                SetName = card.SetName,
             };
 
+            result.IsBasicLand = result.Rarity == Rarity.BasicLand;
             UpdateFromTypeLine(result, card.TypeLine);
             return result;
         }
@@ -46,17 +47,17 @@ namespace MtgDatabase.Models
             card.IsPlaneswalker = typeLine.Contains("planeswalker", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public ReprintInfo[] CalculateReprints(ScryfallCard[] cards)
-        {
-            return cards.Select(c => new ReprintInfo()
-            {
-                Rarity = c.Rarity.ToRarity(c.TypeLine),
-                SetCode = c.Set,
-                SetName = c.SetName,
-                CollectorNumber = c.CollectorNumber,
-                Images = CalculateImages(c),
-            }).ToArray();
-        }
+        // public ReprintInfo[] CalculateReprints(ScryfallCard[] cards)
+        // {
+        //     return cards.Select(c => new ReprintInfo()
+        //     {
+        //         Rarity = c.Rarity.ToRarity(c.TypeLine),
+        //         SetCode = c.Set,
+        //         SetName = c.SetName,
+        //         CollectorNumber = c.CollectorNumber,
+        //         Images = CalculateImages(c),
+        //     }).ToArray();
+        // }
 
         public CardImages CalculateImages(ScryfallCard card)
         {
@@ -95,16 +96,16 @@ namespace MtgDatabase.Models
             return result;
         }
 
-        public Legality[] CalculateLegalities(ScryfallCard[] cards)
-        {
-            var legalities = cards
-                .SelectMany(c => c.Legalities)
-                .OrderBy(l => l.Key)
-                .ToArray();
-
-            return legalities.Select(c =>
-                    new Legality() {Format = c.Key.ToSanctionedFormat(), IsLegal = c.Value.ToLegalityState(),})
-                .ToArray();
-        }
+        // public Legality[] CalculateLegalities(ScryfallCard card)
+        // {
+        //     var legalities = cards
+        //         .SelectMany(c => c.Legalities)
+        //         .OrderBy(l => l.Key)
+        //         .ToArray();
+        //
+        //     return legalities.Select(c =>
+        //             new Legality() {Format = c.Key.ToSanctionedFormat(), IsLegal = c.Value.ToLegalityState(),})
+        //         .ToArray();
+        // }
     }
 }

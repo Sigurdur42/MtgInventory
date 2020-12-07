@@ -12,12 +12,15 @@ namespace MtgDatabase.Models
 
         public ReprintInfo[] ReprintInfos { get; set; } = Array.Empty<ReprintInfo>();
 
-        public string SetCodes { get; set; } = "";
+        public string SetCode { get; set; } = "";
 
         public string OracleText { get; set; } = "";
 
-        public Legality[] Legalities { get; set; } = Array.Empty<Legality>();
+        // public Legality[] Legalities { get; set; } = Array.Empty<Legality>();
+        public CardImages Images { get; set; } = new CardImages();
 
+        public Rarity Rarity { get; set; } = Rarity.Unknown;
+        
         public string CollectorNumber { get; set; } = "";
         
         public bool IsBasicLand { get; set; }
@@ -33,6 +36,7 @@ namespace MtgDatabase.Models
         public bool IsLegendary { get; set; }
         public bool IsPlaneswalker { get; set; }
         public bool IsSnow { get; set; }
+        public string SetName { get; set; } = "";
 
         // TODO: More properties
     }

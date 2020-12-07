@@ -103,13 +103,8 @@ namespace MtgDatabase
 
                     if (!string.IsNullOrWhiteSpace(queryData.SetCode))
                     {
-                        query = query
-                            ?.Where(c =>
-                                c.SetCodes.Contains(queryData.SetCode, StringComparison.InvariantCultureIgnoreCase));
+                        query = query?.Where(c => c.SetCode.Equals(queryData.SetCode, StringComparison.InvariantCultureIgnoreCase));
                     }
-
-
-                    // query = query?.OrderBy(c => c.Name);
 
                     var result = new List<FoundMagicCard>();
                     var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
@@ -169,9 +164,9 @@ namespace MtgDatabase
             _logger.LogTrace($"Retrieving all cards from cache took {stopwatch.Elapsed} for {allCards.Length} cards");
 
             stopwatch.Restart();
-            var groupedByName = allCards.GroupBy(c => c.Name).ToArray();
-            _logger.LogTrace($"Found {groupedByName.Length} distinct cards in {stopwatch.Elapsed}");
-            stopwatch.Restart();
+            // var groupedByName = allCards.GroupBy(c => c.Name).ToArray();
+            // _logger.LogTrace($"Found {groupedByName.Length} distinct cards in {stopwatch.Elapsed}");
+            // stopwatch.Restart();
 
             // TEST ONLY
             // var groupedTypelines = allCards
@@ -185,7 +180,7 @@ namespace MtgDatabase
             var cardFactory = new QueryableMagicCardFactory();
             var cardsToInsert = new List<QueryableMagicCard>();
             var cardsToUpdate = new List<QueryableMagicCard>();
-            foreach (var group in groupedByName)
+            foreach (var group in allCards)
             {
                 var card = cardFactory.Create(group);
 
