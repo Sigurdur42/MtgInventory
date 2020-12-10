@@ -75,7 +75,8 @@ namespace MtgDatabase
                            ReleaseDate = s.ReleaseDate,
                            IsDigital = s.IsDigital,
                            SetType = s.SetType,
-                           IconSvgUri = s.IconSvgUri?.AbsolutePath != null ?"https://c2.scryfall.com" + s.IconSvgUri?.AbsolutePath : "",
+                           IconSvgUri = s.IconSvgUri?.AbsolutePath != null ? "https://c2.scryfall.com" + s.IconSvgUri?.AbsolutePath : "",
+                           CardCount = s.card_count,
                        })
                        ?.ToArray()
                    ?? Array.Empty<SetInfo>();

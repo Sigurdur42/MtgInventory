@@ -12,5 +12,6 @@ namespace MtgDatabase.Models
         public string SetType { get; set; } = "";
 
         public string IconSvgUri { get; set; } = "";
+        public int CardCount { get; set; }
     }
 }
