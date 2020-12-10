@@ -8,7 +8,6 @@
 <p>
     MY SETS<br/> TODO: Summary
     <br/>
-    <RadzenButton Click=@(args => OnRebuildSetData()) Text="Rebuild Set Data" />
 </p>
 
 <p>
@@ -16,16 +15,45 @@
                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 FilterMode="FilterMode.Advanced"
                 AllowPaging="false" PageSize="100"
-                AllowSorting="true" Data="@_setData" TItem="SetInfo" >
+                AllowSorting="true" Data="@_setData" TItem="SetInfo">
         <Columns>
+            @* <RadzenGridColumn TItem="SetInfo" Property="Code" Title="Actions" Sortable="false" Filterable="false"> *@
+            @*     <Template Context="data"> *@
+            @*         <img src="@data.IconSvgUri" style="width:100px"/> *@
+            @*     </Template> *@
+            @* </RadzenGridColumn> *@
             <RadzenGridColumn TItem="SetInfo" Property="Code" Title="Actions" Sortable="false" Filterable="false">
-
                 <Template Context="data">
-                    <RadzenButton Click=@(args => OnRebuildCards(@data)) Text="Rebuild Cards" ButtonStyle="ButtonStyle.Light" />
+                    <RadzenButton Click=@(args => OnRebuildCards(@data)) Text="Rebuild Cards" ButtonStyle="ButtonStyle.Light"/>
                 </Template>
             </RadzenGridColumn>
+
             <RadzenGridColumn TItem="SetInfo" Property="Code" Title="Code"/>
             <RadzenGridColumn TItem="SetInfo" Property="Name" Title="Name"/>
+            <RadzenGridColumn TItem="SetInfo" Property="ReleaseDate" Title="ReleaseDate"/>
+            <RadzenGridColumn TItem="SetInfo" Property="IsDigital" Title="IsDigital"/>
+            <RadzenGridColumn TItem="SetInfo" Title="Details" Sortable="false" Filterable="false">
+                <Template Context="data">
+                    <RadzenCard Style="width:300px;">
+                        <div class="row">
+                            <div class="col-md-4">
+                                IsDigital:
+                            </div>
+                            <div class="col-md-8">
+                                <div>@data.IsDigital</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                SetType:
+                            </div>
+                            <div class="col-md-8">
+                                <div>@data.SetType</div>
+                            </div>
+                        </div>
+                    </RadzenCard>
+                </Template>
+            </RadzenGridColumn>
 
             @* <RadzenGridColumn TItem="Employee" Property="Photo" Title="Photo" Sortable="false" Filterable="false"> *@
             @*     <Template Context="data"> *@

@@ -45,6 +45,10 @@ namespace MtgDatabase
             RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
         }
 
+        public void RebuildAllSetData()
+        {
+        }
+
         private ScryfallConfiguration? _scryfallConfiguration;
 
         public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
@@ -64,7 +68,15 @@ namespace MtgDatabase
         {
             return _scryfallService.ScryfallSets
                        ?.FindAll()
-                       ?.Select(s => new SetInfo() {Code = s.Code, Name = s.Name,})
+                       ?.Select(s => new SetInfo()
+                       {
+                           Code = s.Code,
+                           Name = s.Name,
+                           ReleaseDate = s.ReleaseDate,
+                           IsDigital = s.IsDigital,
+                           SetType = s.SetType,
+                           IconSvgUri = s.IconSvgUri?.AbsolutePath != null ?"https://c2.scryfall.com" + s.IconSvgUri?.AbsolutePath : "",
+                       })
                        ?.ToArray()
                    ?? Array.Empty<SetInfo>();
         }
@@ -106,7 +118,7 @@ namespace MtgDatabase
                         query = query?.Where(c => c.SetCode.Equals(queryData.SetCode, StringComparison.InvariantCultureIgnoreCase));
                     }
 
-                  
+
                     // var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
 
                     // if (!queryData.ResultPerPrinting)
@@ -125,7 +137,7 @@ namespace MtgDatabase
                     //     }
                     // }
 
-                    var result= queryData.ResultSortOrder switch
+                    var result = queryData.ResultSortOrder switch
                     {
                         ResultSortOrder.ByName => query?.OrderBy(c => c.Name)?.ToArray(),
                         ResultSortOrder.ByCollectorNumber => query?.OrderBy(c => c.CollectorNumber)?.ToArray(),
