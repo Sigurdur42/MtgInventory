@@ -17,6 +17,7 @@ namespace MtgDatabase
     {
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
         void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
+        void RebuildSetData(SetInfo setInfo);
 
         Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
         SetInfo[] GetAllSets();
@@ -45,8 +46,21 @@ namespace MtgDatabase
             RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
         }
 
-        public void RebuildAllSetData()
+        public void RebuildSetData(SetInfo setInfo)
         {
+            var found = _scryfallService.ScryfallSets?.Query()?.Where(s => s.Code == setInfo.Code)?.FirstOrDefault();
+            if (found == null)
+            {
+                return;
+            }
+
+            var oldDate = found.UpdateDateUtc;
+            found.UpdateDateUtc = DateTime.MinValue;
+            _scryfallService.ScryfallSets?.Update(found);
+            RebuildInternalDatabase(false);
+            
+            found.UpdateDateUtc = oldDate;
+            _scryfallService.ScryfallSets?.Update(found);
         }
 
         private ScryfallConfiguration? _scryfallConfiguration;

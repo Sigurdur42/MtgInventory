@@ -42,7 +42,12 @@ namespace MtgInventoryBlazor
         {
             RequestToastToDisplay?.Invoke(
                 this,
-                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Success, Header = "Init DB", Message = "Finished DB init"});
+                new RequestToastToDisplayEventArgs()
+                {
+                    Category = ToastCategory.Success,
+                    Header = "Init DB",
+                    Message = "Finished DB init"
+                });
         }
 
         #region Toast Messages
@@ -51,28 +56,48 @@ namespace MtgInventoryBlazor
         {
             _logger.Log(LogLevel.Error, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Error, Header = header, Message = message});
+                new RequestToastToDisplayEventArgs()
+                {
+                    Category = ToastCategory.Error,
+                    Header = header,
+                    Message = message
+                });
         }
 
         public void RequestToastWarning(string message, string header)
         {
             _logger.Log(LogLevel.Warning, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Warning, Header = header, Message = message});
+                new RequestToastToDisplayEventArgs()
+                {
+                    Category = ToastCategory.Warning,
+                    Header = header,
+                    Message = message
+                });
         }
 
         public void RequestToastSuccess(string message, string header)
         {
             _logger.Log(LogLevel.Information, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Success, Header = header, Message = message});
+                new RequestToastToDisplayEventArgs()
+                {
+                    Category = ToastCategory.Success,
+                    Header = header,
+                    Message = message
+                });
         }
 
         public void RequestToastInfo(string message, string header)
         {
             _logger.Log(LogLevel.Information, $"{header}: {message}");
             RequestToastToDisplay?.Invoke(this,
-                new RequestToastToDisplayEventArgs() {Category = ToastCategory.Info, Header = header, Message = message});
+                new RequestToastToDisplayEventArgs()
+                {
+                    Category = ToastCategory.Info,
+                    Header = header,
+                    Message = message
+                });
         }
 
         #endregion
@@ -104,11 +129,26 @@ namespace MtgInventoryBlazor
                 stopwatch.Stop();
                 RequestToastSuccess($"Finished card search with {t.Result.Length} cards in {stopwatch.Elapsed}", "Card search");
             });
-            
+
             return await task;
         }
 
-        public SetInfo[] GetAllSets() => _mtgDatabaseService.GetAllSets().OrderBy(s=>s.Name).ToArray();
+        public SetInfo[] GetAllSets() => _mtgDatabaseService.GetAllSets().OrderBy(s => s.Name).ToArray();
 
+        public async Task RebuildSetDataAsync(SetInfo setInfo)
+        {
+            if (setInfo == null)
+            {
+                return;
+            }
+            
+            await Task.Run(() =>
+            {
+                RequestToastInfo($"Start set rebuild for {setInfo?.Code}...", "Sets");
+                
+                _mtgDatabaseService.RebuildSetData(setInfo);
+                RequestToastSuccess($"Done rebuilding for set {setInfo?.Code}...", "Sets");
+            });
+        }
     }
 }
