@@ -122,6 +122,12 @@ namespace MtgDatabase
                         query = query?.Where(c => c.IsToken);
                     }
 
+
+                    if (queryData.IsBasicLand)
+                    {
+                        query = query?.Where(c => c.IsBasicLand);
+                    }
+
                     if (!string.IsNullOrWhiteSpace(queryData.Name))
                     {
                         if (queryData.MatchExactName)
@@ -140,25 +146,6 @@ namespace MtgDatabase
                     {
                         query = query?.Where(c => c.SetCode.Equals(queryData.SetCode, StringComparison.InvariantCultureIgnoreCase));
                     }
-
-
-                    // var found = query?.ToArray() ?? Array.Empty<QueryableMagicCard>();
-
-                    // if (!queryData.ResultPerPrinting)
-                    // {
-                    //     result = found.Select(c => new FoundMagicCard()
-                    //     {
-                    //         Card = c, PrintInfo = c.ReprintInfos?.LastOrDefault() ?? new ReprintInfo()
-                    //     }).ToList();
-                    // }
-                    // else
-                    // {
-                    //     foreach (var card in found)
-                    //     {
-                    //         result.AddRange(
-                    //             card.ReprintInfos.Select(p => new FoundMagicCard() {Card = card, PrintInfo = p,}));
-                    //     }
-                    // }
 
                     var result = queryData.ResultSortOrder switch
                     {
@@ -184,7 +171,7 @@ namespace MtgDatabase
             }
 
             var oldestCard =
-                _scryfallService.ScryfallCards?.Query().OrderBy(c => c.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ??
+                _database.Cards?.Query().OrderBy(c => c.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ??
                 DateTime.MinValue;
             var oldestDate = _scryfallConfiguration?.IsCardOutdated(oldestCard) ?? false;
             if (!clearDatabase && oldestDate)

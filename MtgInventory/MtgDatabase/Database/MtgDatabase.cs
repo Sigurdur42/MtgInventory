@@ -43,6 +43,7 @@ namespace MtgDatabase.Database
             Cards?.EnsureIndex(c => c.IsCreature);
             
             Cards?.EnsureIndex(c => c.SetCode);
+            Cards?.EnsureIndex(c => c.UpdateDateUtc);
 
             // Cards?.EnsureIndex(c => c.SetCodes);
         }

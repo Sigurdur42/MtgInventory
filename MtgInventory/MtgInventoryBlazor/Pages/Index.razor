@@ -36,6 +36,10 @@
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsToken">Token only</InputCheckbox>
         </div>
         <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Basic Land Only</label>
+            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsBasicLand">Basic only</InputCheckbox>
+        </div>
+        <div class="col-12 row">
             <span class="col-2"/>
             <input type="submit" class="form-control col-1 btn-primary" value="Search!"/>
         </div>
@@ -78,12 +82,17 @@
                     @card.SetCode
                     <br/>
                     @card.SetName
+                    <br/>
+                    Collector: &nbsp;: @card.CollectorNumber
                 </td>
                 <td>
 
-                    EUR:&nbsp;@card.Eur
+                    €:&nbsp;@card.Eur
                     <br/>
-                    USD:&nbsp;@card.Usd
+                    € Foil:&nbsp;@card.EurFoil
+                    <br/>
+                    $:&nbsp;@card.Usd
+                    <br/>$ Foil:&nbsp;@card.UsdFoil
                     <br/>
                     Tix:&nbsp;@card.Tix
                 </td>

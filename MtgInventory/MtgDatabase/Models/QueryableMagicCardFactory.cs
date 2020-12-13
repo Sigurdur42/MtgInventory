@@ -30,6 +30,8 @@ namespace MtgDatabase.Models
                 Eur = card.Price.Eur,
                 EurFoil = card.Price.EurFoil,
                 Tix = card.Price.Tix,
+                
+                UpdateDateUtc = DateTime.Now,
             };
 
             result.UniqueId = $"{result.Name}_{result.SetCode}_{result.CollectorNumber}".ToUpperInvariant();
