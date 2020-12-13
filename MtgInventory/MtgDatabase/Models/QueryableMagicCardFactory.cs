@@ -24,8 +24,16 @@ namespace MtgDatabase.Models
                 Images = CalculateImages(card),
                 SetCode = card.Set,
                 SetName = card.SetName,
+                
+                Usd = card.Price.Usd,
+                UsdFoil = card.Price.UsdFoil,
+                Eur = card.Price.Eur,
+                EurFoil = card.Price.EurFoil,
+                Tix = card.Price.Tix,
             };
 
+            result.UniqueId = $"{result.Name}_{result.SetCode}_{result.CollectorNumber}".ToUpperInvariant();
+            
             result.IsBasicLand = result.Rarity == Rarity.BasicLand;
             UpdateFromTypeLine(result, card.TypeLine);
             return result;

@@ -19,8 +19,8 @@ namespace ScryfallApiServices.Database
         void Configure(DirectoryInfo folder);
         void ShutDown();
         void ClearDatabase();
-        void InsertScryfallCards(ScryfallCard[] cards);
-        void InsertScryfallSets(ScryfallSet[] sets);
+        void InsertOrUpdateScryfallCards(ScryfallCard[] cards);
+        void InsertOrUpdateScryfallSets(ScryfallSet[] sets);
     }
 
     public class ScryfallDatabase : IScryfallDatabase
@@ -65,7 +65,7 @@ namespace ScryfallApiServices.Database
             ScryfallCards?.DeleteAll();
         }
 
-        public void InsertScryfallCards(ScryfallCard[] cards)
+        public void InsertOrUpdateScryfallCards(ScryfallCard[] cards)
         {
             VerifyConfigured();
 
@@ -100,7 +100,7 @@ namespace ScryfallApiServices.Database
             ScryfallCards?.EnsureIndex(e => e.UpdateDateUtc);
         }
 
-        public void InsertScryfallSets(ScryfallSet[] sets)
+        public void InsertOrUpdateScryfallSets(ScryfallSet[] sets)
         {
             VerifyConfigured();
             _logger.LogInformation("Cleaning existing set info...");

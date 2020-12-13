@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace ScryfallApiServices
 {
@@ -13,6 +14,16 @@ namespace ScryfallApiServices
             builder.AppendLine($"{nameof(UpdateSetCacheInDays)}: {UpdateSetCacheInDays}");
             builder.AppendLine($"{nameof(UpdateCardCacheInDays)}: {UpdateCardCacheInDays}");
             return builder.ToString();
+        }
+
+        public bool IsSetOutdated(DateTime? setUpdateDate)
+        {
+            return DateTime.Now.AddDays(-1 * UpdateSetCacheInDays).Date > (setUpdateDate ?? DateTime.MinValue).Date;
+        }
+        
+        public bool IsCardOutdated(DateTime? setUpdateDate)
+        {
+            return DateTime.Now.AddDays(-1 * UpdateCardCacheInDays).Date > (setUpdateDate ?? DateTime.MinValue).Date;
         }
     }
 }

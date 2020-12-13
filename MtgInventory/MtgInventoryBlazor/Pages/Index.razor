@@ -28,10 +28,6 @@
 
         </div>
         <div class="col-12 row">
-            <label class="col-2 font-weight-bold">Show results per print</label>
-            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.ResultPerPrinting" displayname="Per printing"></InputCheckbox>
-        </div>
-        <div class="col-12 row">
             <label class="col-2 font-weight-bold">Match exact</label>
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
         </div>
@@ -62,6 +58,7 @@
         <tr>
             <th>Image</th>
             <th>Name</th>
+            <th>Price</th>
             <th>Type Line</th>
             <th>Reprints</th>
         </tr>
@@ -81,6 +78,14 @@
                     @card.SetCode
                     <br/>
                     @card.SetName
+                </td>
+                <td>
+
+                    EUR:&nbsp;@card.Eur
+                    <br/>
+                    USD:&nbsp;@card.Usd
+                    <br/>
+                    Tix:&nbsp;@card.Tix
                 </td>
                 <td>
                     @card.TypeLine<br/>@card.OracleText

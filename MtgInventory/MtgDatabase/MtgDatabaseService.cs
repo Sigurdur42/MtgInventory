@@ -16,8 +16,9 @@ namespace MtgDatabase
     public interface IMtgDatabaseService : IQueryableCardsProvider, IDisposable
     {
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
-        void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
+        void RefreshLocalDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
         void RebuildSetData(SetInfo setInfo);
+        void DownloadRebuildSetData(SetInfo setInfo);
 
         Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
         SetInfo[] GetAllSets();
@@ -29,6 +30,8 @@ namespace MtgDatabase
         private readonly ILogger<MtgDatabaseService> _logger;
         private readonly IScryfallService _scryfallService;
 
+        private ScryfallConfiguration? _scryfallConfiguration;
+
         public MtgDatabaseService(
             ILogger<MtgDatabaseService> logger,
             Database.MtgDatabase database,
@@ -39,7 +42,7 @@ namespace MtgDatabase
             _scryfallService = scryfallService;
         }
 
-        public void CreateDatabase(bool clearScryfallMirror, bool clearMtgDatabase)
+        public void RefreshLocalDatabase(bool clearScryfallMirror, bool clearMtgDatabase)
         {
             _scryfallService.RefreshLocalMirror(clearScryfallMirror);
 
@@ -58,12 +61,18 @@ namespace MtgDatabase
             found.UpdateDateUtc = DateTime.MinValue;
             _scryfallService.ScryfallSets?.Update(found);
             RebuildInternalDatabase(false);
-            
+
             found.UpdateDateUtc = oldDate;
             _scryfallService.ScryfallSets?.Update(found);
         }
 
-        private ScryfallConfiguration? _scryfallConfiguration;
+        public void DownloadRebuildSetData(SetInfo setInfo)
+        {
+            _scryfallService.MarkSetCardsAsOutdated(setInfo.Code);
+            var cards = _scryfallService.RefreshLocalMirrorForSet(setInfo.Code);
+
+            RebuildCardsFromScryfall(cards);
+        }
 
         public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
         {
@@ -78,27 +87,26 @@ namespace MtgDatabase
 
         public ILiteCollection<QueryableMagicCard>? Cards => _database?.Cards;
 
-        public SetInfo[] GetAllSets()
-        {
-            return _scryfallService.ScryfallSets
-                       ?.FindAll()
-                       ?.Select(s => new SetInfo()
-                       {
-                           Code = s.Code,
-                           Name = s.Name,
-                           ReleaseDate = s.ReleaseDate,
-                           IsDigital = s.IsDigital,
-                           SetType = s.SetType,
-                           IconSvgUri = s.IconSvgUri?.AbsolutePath != null ? "https://c2.scryfall.com" + s.IconSvgUri?.AbsolutePath : "",
-                           CardCount = s.card_count,
-                       })
-                       ?.ToArray()
-                   ?? Array.Empty<SetInfo>();
-        }
+        public SetInfo[] GetAllSets() =>
+            _scryfallService.ScryfallSets
+                ?.FindAll()
+                ?.Select(s => new SetInfo
+                {
+                    Code = s.Code,
+                    ParentSetCode = s.ParentSetCode,
+                    Name = s.Name,
+                    ReleaseDate = s.ReleaseDate,
+                    IsDigital = s.IsDigital,
+                    SetType = s.SetType,
+                    IconSvgUri = s.IconSvgUri?.AbsolutePath != null ? "https://c2.scryfall.com" + s.IconSvgUri?.AbsolutePath : "",
+                    CardCount = s.card_count,
+                    UpdateDateUtc = s.UpdateDateUtc
+                })
+                ?.ToArray()
+            ?? Array.Empty<SetInfo>();
 
-        public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData)
-        {
-            return Task.Run(() =>
+        public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData) =>
+            Task.Run(() =>
             {
                 if (!(queryData?.ContainsValidSearch() ?? false))
                 {
@@ -167,7 +175,6 @@ namespace MtgDatabase
                     return Array.Empty<QueryableMagicCard>();
                 }
             });
-        }
 
         private void RebuildInternalDatabase(bool clearDatabase)
         {
@@ -179,15 +186,15 @@ namespace MtgDatabase
             var oldestCard =
                 _scryfallService.ScryfallCards?.Query().OrderBy(c => c.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ??
                 DateTime.MinValue;
-            var oldestDate = DateTime.Now.AddDays(-1 * _scryfallConfiguration?.UpdateSetCacheInDays ?? 28);
-            if (!clearDatabase && oldestDate <= oldestCard)
+            var oldestDate = _scryfallConfiguration?.IsCardOutdated(oldestCard) ?? false;
+            if (!clearDatabase && oldestDate)
             {
                 // Cards are up to date - skip this
-                _logger.LogTrace($"All cards are up to date - skip rebuild");
+                _logger.LogTrace("All cards are up to date - skip rebuild");
                 return;
             }
 
-            _logger.LogTrace($"Retrieving all cards from cache...");
+            _logger.LogTrace("Retrieving all cards from cache...");
             var stopwatch = Stopwatch.StartNew();
             var allCards = _scryfallService.ScryfallCards?.FindAll().ToArray() ?? Array.Empty<ScryfallCard>();
             _logger.LogTrace($"Retrieving all cards from cache took {stopwatch.Elapsed} for {allCards.Length} cards");
@@ -206,14 +213,19 @@ namespace MtgDatabase
             // var dummy = string.Join(Environment.NewLine, groupedTypelines);
             // File.WriteAllText(@"C:\temp\typelines.txt", dummy);
 
+            RebuildCardsFromScryfall(allCards);
+        }
+
+        private void RebuildCardsFromScryfall(ScryfallCard[] allCards)
+        {
+            var stopwatch = Stopwatch.StartNew();
             var cardFactory = new QueryableMagicCardFactory();
             var cardsToInsert = new List<QueryableMagicCard>();
             var cardsToUpdate = new List<QueryableMagicCard>();
             foreach (var group in allCards)
             {
                 var card = cardFactory.Create(group);
-
-                var found = _database.Cards?.Query()?.Where(c => c.Name == card.Name)?.FirstOrDefault();
+                var found = _database.Cards?.Query()?.Where(c => c.UniqueId == card.UniqueId)?.FirstOrDefault();
                 if (found == null)
                 {
                     cardsToInsert.Add(card);

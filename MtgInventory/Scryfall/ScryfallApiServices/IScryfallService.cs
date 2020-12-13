@@ -21,5 +21,10 @@ namespace ScryfallApiServices
         
         void ShutDown();
         void RefreshLocalMirror(bool cleanDatabase);
+
+        void MarkSetCardsAsOutdated(string setCode);
+        void MarkSetsAsOutdated();
+
+        ScryfallCard[] RefreshLocalMirrorForSet(string setCode);
     }
 }

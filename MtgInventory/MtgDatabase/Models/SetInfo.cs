@@ -13,5 +13,7 @@ namespace MtgDatabase.Models
 
         public string IconSvgUri { get; set; } = "";
         public int CardCount { get; set; }
+        public string ParentSetCode { get; set; } = "";
+        public DateTime? UpdateDateUtc { get; set; }
     }
 }

@@ -10,19 +10,24 @@ using MkmApi.Entities;
 using MtgInventory.Service.Converter;
 using MtgInventory.Service.Models;
 using ScryfallApiServices;
-using ScryfallApiServices.Models;
 
 namespace MtgInventory.Service.Database
 {
     public sealed class CardDatabase : IDisposable
     {
-        private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<CardDatabase> _logger;
+        private readonly ILoggerFactory _loggerFactory;
         private LiteDatabase? _cardDatabase;
         private DetailedDatabaseBuilder? _detailedDatabaseBuilder;
         private LiteDatabase? _mkmDatabase;
         private LiteDatabase? _priceDatabase;
         
+        public CardDatabase(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<CardDatabase>();
+        }
+
         public ILiteCollection<CardPrice>? CardPrices { get; private set; }
         public bool IsInitialized { get; private set; }
 
@@ -33,25 +38,13 @@ namespace MtgInventory.Service.Database
         public ILiteCollection<Expansion>? MkmExpansion { get; private set; }
         public ILiteCollection<MkmProductInfo>? MkmProductInfo { get; private set; }
         public ILiteCollection<ScryfallApiCallStatistic>? ScryfallApiCallStatistics { get; private set; }
-   
 
-        public CardDatabase(ILoggerFactory loggerFactory)
-        {
-            _loggerFactory = loggerFactory;
-            _logger = loggerFactory.CreateLogger<CardDatabase>();
-        }
+        public void Dispose() => ShutDown();
 
         public void ClearDetailedCards()
         {
             _logger.LogInformation($"{nameof(ClearDetailedCards)}: Cleaning existing detailed card info...");
             MagicCards?.DeleteAll();
-        }
-
-       
-
-        public void Dispose()
-        {
-            ShutDown();
         }
 
         public void EnsureCardPriceIndex()
@@ -74,7 +67,7 @@ namespace MtgInventory.Service.Database
                 {
                     CountToday = 0,
                     CountTotal = 0,
-                    Today = DateTime.Now.Date,
+                    Today = DateTime.Now.Date
                 };
                 MkmApiCallStatistics?.Insert(found);
             }
@@ -91,7 +84,7 @@ namespace MtgInventory.Service.Database
                 {
                     ScryfallCountToday = 0,
                     ScryfallCountTotal = 0,
-                    Today = DateTime.Now.Date,
+                    Today = DateTime.Now.Date
                 };
                 ScryfallApiCallStatistics.Insert(found);
             }
@@ -107,7 +100,7 @@ namespace MtgInventory.Service.Database
             folder.EnsureExists();
             var databaseFile = Path.Combine(folder.FullName, "CardDatabase.db");
             _cardDatabase = new LiteDatabase(databaseFile);
-            
+
             _mkmDatabase = new LiteDatabase(Path.Combine(folder.FullName, "MkmDatabase.db"));
             _priceDatabase = new LiteDatabase(Path.Combine(folder.FullName, "PriceDatabase.db"));
 
@@ -117,7 +110,6 @@ namespace MtgInventory.Service.Database
             ScryfallApiCallStatistics = _mkmDatabase.GetCollection<ScryfallApiCallStatistic>();
             MkmAdditionalInfo = _mkmDatabase.GetCollection<MkmAdditionalCardInfo>();
             CardPrices = _priceDatabase.GetCollection<CardPrice>();
-
 
 
             MagicSets = _cardDatabase.GetCollection<DetailedSetInfo>();
@@ -174,7 +166,6 @@ namespace MtgInventory.Service.Database
             BulkInsertProductInfo(temp);
         }
 
-      
 
         public void RebuildDetailedDatabase()
         {
@@ -204,7 +195,7 @@ namespace MtgInventory.Service.Database
             {
                 found = new MkmAdditionalCardInfo
                 {
-                    MkmId = product.IdProduct,
+                    MkmId = product.IdProduct
                 };
 
                 MkmAdditionalInfo?.Insert(found);
@@ -233,7 +224,7 @@ namespace MtgInventory.Service.Database
                 {
                     CountToday = mkmStatistic.CountToday,
                     CountTotal = mkmStatistic.CountTotal,
-                    Today = mkmStatistic.Today,
+                    Today = mkmStatistic.Today
                 };
                 MkmApiCallStatistics?.Insert(newRecord);
             }
@@ -255,7 +246,7 @@ namespace MtgInventory.Service.Database
                 {
                     ScryfallCountToday = statistic.ScryfallCountToday,
                     ScryfallCountTotal = statistic.ScryfallCountTotal,
-                    Today = statistic.Today,
+                    Today = statistic.Today
                 };
                 ScryfallApiCallStatistics.Insert(newRecord);
             }
@@ -312,7 +303,7 @@ namespace MtgInventory.Service.Database
         internal void RebuildDetailedCardData()
         {
             _cardDatabase?.Pragma("CHECKPOINT", 10000);
-          ////  _scryfallDatabase?.Pragma("CHECKPOINT", 10000);
+            ////  _scryfallDatabase?.Pragma("CHECKPOINT", 10000);
             _mkmDatabase?.Pragma("CHECKPOINT", 10000);
 
             try
@@ -337,7 +328,7 @@ namespace MtgInventory.Service.Database
             finally
             {
                 _cardDatabase?.Pragma("CHECKPOINT", 1000);
-              ////  _scryfallDatabase?.Pragma("CHECKPOINT", 1000);
+                ////  _scryfallDatabase?.Pragma("CHECKPOINT", 1000);
                 _mkmDatabase?.Pragma("CHECKPOINT", 1000);
             }
         }
