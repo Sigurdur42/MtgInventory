@@ -95,6 +95,8 @@
                     <br/>$ Foil:&nbsp;@card.UsdFoil
                     <br/>
                     Tix:&nbsp;@card.Tix
+                    <br/>
+                    Updated:&nbsp;@card.UpdateDateUtc
                 </td>
                 <td>
                     @card.TypeLine<br/>@card.OracleText
@@ -137,7 +139,6 @@
     {
         _setData = InventoryService.GetAllSets();
     }
-
 
     void OnChange(object value, string name)
     {
