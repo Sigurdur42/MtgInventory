@@ -13,9 +13,9 @@ namespace MtgDatabase.Database
     {
         private LiteDatabase? _database;
 
-        public ILiteCollection<QueryableMagicCard>? Cards { get; private set; }
-
         public bool IsInitialized { get; private set; }
+
+        public ILiteCollection<QueryableMagicCard>? Cards { get; private set; }
 
         public void Configure(DirectoryInfo folder)
         {
@@ -26,12 +26,12 @@ namespace MtgDatabase.Database
 
             _database = new LiteDatabase(Path.Combine(folder.FullName, "MtgDatabase.db"));
             Cards = _database.GetCollection<QueryableMagicCard>();
-            
+
             var mapper = BsonMapper.Global;
 
             mapper.Entity<QueryableMagicCard>()
                 .Id(x => x.UniqueId);
-            
+
             IsInitialized = true;
         }
 
@@ -41,7 +41,7 @@ namespace MtgDatabase.Database
             Cards?.EnsureIndex(c => c.IsBasicLand);
             Cards?.EnsureIndex(c => c.IsToken);
             Cards?.EnsureIndex(c => c.IsCreature);
-            
+
             Cards?.EnsureIndex(c => c.SetCode);
             Cards?.EnsureIndex(c => c.UpdateDateUtc);
 

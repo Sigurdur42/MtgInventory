@@ -12,7 +12,7 @@ namespace MtgDatabase
             serviceCollection.AddSingleton<IMtgDatabaseService, MtgDatabaseService>();
             serviceCollection.AddSingleton<Database.MtgDatabase>();
             serviceCollection.AddSingleton<IMkmMapper, MkmMapper>();
-            
+
             return serviceCollection;
         }
     }

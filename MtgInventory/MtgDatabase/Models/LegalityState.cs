@@ -10,12 +10,11 @@ namespace MtgDatabase.Models
         Banned,
         Restricted
     }
-    
+
     public static class LegalityStateConverter
     {
-        public static LegalityState ToLegalityState(this string value)
-        {
-            return value?.ToUpperInvariant() switch
+        public static LegalityState ToLegalityState(this string value) =>
+            value?.ToUpperInvariant() switch
             {
                 "NOT_LEGAL" => LegalityState.NotLegal,
                 "LEGAL" => LegalityState.Legal,
@@ -23,6 +22,5 @@ namespace MtgDatabase.Models
                 "RESTRICTED" => LegalityState.Restricted,
                 _ => throw new InvalidCastException($"Cannot convert value {value} to legality")
             };
-        }
     }
 }

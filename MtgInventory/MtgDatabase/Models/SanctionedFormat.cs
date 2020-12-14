@@ -4,7 +4,7 @@ namespace MtgDatabase.Models
 {
     public enum SanctionedFormat
     {
-        Unknown=0,
+        Unknown = 0,
         Pauper,
         Commander,
         Standard,
@@ -19,7 +19,7 @@ namespace MtgDatabase.Models
         Vintage,
         Pioneer
     }
-    
+
     public static class SanctionedFormatConverter
     {
         public static SanctionedFormat ToSanctionedFormat(this string value)
@@ -40,7 +40,7 @@ namespace MtgDatabase.Models
                 "HISTORIC" => SanctionedFormat.Historic,
                 "VINTAGE" => SanctionedFormat.Vintage,
                 "PIONEER" => SanctionedFormat.Pioneer,
-                _ =>  SanctionedFormat.Unknown // throw new InvalidCastException($"Cannot convert value {value} to sanctioned format")
+                _ => SanctionedFormat.Unknown // throw new InvalidCastException($"Cannot convert value {value} to sanctioned format")
             };
 
             if (result == SanctionedFormat.Unknown)

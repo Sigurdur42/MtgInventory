@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using ScryfallApiServices.Models;
 
 namespace MtgDatabase.Models
@@ -11,7 +9,7 @@ namespace MtgDatabase.Models
         {
             // var legalities = CalculateLegalities(allCards);
             // var reprintInfos = CalculateReprints(card);
-            var result = new QueryableMagicCard()
+            var result = new QueryableMagicCard
             {
                 Name = card.Name,
                 TypeLine = card.TypeLine,
@@ -24,18 +22,16 @@ namespace MtgDatabase.Models
                 Images = CalculateImages(card),
                 SetCode = card.Set,
                 SetName = card.SetName,
-                
                 Usd = card.Price.Usd,
                 UsdFoil = card.Price.UsdFoil,
                 Eur = card.Price.Eur,
                 EurFoil = card.Price.EurFoil,
                 Tix = card.Price.Tix,
-                
-                UpdateDateUtc = DateTime.Now,
+                UpdateDateUtc = DateTime.Now
             };
 
             result.UniqueId = $"{result.Name}_{result.SetCode}_{result.CollectorNumber}".ToUpperInvariant();
-            
+
             result.IsBasicLand = result.Rarity == Rarity.BasicLand;
             UpdateFromTypeLine(result, card.TypeLine);
             return result;
@@ -95,13 +91,8 @@ namespace MtgDatabase.Models
                     case "border_crop":
                         result.BorderCrop = image.Uri;
                         break;
-
-                    default:
-                        // TODO: log this
-                        break;
                 }
             }
-
 
             return result;
         }

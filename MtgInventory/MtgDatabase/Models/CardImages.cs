@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MtgDatabase.Models
+﻿namespace MtgDatabase.Models
 {
     public class CardImages
     {
@@ -10,7 +8,7 @@ namespace MtgDatabase.Models
         public string Png { get; set; } = "";
         public string ArtCrop { get; set; } = "";
         public string BorderCrop { get; set; } = "";
-        
+
         // TODO: Shorten uri (fix + category)
     }
 }

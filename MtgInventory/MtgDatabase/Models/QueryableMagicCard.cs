@@ -1,5 +1,4 @@
 ﻿using System;
-using ScryfallApiServices.Models;
 
 namespace MtgDatabase.Models
 {
@@ -36,7 +35,7 @@ namespace MtgDatabase.Models
         public bool IsPlaneswalker { get; set; }
         public bool IsSnow { get; set; }
         public string SetName { get; set; } = "";
-        
+
         public DateTime UpdateDateUtc { get; set; }
 
         #region Price Data

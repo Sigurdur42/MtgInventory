@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MtgDatabase.Models
+﻿namespace MtgDatabase.Models
 {
     public class ReprintInfo
     {
@@ -10,8 +8,7 @@ namespace MtgDatabase.Models
         public Rarity Rarity { get; set; } = Rarity.Unknown;
 
         public string CollectorNumber { get; set; } = "";
-        
+
         public CardImages Images { get; set; } = new CardImages();
-        
     }
 }

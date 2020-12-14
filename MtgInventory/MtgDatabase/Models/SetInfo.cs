@@ -6,7 +6,7 @@ namespace MtgDatabase.Models
     {
         public string Code { get; set; } = "";
         public string Name { get; set; } = "";
-        
+
         public DateTime? ReleaseDate { get; set; }
         public bool IsDigital { get; set; }
         public string SetType { get; set; } = "";

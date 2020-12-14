@@ -11,9 +11,9 @@ namespace MtgDatabase.Models
         Mythic,
         BasicLand,
         Token,
-        Plane,
+        Plane
     }
-    
+
     public static class RarityConverter
     {
         public static Rarity ToRarity(this string value, string? argTypeLine)
@@ -23,8 +23,8 @@ namespace MtgDatabase.Models
             {
                 return Rarity.BasicLand;
             }
-            
-            if ((argTypeLine?.StartsWith("Plane ", StringComparison.InvariantCultureIgnoreCase) ?? false))
+
+            if (argTypeLine?.StartsWith("Plane ", StringComparison.InvariantCultureIgnoreCase) ?? false)
             {
                 return Rarity.Plane;
             }

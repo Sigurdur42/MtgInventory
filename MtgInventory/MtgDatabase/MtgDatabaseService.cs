@@ -122,7 +122,6 @@ namespace MtgDatabase
                         query = query?.Where(c => c.IsToken);
                     }
 
-
                     if (queryData.IsBasicLand)
                     {
                         query = query?.Where(c => c.IsBasicLand);
