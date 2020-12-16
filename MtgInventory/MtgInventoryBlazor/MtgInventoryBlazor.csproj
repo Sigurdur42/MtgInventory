@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\_content" />
+    <Folder Include="wwwroot\_manualContent\Radzen.Blazor\" />
   </ItemGroup>
 
 </Project>

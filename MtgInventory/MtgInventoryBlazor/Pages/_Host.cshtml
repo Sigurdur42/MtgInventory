@@ -18,11 +18,19 @@
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <link href="css/blazored-toast.css" rel="stylesheet" />
 
-    <link rel="stylesheet" href="_content/Radzen.Blazor/css/default-base.css">
-    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
 
-    <link href="_content/AntDesign/css/ant-design-blazor.css" rel="stylesheet" />
-    <script src="_content/AntDesign/js/ant-design-blazor.js"></script>    
+
+    <!-- Moved to manual folder as rider has issues with the scripts from
+    nuget packages
+    just replaced _content with _manualContent
+
+        Copy the static web assets to this structure after each nuget update
+    -->
+    <link href="_manualContent/AntDesign/css/ant-design-blazor.css" rel="stylesheet" />
+    <script src="_manualContent/AntDesign/js/ant-design-blazor.js"></script>
+
+    <link rel="stylesheet" href="_manualContent/Radzen.Blazor/css/default-base.css">
+    <script src="_manualContent/Radzen.Blazor/Radzen.Blazor.js"></script>
 
 </head>
 <body>
