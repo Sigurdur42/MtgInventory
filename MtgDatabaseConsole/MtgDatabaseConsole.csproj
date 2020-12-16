@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <AssemblyName>MtgDatabaseConsole</AssemblyName>
+        <RootNamespace>MtgDatabaseConsole</RootNamespace>
+        <Company>MtgDatabaseConsole</Company>
+        <Product>MtgDatabaseConsole</Product>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.8.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="AppSettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MtgDatabase\MtgDatabase.csproj" />
+      <ProjectReference Include="..\ScryfallApiServices\ScryfallApiServices.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,173 @@
+﻿@page "/"
+@using MtgDatabase
+@using MtgDatabase.Models
+@using System.Collections.ObjectModel
+@inject MtgInventoryService InventoryService
+@inject IMkmMapper MkmMapper
+
+<p>
+    <EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearchAsync">
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Card Name:</label>
+            <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
+        </div>
+
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Sets</label>
+            <div class="col-xl-6">
+                <RadzenAutoComplete AllowClear="true" TValue="string"
+                                    Data="@_setData"
+                                    TextProperty="Name"
+                                    ValueProperty="Code"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    Change=@(args => OnChange(args, "SetFilter")) />
+            </div>
+            <div class="col-xl-2">
+                <label>@_databaseQueryData.SetCode</label>
+            </div>
+
+        </div>
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Sets</label>
+            <div class="col-xl-6">
+                <AutoComplete Options="@_setData" OptionFormat='x => $"{x.Value.Name}"' OnSelectionChange="OnSelectedSetChange"  Placeholder="input here" />
+            </div>
+            <div class="col-xl-2">
+                <label>@_databaseQueryData.SetCode</label>
+            </div>
+
+        </div>       <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Match exact</label>
+            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
+        </div>
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Token Only</label>
+            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsToken">Token only</InputCheckbox>
+        </div>
+        <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Basic Land Only</label>
+            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsBasicLand">Basic only</InputCheckbox>
+        </div>
+        <div class="col-12 row">
+            <span class="col-2" />
+            <input type="submit" class="form-control col-1 btn-primary" value="Search!" />
+        </div>
+    </EditForm>
+</p>
+<hr />
+<p>
+<p>
+    Result count: @resultCount
+    <RadzenRadioButtonList @bind-Value="@_imageWidth" TValue="int">
+        <Items>
+            <RadzenRadioButtonListItem Text="Small" Value="100" />
+            <RadzenRadioButtonListItem Text="Medium" Value="200" />
+            <RadzenRadioButtonListItem Text="Large" Value="300" />
+        </Items>
+    </RadzenRadioButtonList>
+</p>
+<table class="table" id="searchResult">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Type Line</th>
+            <th>Reprints</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var card in _queryResult)
+        {
+            <tr>
+                <td>
+                    <img src="@card.Images?.Normal" width="@_imageWidth" />
+                </td>
+                <td>
+                    <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank" />
+                    <br />
+                    @card.Name+
+                    <br />
+                    @card.SetCode
+                    <br />
+                    @card.SetName
+                    <br />
+                    Collector: &nbsp;: @card.CollectorNumber
+                </td>
+                <td>
+
+                    €:&nbsp;@card.Eur
+                    <br />
+                    € Foil:&nbsp;@card.EurFoil
+                    <br />
+                    $:&nbsp;@card.Usd
+                    <br />$ Foil:&nbsp;@card.UsdFoil
+                    <br />
+                    Tix:&nbsp;@card.Tix
+                    <br />
+                    Updated:&nbsp;@card.UpdateDateUtc
+                </td>
+                <td>
+                    @card.TypeLine<br />@card.OracleText
+                </td>
+                <td>@card.ReprintInfos?.Length</td>
+            </tr>
+        }
+    </tbody>
+</table>
+</p>
+
+
+@code
+{
+    private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();
+
+    private int resultCount = 0;
+    private int _imageWidth = 300;
+
+    public ObservableCollection<QueryableMagicCard> _queryResult = new ObservableCollection<QueryableMagicCard>();
+
+    private async void StartSearchAsync()
+    {
+        var result = await InventoryService.SearchCardsAsync(_databaseQueryData);
+        _queryResult.Clear();
+        foreach (var res in result)
+        {
+            _queryResult.Add(res);
+        }
+
+        resultCount = result.Length;
+        // _queryResult.AddRange(result);
+
+        StateHasChanged();
+    }
+
+    private SetInfo[] _setData = Array.Empty<SetInfo>();
+
+    protected override void OnInitialized()
+    {
+        _setData = InventoryService.GetAllSets();
+    }
+
+    void OnChange(object value, string name)
+    {
+        if ("SetFilter".Equals(name))
+        {
+            _databaseQueryData.SetCode = _setData.FirstOrDefault(s => s.Name == (value?.ToString() ?? ""))?.Code ?? "";
+        }
+        // console.Log($"{name} value changed to {value}");
+    }
+
+    void OnSelectedSetChange(AutoCompleteOption item)
+    {
+        if (item?.Value is SetInfo value)
+        {
+            _databaseQueryData.SetCode = value.Code;
+        }
+        else
+        {
+            _databaseQueryData.SetCode = "";
+        }
+    }
+
+}

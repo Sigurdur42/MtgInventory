@@ -1,0 +1,132 @@
+﻿@page "/mtgsets"
+@using MtgDatabase
+@using MtgDatabase.Models
+@using System.Collections.ObjectModel
+@inject MtgInventoryService InventoryService
+@inject IMkmMapper MkmMapper
+
+<p>
+    MY SETS<br/> TODO: Summary
+    <br/>
+</p>
+
+<p>
+    <div class="row">
+        <RadzenGrid AllowFiltering="true"
+                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    FilterMode="FilterMode.Advanced"
+                    AllowPaging="false" PageSize="100"
+                    AllowSorting="true" Data="@_setData" TItem="SetInfo">
+            <Columns>
+                <RadzenGridColumn TItem="SetInfo" Property="Code" Title="Actions" Sortable="false" Filterable="false" Width="350px">
+                    <Template Context="data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <RadzenButton Click=@(args => OnRebuildCards(@data)) Text="Rebuild" ButtonStyle="ButtonStyle.Light"/>
+                            </div>
+                            <div class="col-md-6">
+                                <RadzenButton Click=@(args => OnDownloadAndRebuildCards(@data)) Text="Download" ButtonStyle="ButtonStyle.Light"/>
+                            </div>
+                        </div>
+                    </Template>
+                </RadzenGridColumn>
+
+                <RadzenGridColumn TItem="SetInfo" Property="Code" Title="Code"/>
+                <RadzenGridColumn TItem="SetInfo" Property="ParentSetCode" Title="ParentSetCode"/>
+                <RadzenGridColumn TItem="SetInfo" Property="Name" Title="Name" Width="250"/>
+                <RadzenGridColumn TItem="SetInfo" Property="ReleaseDate" Title="ReleaseDate"/>
+                <RadzenGridColumn TItem="SetInfo" Property="IsDigital" Title="IsDigital"/>
+                <RadzenGridColumn TItem="SetInfo" Property="CardCount" Title="CardCount"/>
+                <RadzenGridColumn TItem="SetInfo" Property="SetType" Title="SetType"/>
+                <RadzenGridColumn TItem="SetInfo" Property="UpdateDateUtc" Title="Updated"/>
+                @* <RadzenGridColumn TItem="SetInfo" Title="Details" Sortable="false" Filterable="false"> *@
+                @*     <Template Context="data"> *@
+                @*         <RadzenCard Style="width:300px;"> *@
+                @*             <div class="row"> *@
+                @*                 <div class="col-md-4"> *@
+                @*                     IsDigital: *@
+                @*                 </div> *@
+                @*                 <div class="col-md-8"> *@
+                @*                     <div>@data.IsDigital</div> *@
+                @*                 </div> *@
+                @*             </div> *@
+                @*             <div class="row"> *@
+                @*                 <div class="col-md-4"> *@
+                @*                     SetType: *@
+                @*                 </div> *@
+                @*                 <div class="col-md-8"> *@
+                @*                     <div>@data.SetType</div> *@
+                @*                 </div> *@
+                @*             </div> *@
+                @*         </RadzenCard> *@
+                @*     </Template> *@
+                @* </RadzenGridColumn> *@
+
+                @* <RadzenGridColumn TItem="Employee" Property="Photo" Title="Photo" Sortable="false" Filterable="false"> *@
+                @*     <Template Context="data"> *@
+                @*         <RadzenImage Path="@data?.Photo" /> *@
+                @*     </Template> *@
+                @* </RadzenGridColumn> *@
+                @* <RadzenGridColumn TItem="Employee" Property="LastName" Title="Last Name" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="FirstName" Title="First Name" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="Title" Title="Title" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="TitleOfCourtesy" Title="Title Of Courtesy" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="BirthDate" Title="Birth Date"> *@
+                @*     <Template Context="data"> *@
+                @*         @String.Format("{0:d}", data.BirthDate) *@
+                @*     </Template> *@
+                @* </RadzenGridColumn> *@
+                @* <RadzenGridColumn TItem="Employee" Property="HireDate" Title="Hire Date"> *@
+                @*     <Template Context="data"> *@
+                @*         @String.Format("{0:d}", data.HireDate) *@
+                @*     </Template> *@
+                @* </RadzenGridColumn> *@
+                @* <RadzenGridColumn TItem="Employee" Property="Address" Title="Address" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="City" Title="City" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="Region" Title="Region" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="PostalCode" Title="Postal Code" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="Country" Title="Country" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="HomePhone" Title="Home Phone" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="Extension" Title="Extension" /> *@
+                @* <RadzenGridColumn TItem="Employee" Property="Notes" Title="Notes" /> *@
+            </Columns>
+        </RadzenGrid>
+    </div>
+</p>
+
+
+@code
+{
+
+    void OnRebuildSetData()
+    {
+    }
+
+    async void OnRebuildCards(SetInfo set)
+    {
+        await InventoryService.RebuildSetDataAsync(set);
+    }
+
+    async void OnDownloadAndRebuildCards(SetInfo set)
+    {
+        await InventoryService.DownloadRebuildSetDataAsync(set);
+    }
+
+
+    private SetInfo[] _setData = Array.Empty<SetInfo>();
+
+    protected override void OnInitialized()
+    {
+        _setData = InventoryService.GetAllSets();
+    }
+
+
+    void OnChange(object value, string name)
+    {
+    // if ("SetFilter".Equals(name))
+    // {
+    //     _databaseQueryData.SetCode = _setData.FirstOrDefault(s => s.Name == (value?.ToString() ?? ""))?.Code ?? "";
+    // }
+    // console.Log($"{name} value changed to {value}");
+    }
+}
