@@ -4,6 +4,7 @@ Write something fancy here
 
 #Links
 - https://github.com/AdrienTorris/awesome-blazor
+- https://mudblazor.com/components/alert (MudBlazor components)
 
 # Open Tasks - Card Lookup
 
