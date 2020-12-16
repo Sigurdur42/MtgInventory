@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AntDesign" Version="0.4.1" />
     <PackageReference Include="Blazored.Toast" Version="3.1.2" />
     <PackageReference Include="MatBlazor" Version="2.8.0" />
     <PackageReference Include="Radzen.Blazor" Version="2.18.6" />

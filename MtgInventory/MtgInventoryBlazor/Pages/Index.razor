@@ -20,7 +20,7 @@
                                     TextProperty="Name"
                                     ValueProperty="Code"
                                     FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                    Change=@(args => OnChange(args, "SetFilter"))/>
+                                    Change=@(args => OnChange(args, "SetFilter")) />
             </div>
             <div class="col-xl-2">
                 <label>@_databaseQueryData.SetCode</label>
@@ -28,6 +28,15 @@
 
         </div>
         <div class="col-12 row">
+            <label class="col-2 font-weight-bold">Sets</label>
+            <div class="col-xl-6">
+                <AutoComplete Options="@_setData" OptionFormat='x => $"{x.Value.Name}"' OnSelectionChange="OnSelectedSetChange"  Placeholder="input here" />
+            </div>
+            <div class="col-xl-2">
+                <label>@_databaseQueryData.SetCode</label>
+            </div>
+
+        </div>       <div class="col-12 row">
             <label class="col-2 font-weight-bold">Match exact</label>
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
         </div>
@@ -40,25 +49,25 @@
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsBasicLand">Basic only</InputCheckbox>
         </div>
         <div class="col-12 row">
-            <span class="col-2"/>
-            <input type="submit" class="form-control col-1 btn-primary" value="Search!"/>
+            <span class="col-2" />
+            <input type="submit" class="form-control col-1 btn-primary" value="Search!" />
         </div>
     </EditForm>
 </p>
-<hr/>
+<hr />
 <p>
-    <p>
-        Result count: @resultCount
-        <RadzenRadioButtonList @bind-Value="@_imageWidth" TValue="int">
-            <Items>
-                <RadzenRadioButtonListItem Text="Small" Value="100"/>
-                <RadzenRadioButtonListItem Text="Medium" Value="200"/>
-                <RadzenRadioButtonListItem Text="Large" Value="300"/>
-            </Items>
-        </RadzenRadioButtonList>
-    </p>
-    <table class="table" id="searchResult">
-        <thead>
+<p>
+    Result count: @resultCount
+    <RadzenRadioButtonList @bind-Value="@_imageWidth" TValue="int">
+        <Items>
+            <RadzenRadioButtonListItem Text="Small" Value="100" />
+            <RadzenRadioButtonListItem Text="Medium" Value="200" />
+            <RadzenRadioButtonListItem Text="Large" Value="300" />
+        </Items>
+    </RadzenRadioButtonList>
+</p>
+<table class="table" id="searchResult">
+    <thead>
         <tr>
             <th>Image</th>
             <th>Name</th>
@@ -66,46 +75,46 @@
             <th>Type Line</th>
             <th>Reprints</th>
         </tr>
-        </thead>
-        <tbody>
+    </thead>
+    <tbody>
         @foreach (var card in _queryResult)
         {
             <tr>
                 <td>
-                    <img src="@card.Images?.Normal" width="@_imageWidth"/>
+                    <img src="@card.Images?.Normal" width="@_imageWidth" />
                 </td>
                 <td>
-                    <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank"/>
-                    <br/>
+                    <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank" />
+                    <br />
                     @card.Name+
-                    <br/>
+                    <br />
                     @card.SetCode
-                    <br/>
+                    <br />
                     @card.SetName
-                    <br/>
+                    <br />
                     Collector: &nbsp;: @card.CollectorNumber
                 </td>
                 <td>
 
                     €:&nbsp;@card.Eur
-                    <br/>
+                    <br />
                     € Foil:&nbsp;@card.EurFoil
-                    <br/>
+                    <br />
                     $:&nbsp;@card.Usd
-                    <br/>$ Foil:&nbsp;@card.UsdFoil
-                    <br/>
+                    <br />$ Foil:&nbsp;@card.UsdFoil
+                    <br />
                     Tix:&nbsp;@card.Tix
-                    <br/>
+                    <br />
                     Updated:&nbsp;@card.UpdateDateUtc
                 </td>
                 <td>
-                    @card.TypeLine<br/>@card.OracleText
+                    @card.TypeLine<br />@card.OracleText
                 </td>
                 <td>@card.ReprintInfos?.Length</td>
             </tr>
         }
-        </tbody>
-    </table>
+    </tbody>
+</table>
 </p>
 
 
@@ -128,7 +137,7 @@
         }
 
         resultCount = result.Length;
-    // _queryResult.AddRange(result);
+        // _queryResult.AddRange(result);
 
         StateHasChanged();
     }
@@ -146,6 +155,20 @@
         {
             _databaseQueryData.SetCode = _setData.FirstOrDefault(s => s.Name == (value?.ToString() ?? ""))?.Code ?? "";
         }
-    // console.Log($"{name} value changed to {value}");
+        // console.Log($"{name} value changed to {value}");
     }
+
+    void OnSelectedSetChange(AutoCompleteOption item)
+    {
+        var value = item?.Value as SetInfo;
+        if (value!=null)
+        {
+            _databaseQueryData.SetCode = value.Code;
+        }
+        else
+        {
+            _databaseQueryData.SetCode = "";
+        }
+    }
+
 }

@@ -36,6 +36,8 @@ namespace MtgInventoryBlazor
             services.AddMtgDatabase();
             services.AddBlazoredToast();
 
+            services.AddAntDesign();
+
             services.AddScoped<DialogService>();
             services.AddScoped<NotificationService>();
             services.AddScoped<TooltipService>();
