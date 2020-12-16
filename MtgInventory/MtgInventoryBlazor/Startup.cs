@@ -78,10 +78,10 @@ namespace MtgInventoryBlazor
             // Initialize mtg app service
             var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
             var service = app.ApplicationServices.GetService<IMtgDatabaseService>();
-            service.Configure(baseFolder, new ScryfallConfiguration());
+            service?.Configure(baseFolder, new ScryfallConfiguration());
 
             var mtgService = app.ApplicationServices.GetService<MtgInventoryService>();
-            Task.Factory.StartNew(() => mtgService.CreateDatabase());
+            Task.Factory.StartNew(() => mtgService?.CreateDatabase());
         }
     }
 }

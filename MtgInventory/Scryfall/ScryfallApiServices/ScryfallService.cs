@@ -32,8 +32,7 @@ namespace ScryfallApiServices
             _apiClient = new ScryfallApiClient(new HttpClient
                 {
                     BaseAddress = new Uri("https://api.scryfall.com/")
-                },
-                loggerFactory.CreateLogger<ScryfallApiClient>());
+                });
 
             _apiCallStatistic = scryfallApiCallStatistic;
             _database = database;

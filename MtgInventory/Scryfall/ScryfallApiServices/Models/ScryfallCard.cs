@@ -65,8 +65,6 @@ namespace ScryfallApiServices.Models
             Price = scryfallCard.Price;
             RelatedUris = scryfallCard.RelatedUris;
             RetailerUris = scryfallCard.RetailerUris;
-            Object = scryfallCard.Object;
-
             Images = scryfallCard.ImageUris?.Select(i => new ImageLinkUri()
             {
                 Category = i.Key ?? "",

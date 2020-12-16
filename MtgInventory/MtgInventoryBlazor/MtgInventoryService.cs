@@ -137,32 +137,22 @@ namespace MtgInventoryBlazor
 
         public async Task RebuildSetDataAsync(SetInfo setInfo)
         {
-            if (setInfo == null)
-            {
-                return;
-            }
-            
             await Task.Run(() =>
             {
-                RequestToastInfo($"Start set rebuild for {setInfo?.Code}...", "Sets");
+                RequestToastInfo($"Start set rebuild for {setInfo.Code}...", "Sets");
                 
                 _mtgDatabaseService.RebuildSetData(setInfo);
-                RequestToastSuccess($"Done rebuilding for set {setInfo?.Code}...", "Sets");
+                RequestToastSuccess($"Done rebuilding for set {setInfo.Code}...", "Sets");
             });
         }
         
         public async Task DownloadRebuildSetDataAsync(SetInfo setInfo)
         {
-            if (setInfo == null)
-            {
-                return;
-            }
-            
             await Task.Run(() =>
             {
-                RequestToastInfo($"Start set download rebuild for {setInfo?.Code}...", "Sets");
+                RequestToastInfo($"Start set download rebuild for {setInfo.Code}...", "Sets");
                 _mtgDatabaseService.DownloadRebuildSetData(setInfo);
-                RequestToastSuccess($"Done rebuilding for set {setInfo?.Code}...", "Sets");
+                RequestToastSuccess($"Done rebuilding for set {setInfo.Code}...", "Sets");
             });
         }
     }

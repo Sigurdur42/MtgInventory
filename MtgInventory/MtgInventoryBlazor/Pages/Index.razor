@@ -72,12 +72,12 @@
         {
             <tr>
                 <td>
-                    <img src="@card?.Images?.Normal" width="@_imageWidth"/>
+                    <img src="@card.Images?.Normal" width="@_imageWidth"/>
                 </td>
                 <td>
                     <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank"/>
                     <br/>
-                    @card.Name
+                    @card.Name+
                     <br/>
                     @card.SetCode
                     <br/>
