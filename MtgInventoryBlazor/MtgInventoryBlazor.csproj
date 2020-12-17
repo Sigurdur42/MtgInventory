@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LocalSettings\LocalSettings\LocalSettings.csproj" />
     <ProjectReference Include="..\MtgDatabase\MtgDatabase.csproj" />
     <ProjectReference Include="..\ScryfallApiServices\ScryfallApiServices.csproj" />
   </ItemGroup>

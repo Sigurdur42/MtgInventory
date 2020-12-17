@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Blazored.Toast;
-
+using LocalSettings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +15,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using Radzen;
 using ScryfallApiServices;
+using FileInfo = System.IO.FileInfo;
 
 namespace MtgInventoryBlazor
 {
@@ -35,6 +36,7 @@ namespace MtgInventoryBlazor
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<MtgInventoryService>();
+            services.AddSingleton<ILocalSettingService, LocalSettingService>();
             services.AddMtgDatabase();
             services.AddBlazoredToast();
             
@@ -83,11 +85,23 @@ namespace MtgInventoryBlazor
                 endpoints.MapFallbackToPage("/_Host");
             });
 
-            // Initialize mtg app service
+            // Initialize configuration
             var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
+            var configuration = app.ApplicationServices.GetService<ILocalSettingService>();
+            configuration?.Initialize(new FileInfo(Path.Combine(baseFolder.FullName, "settings.yaml")), SettingWriteMode.OnChange);
+            
+            // Initialize mtg app service
             var service = app.ApplicationServices.GetService<IMtgDatabaseService>();
             service?.Configure(baseFolder, new ScryfallConfiguration());
-
+            
+            configuration?.Set("dummy", "bla");
+            configuration?.Set("dummy", "bla2");
+            configuration?.Set("dummy2323", "test");
+            configuration?.Set("IntTest", 42);
+            
+            var dum = configuration?.Get("dummy");
+            var dum2 = configuration?.GetInt("IntTest");
+            
             var mtgService = app.ApplicationServices.GetService<MtgInventoryService>();
             Task.Factory.StartNew(() => mtgService?.CreateDatabase());
         }
