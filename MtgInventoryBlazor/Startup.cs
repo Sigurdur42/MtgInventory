@@ -11,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
 using MtgInventoryBlazor.Data;
+using MudBlazor;
+using MudBlazor.Services;
 using Radzen;
 using ScryfallApiServices;
 
@@ -35,6 +37,10 @@ namespace MtgInventoryBlazor
             services.AddSingleton<MtgInventoryService>();
             services.AddMtgDatabase();
             services.AddBlazoredToast();
+            
+            services.AddMudBlazorDialog();
+            services.AddMudBlazorSnackbar();
+            services.AddMudBlazorResizeListener();            
 
             services.AddAntDesign();
 

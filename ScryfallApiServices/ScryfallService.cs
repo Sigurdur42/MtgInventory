@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Xml.Schema;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using ScryfallApi.Client;
@@ -30,31 +29,35 @@ namespace ScryfallApiServices
             IScryfallDatabase database)
         {
             _apiClient = new ScryfallApiClient(new HttpClient
-                {
-                    BaseAddress = new Uri("https://api.scryfall.com/")
-                });
+            {
+                BaseAddress = new Uri("https://api.scryfall.com/")
+            });
 
             _apiCallStatistic = scryfallApiCallStatistic;
             _database = database;
             _logger = loggerFactory.CreateLogger<ScryfallService>();
         }
 
+        public ILiteCollection<ScryfallCard>? ScryfallCards => _database.ScryfallCards;
+
+        public ILiteCollection<ScryfallSet>? ScryfallSets => _database.ScryfallSets;
+
         public void ShutDown() => _database.ShutDown();
 
         public void RefreshLocalMirror(
             bool cleanDatabase)
         {
-            // TODO: make this abortable 
+            // TODO: make this abortable
 
             if (cleanDatabase)
             {
                 _database.ClearDatabase();
             }
 
-            DownloadSetData(false);
+            DownloadSetData(cleanDatabase);
             DownloadCardsForAllSets();
         }
-        
+
         public ScryfallCard[] RefreshLocalMirrorForSet(string setCode)
         {
             DownloadSetData(false);
@@ -71,7 +74,7 @@ namespace ScryfallApiServices
 
             foreach (var scryfallCard in cards)
             {
-                scryfallCard.UpdateDateUtc=DateTime.MinValue;
+                scryfallCard.UpdateDateUtc = DateTime.MinValue;
             }
 
             _database.ScryfallCards?.Update(cards);
@@ -82,7 +85,7 @@ namespace ScryfallApiServices
             var sets = _database.ScryfallSets?.FindAll()?.ToArray() ?? Array.Empty<ScryfallSet>();
             foreach (var set in sets)
             {
-                set.UpdateDateUtc=DateTime.MinValue;
+                set.UpdateDateUtc = DateTime.MinValue;
             }
 
             _database.ScryfallSets?.Update(sets);
@@ -128,10 +131,6 @@ namespace ScryfallApiServices
             return InternalSearch(query, rollupMode);
         }
 
-        public ILiteCollection<ScryfallCard>? ScryfallCards => _database.ScryfallCards;
-
-        public ILiteCollection<ScryfallSet>? ScryfallSets => _database.ScryfallSets;
-
         private void DownloadCardsForAllSets()
         {
             var download = _configuration.IsCardOutdated(GetOldestCardByUpdateDate());
@@ -143,9 +142,22 @@ namespace ScryfallApiServices
 
             var stopwatch = Stopwatch.StartNew();
             var allSets = _database.ScryfallSets?.FindAll()?.ToArray() ?? Array.Empty<ScryfallSet>();
-            foreach (var scryfallSet in allSets)
+            const int pageSize = 10;
+            var pages = (int)Math.Round(allSets.Length / (decimal)pageSize, MidpointRounding.AwayFromZero);
+            for (var page = 0; page < pages; ++page)
             {
-                DownloadCardsForSet(scryfallSet.Code);
+                _logger.LogTrace($"Retrieving page {page} of {pages} now...");
+                var pageSelect = allSets.Skip(page * pageSize).Take(pageSize);
+                var query = string.Join(" OR ", pageSelect.Select(s => $"e:{s.Code}"));
+                var canQuery = !string.IsNullOrWhiteSpace(query);
+                var cards = canQuery ? InternalSearch(query, SearchOptions.RollupMode.Prints) : Array.Empty<ScryfallCard>(); 
+                if (!cards.Any())
+                {
+                    // Assume that the download failed - do not insert and do not mark as complete
+                    return;
+                }
+
+                _database.InsertOrUpdateScryfallCards(cards);
             }
 
             stopwatch.Stop();
@@ -195,10 +207,7 @@ namespace ScryfallApiServices
                     return Array.Empty<ScryfallCard>();
                 }
 
-                var cards = RetrieveCardsForSetCode(setCode)
-                    .Select(c => new ScryfallCard(c))
-                    .ToArray();
-
+                var cards = RetrieveCardsForSetCode(setCode);
                 if (!cards.Any())
                 {
                     // Assume that the download failed - do not insert and do not mark as complete
@@ -256,7 +265,7 @@ namespace ScryfallApiServices
                     Sort = SearchOptions.CardSort.Name
                 };
 
-                var result = new List<Card>();
+                var scryfallCards = new List<ScryfallCard>();
                 do
                 {
                     _autoSleep.AutoSleep();
@@ -273,13 +282,13 @@ namespace ScryfallApiServices
 
                     if (cards.Data != null)
                     {
-                        result.AddRange(cards.Data);
+                        scryfallCards.AddRange(cards.Data.Select(c => new ScryfallCard(c)));
                     }
 
                     // TODO: Handle errors
                 } while (cards.HasMore);
 
-                return result.Select(c => new ScryfallCard(c)).ToArray();
+                return scryfallCards.ToArray();
             }
             catch (Exception error)
             {

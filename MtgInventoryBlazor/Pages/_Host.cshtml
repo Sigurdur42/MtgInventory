@@ -8,47 +8,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>MtgInventoryBlazor</title>
-    <base href="~/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link href="css/site.css" rel="stylesheet" />
+    <base href="~/"/>
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css"/>
+    <link href="css/site.css" rel="stylesheet"/>
 
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-    <link href="css/blazored-toast.css" rel="stylesheet" />
-
+    <link href="css/blazored-toast.css" rel="stylesheet"/>
 
 
     <!-- Moved to manual folder as rider has issues with the scripts from
     nuget packages
     just replaced _content with _manualContent
 
-        Copy the static web assets to this structure after each nuget update
+    Copy the static web assets to this structure after each nuget update
     -->
-    <link href="_manualContent/AntDesign/css/ant-design-blazor.css" rel="stylesheet" />
+    <link href="_manualContent/AntDesign/css/ant-design-blazor.css" rel="stylesheet"/>
     <script src="_manualContent/AntDesign/js/ant-design-blazor.js"></script>
 
     <link rel="stylesheet" href="_manualContent/Radzen.Blazor/css/default-base.css">
     <script src="_manualContent/Radzen.Blazor/Radzen.Blazor.js"></script>
 
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
+    <link href="_manualContent/MudBlazor/MudBlazor.min.css" rel="stylesheet"/>
+
 </head>
 <body>
-    <app>
-        <component type="typeof(App)" render-mode="Server" />
-    </app>
+<app>
+    <component type="typeof(App)" render-mode="Server"/>
+</app>
 
-    <div id="blazor-error-ui">
-        <environment include="Staging,Production">
-            An error has occurred. This application may no longer respond until reloaded.
-        </environment>
-        <environment include="Development">
-            An unhandled exception has occurred. See browser dev tools for details.
-        </environment>
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
+<div id="blazor-error-ui">
+    <environment include="Staging,Production">
+        An error has occurred. This application may no longer respond until reloaded.
+    </environment>
+    <environment include="Development">
+        An unhandled exception has occurred. See browser dev tools for details.
+    </environment>
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
 
-    <script src="_framework/blazor.server.js"></script>
+<script src="_framework/blazor.server.js"></script>
 </body>
 </html>
