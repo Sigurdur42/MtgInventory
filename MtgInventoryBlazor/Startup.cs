@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Blazored.Toast;
@@ -102,6 +103,8 @@ namespace MtgInventoryBlazor
             var dum = configuration?.Get("dummy");
             var dum2 = configuration?.GetInt("IntTest");
             
+           // configuration?.SetComplexValue("scryfall_settings", new ScryfallConfiguration());
+            var config = configuration?.GetComplexValue("scryfall_settings", new ScryfallConfiguration());
             var mtgService = app.ApplicationServices.GetService<MtgInventoryService>();
             Task.Factory.StartNew(() => mtgService?.CreateDatabase());
         }
