@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using LiteDB;
-using LocalSettings;
 using Microsoft.Extensions.Logging;
 using MtgDatabase.Database;
 using MtgDatabase.Models;
@@ -30,20 +29,17 @@ namespace MtgDatabase
         private readonly Database.MtgDatabase _database;
         private readonly ILogger<MtgDatabaseService> _logger;
         private readonly IScryfallService _scryfallService;
-        private readonly ILocalSettingService _localSettingService;
 
         private ScryfallConfiguration? _scryfallConfiguration;
 
         public MtgDatabaseService(
             ILogger<MtgDatabaseService> logger,
             Database.MtgDatabase database,
-            IScryfallService scryfallService,
-            ILocalSettingService localSettingService)
+            IScryfallService scryfallService)
         {
             _logger = logger;
             _database = database;
             _scryfallService = scryfallService;
-            _localSettingService = localSettingService;
         }
 
         public void RefreshLocalDatabase(bool clearScryfallMirror, bool clearMtgDatabase)
