@@ -24,6 +24,9 @@ namespace MtgDatabase
         SetInfo[] GetAllSets();
 
         DatabaseSummary GetDatabaseSummary();
+
+        bool IsRebuilding { get; }
+        event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding;
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -33,6 +36,8 @@ namespace MtgDatabase
         private readonly IScryfallService _scryfallService;
 
         private ScryfallConfiguration? _scryfallConfiguration;
+
+        private readonly object _sync = new object();
 
         public MtgDatabaseService(
             ILogger<MtgDatabaseService> logger,
@@ -44,36 +49,87 @@ namespace MtgDatabase
             _scryfallService = scryfallService;
         }
 
+        private bool _isRebuilding;
+        public event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding = (sender, args) => { };
+
+        public bool IsRebuilding
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _isRebuilding;
+                }
+            }
+
+            private set
+            {
+                lock (_sync)
+                {
+                    _isRebuilding = value;
+                }
+
+                OnRebuilding?.Invoke(this, new DatabaseRebuildingEventArgs()
+                {
+                    RebuildingStarted = value
+                });
+            }
+        }
+
         public void RefreshLocalDatabase(bool clearScryfallMirror, bool clearMtgDatabase)
         {
-            _scryfallService.RefreshLocalMirror(clearScryfallMirror);
+            IsRebuilding = true;
+            try
+            {
+                _scryfallService.RefreshLocalMirror(clearScryfallMirror);
 
-            RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
+                RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
+            }
+            finally
+            {
+                IsRebuilding = false;
+            }
         }
 
         public void RebuildSetData(SetInfo setInfo)
         {
-            var found = _scryfallService.ScryfallSets?.Query()?.Where(s => s.Code == setInfo.Code)?.FirstOrDefault();
-            if (found == null)
+            IsRebuilding = true;
+            try
             {
-                return;
+                var found = _scryfallService.ScryfallSets?.Query()?.Where(s => s.Code == setInfo.Code)?.FirstOrDefault();
+                if (found == null)
+                {
+                    return;
+                }
+
+                var oldDate = found.UpdateDateUtc;
+                found.UpdateDateUtc = DateTime.MinValue;
+                _scryfallService.ScryfallSets?.Update(found);
+                RebuildInternalDatabase(false);
+
+                found.UpdateDateUtc = oldDate;
+                _scryfallService.ScryfallSets?.Update(found);
             }
-
-            var oldDate = found.UpdateDateUtc;
-            found.UpdateDateUtc = DateTime.MinValue;
-            _scryfallService.ScryfallSets?.Update(found);
-            RebuildInternalDatabase(false);
-
-            found.UpdateDateUtc = oldDate;
-            _scryfallService.ScryfallSets?.Update(found);
+            finally
+            {
+                IsRebuilding = false;
+            }
         }
 
         public void DownloadRebuildSetData(SetInfo setInfo)
         {
-            _scryfallService.MarkSetCardsAsOutdated(setInfo.Code);
-            var cards = _scryfallService.RefreshLocalMirrorForSet(setInfo.Code);
+            IsRebuilding = true;
+            try
+            {
+                _scryfallService.MarkSetCardsAsOutdated(setInfo.Code);
+                var cards = _scryfallService.RefreshLocalMirrorForSet(setInfo.Code);
 
-            RebuildCardsFromScryfall(cards);
+                RebuildCardsFromScryfall(cards);
+            }
+            finally
+            {
+                IsRebuilding = false;
+            }
         }
 
         public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)

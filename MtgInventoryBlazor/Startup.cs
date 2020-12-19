@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Blazored.Toast;
 using LocalSettings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -38,10 +37,19 @@ namespace MtgInventoryBlazor
             services.AddSingleton<MtgInventoryService>();
             services.AddSingleton<ILocalSettingService, LocalSettingService>();
             services.AddMtgDatabase();
-            services.AddBlazoredToast();
-            
+
             services.AddMudBlazorDialog();
-            services.AddMudBlazorSnackbar();
+            services.AddMudBlazorSnackbar(config =>
+            {
+                config.PositionClass = Defaults.Classes.Position.TopRight;
+                config.PreventDuplicates = false;
+                config.NewestOnTop = true;
+                config.ShowCloseIcon = true;
+                config.VisibleStateDuration = 10000;
+                config.HideTransitionDuration = 500;
+                config.ShowTransitionDuration = 500;
+            });
+            
             services.AddMudBlazorResizeListener();            
 
             services.AddAntDesign();
@@ -105,7 +113,7 @@ namespace MtgInventoryBlazor
            // configuration?.SetComplexValue("scryfall_settings", new ScryfallConfiguration());
             var config = configuration?.GetComplexValue("scryfall_settings", new ScryfallConfiguration());
             var mtgService = app.ApplicationServices.GetService<MtgInventoryService>();
-            Task.Factory.StartNew(() => mtgService?.CreateDatabase());
+            // Task.Factory.StartNew(() => mtgService?.CreateDatabase());
         }
     }
 }
