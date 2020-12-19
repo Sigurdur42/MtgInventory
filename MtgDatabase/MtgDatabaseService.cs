@@ -22,6 +22,8 @@ namespace MtgDatabase
 
         Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
         SetInfo[] GetAllSets();
+
+        DatabaseSummary GetDatabaseSummary();
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -104,6 +106,16 @@ namespace MtgDatabase
                 })
                 ?.ToArray()
             ?? Array.Empty<SetInfo>();
+
+        public DatabaseSummary GetDatabaseSummary()
+        {
+            return new DatabaseSummary()
+            {
+                LastUpdated = _scryfallService.ScryfallSets?.Query().OrderByDescending(s => s.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ?? DateTime.MinValue,
+                NumberOfCards = _scryfallService?.ScryfallCards?.Count() ?? 0,
+                NumberOfSets = _scryfallService?.ScryfallSets?.Count() ?? 0,
+            };
+        }
 
         public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData) =>
             Task.Run(() =>

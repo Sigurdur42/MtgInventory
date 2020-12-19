@@ -93,14 +93,14 @@ namespace MtgInventoryBlazor
             // Initialize mtg app service
             var service = app.ApplicationServices.GetService<IMtgDatabaseService>();
             service?.Configure(baseFolder, new ScryfallConfiguration());
-            
-            configuration?.Set("dummy", "bla");
-            configuration?.Set("dummy", "bla2");
-            configuration?.Set("dummy2323", "test");
-            configuration?.Set("IntTest", 42);
-            
-            var dum = configuration?.Get("dummy");
-            var dum2 = configuration?.GetInt("IntTest");
+            //
+            // configuration?.Set("dummy", "bla");
+            // configuration?.Set("dummy", "bla2");
+            // configuration?.Set("dummy2323", "test");
+            // configuration?.Set("IntTest", 42);
+            //
+            // var dum = configuration?.Get("dummy");
+            // var dum2 = configuration?.GetInt("IntTest");
             
            // configuration?.SetComplexValue("scryfall_settings", new ScryfallConfiguration());
             var config = configuration?.GetComplexValue("scryfall_settings", new ScryfallConfiguration());
