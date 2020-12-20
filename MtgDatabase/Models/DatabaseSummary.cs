@@ -7,5 +7,9 @@ namespace MtgDatabase.Models
         public DateTime LastUpdated { get; set; } = DateTime.MinValue;
         public int NumberOfSets { get; set; }
         public int NumberOfCards { get; set; }
+        
+        public int NumberOfCardsEn { get; set; }
+        public int NumberOfCardsDe { get; set; }
+        public int NumberOfCardsNoLanguage { get; set; }
     }
 }

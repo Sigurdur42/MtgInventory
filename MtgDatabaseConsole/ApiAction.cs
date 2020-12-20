@@ -22,7 +22,7 @@ namespace ScryfallApiConsole
 
         public int RunAction(ApiOptions options)
         {
-            var task = _mtgDatabaseService.RefreshLocalDatabaseAsync(options.ClearScryfall, options.ClearMtgDatabase);
+            var task = _mtgDatabaseService.RefreshLocalDatabaseAsync();
             task.GetAwaiter().GetResult();
             _logger.LogInformation("Done creating database.");
             return -1;

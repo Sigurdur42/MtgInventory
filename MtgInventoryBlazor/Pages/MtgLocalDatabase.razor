@@ -25,6 +25,18 @@
             <td>Card Count:</td>
             <td>@_databaseSummary.NumberOfCards</td>
         </tr>
+        <tr>
+            <td>Card Count DE:</td>
+            <td>@_databaseSummary.NumberOfCardsDe</td>
+        </tr>
+        <tr>
+            <td>Card Count EN:</td>
+            <td>@_databaseSummary.NumberOfCardsEn</td>
+        </tr>
+        <tr>
+            <td>Card Count No Lang:</td>
+            <td>@_databaseSummary.NumberOfCardsNoLanguage</td>
+        </tr>
         </tbody>
     </MudSimpleTable>
 </p>
@@ -34,10 +46,7 @@
                    OnClick="OnDownloadAndRebuildAll">
             Download from Scryfall and Rebuild
         </MudButton>
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Custom.Radioactive" Color="Color.Warning"
-                   OnClick="OnSkipDownloadAndRebuildAll">
-            Skip Downlaod and Rebuild
-        </MudButton>
+      
     </div>
 </p>
 
@@ -51,21 +60,11 @@
         {
             return;
         }
-        await InventoryService.DownloadAndRebuildAll(true);
+        await InventoryService.DownloadAndRebuildAll();
         _databaseSummary = InventoryService.GetDatabaseSummary();
     }
 
-    async void OnSkipDownloadAndRebuildAll()
-    {
-        var result = Dialog.Show<RebuildDatabaseConfigurationDialog>("Confirm Skip Download and Database Rebuild");
-        var closeState = await result.Result;
-        if (closeState.Cancelled)
-        {
-            return;
-        }
-        await InventoryService.DownloadAndRebuildAll(false);
-        _databaseSummary = InventoryService.GetDatabaseSummary();
-    }
+  
 
     private DatabaseSummary _databaseSummary = new DatabaseSummary();
 

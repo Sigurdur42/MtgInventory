@@ -18,7 +18,7 @@ namespace MtgDatabase
     {
         bool IsRebuilding { get; }
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration, int downloadCardBatchSize);
-        Task RefreshLocalDatabaseAsync(bool clearScryfallMirror, bool clearMtgDatabase);
+        Task RefreshLocalDatabaseAsync();
         // void RebuildSetData(SetInfo setInfo);
         // void DownloadRebuildSetData(SetInfo setInfo);
 
@@ -59,7 +59,7 @@ namespace MtgDatabase
         private void OnMirrorScryfallCardsDownloaded(object sender, DownloadedCardsEventArgs e)
         {
             var supportedLanguages = e.DownloadedCards
-                .Where(c => "EN".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase) || "DE".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase))
+                .Where(c => string.IsNullOrWhiteSpace(c.Lang) || "EN".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase) || "DE".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase))
                 .ToArray();
 
             if (supportedLanguages.Any())
@@ -94,7 +94,7 @@ namespace MtgDatabase
             }
         }
 
-        public async Task RefreshLocalDatabaseAsync(bool clearScryfallMirror, bool clearMtgDatabase)
+        public async Task RefreshLocalDatabaseAsync()
         {
             IsRebuilding = true;
             try
@@ -193,8 +193,11 @@ namespace MtgDatabase
             new DatabaseSummary
             {
                 LastUpdated = _scryfallService.ScryfallSets?.Query().OrderByDescending(s => s.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ?? DateTime.MinValue,
-                NumberOfCards = _scryfallService?.ScryfallCards?.Count() ?? 0,
-                NumberOfSets = _scryfallService?.ScryfallSets?.Count() ?? 0
+                NumberOfCards = _database.Cards?.Count() ?? 0,
+                NumberOfSets = _scryfallService?.ScryfallSets?.Count() ?? 0,
+                NumberOfCardsDe = _database.Cards?.Query()?.Where(c=>"DE".Equals(c.Language, StringComparison.InvariantCultureIgnoreCase))?.Count() ?? 0,
+                NumberOfCardsEn = _database.Cards?.Query()?.Where(c=>"EN".Equals(c.Language, StringComparison.InvariantCultureIgnoreCase)).Count() ?? 0,
+                NumberOfCardsNoLanguage = _database.Cards?.Query()?.Where(c=>string.IsNullOrEmpty(c.Language)).Count() ?? 0,
             };
 
         public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData) =>
@@ -224,12 +227,12 @@ namespace MtgDatabase
                         if (queryData.MatchExactName)
                         {
                             query = query?.Where(c =>
-                                c.Name.Equals(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                                c.LocalName.Equals(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
                         }
                         else
                         {
                             query = query?.Where(c =>
-                                c.Name.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
+                                c.LocalName.Contains(queryData.Name, StringComparison.InvariantCultureIgnoreCase));
                         }
                     }
 

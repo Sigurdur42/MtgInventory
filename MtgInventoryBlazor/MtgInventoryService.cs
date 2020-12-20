@@ -72,13 +72,14 @@ namespace MtgInventoryBlazor
         //         RequestToastSuccess($"Done rebuilding for set {setInfo.Code}...", "Sets");
         //     });
 
-        public async Task DownloadAndRebuildAll(bool clearScryfallDatabase) =>
-            await Task.Run(() =>
-            {
-                RequestToastInfo("Start download card database...", "Rebuild Database");
-                _mtgDatabaseService.RefreshLocalDatabaseAsync(clearScryfallDatabase, true);
-                RequestToastSuccess("Done downloading card database ...", "Rebuild Database");
-            });
+        public async Task DownloadAndRebuildAll()
+        {
+            RequestToastInfo("Start download card database...", "Rebuild Database");
+            var stopwatch = Stopwatch.StartNew();
+            await _mtgDatabaseService.RefreshLocalDatabaseAsync();
+            stopwatch.Stop();
+            RequestToastSuccess($"Done downloading card database in {stopwatch.Elapsed}...", "Rebuild Database");
+        }
 
         public DatabaseSummary GetDatabaseSummary() => _mtgDatabaseService.GetDatabaseSummary();
 

@@ -27,39 +27,36 @@ namespace MtgDatabase.Scryfall
 
         public event EventHandler<DownloadedCardsEventArgs> CardBatchDownloaded = (sender, args) => { };
 
-        public async Task DownloadDatabase(int batchSize) =>
-            await Task.Run(async () =>
+        public async Task DownloadDatabase(int batchSize)
+        {
+            using var httpClient = new HttpClient();
+
+            _logger.LogTrace("Getting bulk info for all cards...");
+            using var response = await httpClient.GetAsync(" https://api.scryfall.com/bulk-data/all_cards");
+
+            string apiResponse = await response.Content.ReadAsStringAsync();
+            var definition = new
             {
-                using (var httpClient = new HttpClient())
-                {
-                    _logger.LogTrace("Getting bulk info for all cards...");
-                    using (var response = await httpClient.GetAsync(" https://api.scryfall.com/bulk-data/all_cards"))
-                    {
-                        string apiResponse = await response.Content.ReadAsStringAsync();
-                        var definition = new
-                        {
-                            updated_at = DateTime.MinValue,
-                            download_uri = "",
-                            content_encoding = ""
-                        };
+                updated_at = DateTime.MinValue,
+                download_uri = "",
+                content_encoding = ""
+            };
 
-                        var responseRead = JsonConvert.DeserializeAnonymousType(apiResponse, definition);
+            var responseRead = JsonConvert.DeserializeAnonymousType(apiResponse, definition);
 
-                        _logger.LogTrace($"Bulk data last updated at {responseRead.updated_at}...");
+            _logger.LogTrace($"Bulk data last updated at {responseRead.updated_at}...");
 
-                        _logger.LogTrace("Downloading all data now ...");
-                        var stopwatch = Stopwatch.StartNew();
+            _logger.LogTrace("Downloading all data now ...");
+            var stopwatch = Stopwatch.StartNew();
 
-                        await using (var downloadStream = await httpClient.GetStreamAsync(responseRead.download_uri))
-                        {
-                            ReadFromStream(downloadStream, batchSize);
-                        }
+            await using (var downloadStream = await httpClient.GetStreamAsync(responseRead.download_uri))
+            {
+                ReadFromStream(downloadStream, batchSize);
+            }
 
-                        stopwatch.Stop();
-                        _logger.LogTrace($"Downloading all data took {stopwatch.Elapsed} ...");
-                    }
-                }
-            });
+            stopwatch.Stop();
+            _logger.LogTrace($"Downloading all data took {stopwatch.Elapsed} ...");
+        }
 
         private void ReadFromStream(Stream inputStream, int batchSize)
         {
