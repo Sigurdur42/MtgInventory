@@ -9,11 +9,11 @@ using ScryfallApiServices;
 
 namespace ScryfallApiConsole
 {
-    class Program
+    internal class Program
     {
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
-            int exitCode = -1;
+            var exitCode = -1;
             ILogger? logger = null;
             try
             {
@@ -26,7 +26,7 @@ namespace ScryfallApiConsole
                     })
                     .ParseArguments<ApiOptions>(args)
                     .ThrowOnParseError()
-                    .WithParsed<ApiOptions>(options =>
+                    .WithParsed(options =>
                     {
                         var action = serviceProvider?.GetService<ApiAction>();
                         exitCode = action?.RunAction(options) ?? -1;
@@ -87,7 +87,7 @@ namespace ScryfallApiConsole
                 // configure service
                 var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
                 var service = serviceProvider.GetService<IMtgDatabaseService>();
-                service?.Configure(baseFolder, new ScryfallConfiguration());
+                service?.Configure(baseFolder, new ScryfallConfiguration(), 3000);
             }
             catch (Exception error)
             {

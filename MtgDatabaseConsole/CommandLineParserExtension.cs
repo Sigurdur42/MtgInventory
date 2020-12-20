@@ -18,9 +18,9 @@ namespace ScryfallApiConsole
 
             var builder = SentenceBuilder.Create();
             var errorMessages = (HelpText.RenderParsingErrorsTextAsLines(
-                result, 
-                builder.FormatError, 
-                builder.FormatMutuallyExclusiveSetErrors, 
+                result,
+                builder.FormatError,
+                builder.FormatMutuallyExclusiveSetErrors,
                 1) ?? new string[0]).ToArray();
 
             if (!errorMessages.Any())
@@ -29,11 +29,11 @@ namespace ScryfallApiConsole
             }
 
             var dump = new StringBuilder();
-            dump.AppendLine($"Parsing command line arguments failed:");
+            dump.AppendLine("Parsing command line arguments failed:");
             dump.AppendLine(string.Join(Environment.NewLine, errorMessages.Select(l => $"- {l}")));
 
             dump.AppendLine();
-            dump.AppendLine($"These are the possible command line arguments:");
+            dump.AppendLine("These are the possible command line arguments:");
             dump.AppendLine(HelpText.AutoBuild(result));
 
             throw new InvalidOperationException(dump.ToString());

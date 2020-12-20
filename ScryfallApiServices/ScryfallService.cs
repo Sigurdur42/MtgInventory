@@ -4,12 +4,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using LiteDB;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using ScryfallApi.Client;
 using ScryfallApi.Client.Models;
 using ScryfallApiServices.Database;
 using ScryfallApiServices.Models;
+using JsonReader = Newtonsoft.Json.JsonReader;
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace ScryfallApiServices
 {
@@ -45,7 +49,8 @@ namespace ScryfallApiServices
         public void ShutDown() => _database.ShutDown();
 
         public void RefreshLocalMirror(
-            bool cleanDatabase)
+            bool cleanDatabase,
+            bool downloadSetsOnly)
         {
             // TODO: make this abortable
 
@@ -55,8 +60,67 @@ namespace ScryfallApiServices
             }
 
             DownloadSetData(cleanDatabase);
-            DownloadCardsForAllSets();
+
+            if (!downloadSetsOnly)
+            {
+                DownloadCardsForAllSets();
+            }
         }
+
+        public async Task DownloadBulkData() =>
+            await Task.Run(async () =>
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    _logger.LogTrace("Getting bulk info for all cards...");
+                    using (var response = await httpClient.GetAsync(" https://api.scryfall.com/bulk-data/all_cards"))
+                    {
+                        string apiResponse = await response.Content.ReadAsStringAsync();
+                        var definition = new
+                        {
+                            updated_at = DateTime.MinValue,
+                            download_uri = "",
+                            content_encoding = ""
+                        };
+
+                        var responseRead = JsonConvert.DeserializeAnonymousType(apiResponse, definition);
+
+                        _logger.LogTrace($"Bulk data last updated at {responseRead.updated_at}...");
+
+                        _logger.LogTrace("Downloading all data now ...");
+
+                        using (var downloadStream = await httpClient.GetStreamAsync(responseRead.download_uri))
+                        {
+                            var downloadedCards = ReadFromStream(downloadStream);
+
+                            // var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
+                            // using (var fileStream = new FileStream(Path.Combine(baseFolder.FullName, "Downloaded.json"),
+                            //     FileMode.Create, FileAccess.Write, FileShare.None, 10000, true))
+                            // {
+                            //     await downloadStream.CopyToAsync(fileStream);
+                            // }
+
+                            //  // using var decompressionStream = new GZipStream(downloadStream, CompressionMode.Decompress);
+                            //  using var decompressedStreamReader = new StreamReader(downloadStream, Encoding.UTF8, 
+                            //      false, 
+                            //      bufferSize: 1024 * 1024 * 1024);
+                            //
+                            //  var cardDefinition = new
+                            //  {
+                            //      name = "",
+                            //      printed_name= "",
+                            //      lang = "EN",
+                            //  };
+                            //
+                            //  var completeJson = await decompressedStreamReader.ReadToEndAsync();
+                            //  
+                            // var result = JsonConvert.DeserializeAnonymousType(completeJson, cardDefinition);
+                        }
+
+                        // reservationList = JsonConvert.DeserializeObject<List<Reservation>>(apiResponse);
+                    }
+                }
+            });
 
         public ScryfallCard[] RefreshLocalMirrorForSet(string setCode)
         {
@@ -131,6 +195,30 @@ namespace ScryfallApiServices
             return InternalSearch(query, rollupMode);
         }
 
+        private IEnumerable<ScryfallBulkCard> ReadFromStream(Stream inputStream)
+        {
+            var result = new List<ScryfallBulkCard>();
+            var serializer = new JsonSerializer();
+
+            using (StreamReader sr = new StreamReader(inputStream))
+            {
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    while (reader.Read())
+                    {
+                        // deserialize only when there's "{" character in the stream
+                        if (reader.TokenType == JsonToken.StartObject)
+                        {
+                            var single = serializer.Deserialize<ScryfallBulkCard>(reader);
+                            result.Add(single);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         private void DownloadCardsForAllSets()
         {
             var download = _configuration.IsCardOutdated(GetOldestCardByUpdateDate());
@@ -150,7 +238,7 @@ namespace ScryfallApiServices
                 var pageSelect = allSets.Skip(page * pageSize).Take(pageSize);
                 var query = string.Join(" OR ", pageSelect.Select(s => $"e:{s.Code}"));
                 var canQuery = !string.IsNullOrWhiteSpace(query);
-                var cards = canQuery ? InternalSearch(query, SearchOptions.RollupMode.Prints) : Array.Empty<ScryfallCard>(); 
+                var cards = canQuery ? InternalSearch(query, SearchOptions.RollupMode.Prints) : Array.Empty<ScryfallCard>();
                 if (!cards.Any())
                 {
                     // Assume that the download failed - do not insert and do not mark as complete

@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Extensions.Logging;
 
 namespace MtgInventoryBlazor
 {
@@ -8,7 +7,7 @@ namespace MtgInventoryBlazor
         Error,
         Warning,
         Info,
-        Success,
+        Success
     }
 
     public class RequestToastToDisplayEventArgs : EventArgs

@@ -1,5 +1,4 @@
-﻿using MtgDatabase.Models;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace MtgDatabase.Tests
 {

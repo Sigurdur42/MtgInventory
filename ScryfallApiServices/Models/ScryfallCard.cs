@@ -11,6 +11,12 @@ namespace ScryfallApiServices.Models
         }
 
         public ScryfallCard(
+            ScryfallBulkCard card)
+        {
+            UpdateDateUtc = DateTime.Now;
+        }
+
+        public ScryfallCard(
             Card scryfallCard)
         {
             Id = scryfallCard.Id;
@@ -65,10 +71,10 @@ namespace ScryfallApiServices.Models
             Price = scryfallCard.Price;
             RelatedUris = scryfallCard.RelatedUris;
             RetailerUris = scryfallCard.RetailerUris;
-            Images = scryfallCard.ImageUris?.Select(i => new ImageLinkUri()
+            Images = scryfallCard.ImageUris?.Select(i => new ImageLinkUri
             {
                 Category = i.Key ?? "",
-                Uri = i.Value.ToString(),
+                Uri = i.Value.ToString()
             })?.ToArray() ?? new ImageLinkUri[0];
 
             UpdateDateUtc = DateTime.Now;

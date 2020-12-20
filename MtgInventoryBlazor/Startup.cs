@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using LocalSettings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -49,8 +48,8 @@ namespace MtgInventoryBlazor
                 config.HideTransitionDuration = 500;
                 config.ShowTransitionDuration = 500;
             });
-            
-            services.AddMudBlazorResizeListener();            
+
+            services.AddMudBlazorResizeListener();
 
             services.AddAntDesign();
 
@@ -97,10 +96,10 @@ namespace MtgInventoryBlazor
             var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
             var configuration = app.ApplicationServices.GetService<ILocalSettingService>();
             configuration?.Initialize(new FileInfo(Path.Combine(baseFolder.FullName, "settings.yaml")), SettingWriteMode.OnChange);
-            
+
             // Initialize mtg app service
             var service = app.ApplicationServices.GetService<IMtgDatabaseService>();
-            service?.Configure(baseFolder, new ScryfallConfiguration());
+            service?.Configure(baseFolder, new ScryfallConfiguration(), 1000);
             //
             // configuration?.Set("dummy", "bla");
             // configuration?.Set("dummy", "bla2");
@@ -109,8 +108,8 @@ namespace MtgInventoryBlazor
             //
             // var dum = configuration?.Get("dummy");
             // var dum2 = configuration?.GetInt("IntTest");
-            
-           // configuration?.SetComplexValue("scryfall_settings", new ScryfallConfiguration());
+
+            // configuration?.SetComplexValue("scryfall_settings", new ScryfallConfiguration());
             var config = configuration?.GetComplexValue("scryfall_settings", new ScryfallConfiguration());
             var mtgService = app.ApplicationServices.GetService<MtgInventoryService>();
             // Task.Factory.StartNew(() => mtgService?.CreateDatabase());

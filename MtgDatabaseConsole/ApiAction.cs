@@ -7,9 +7,8 @@ namespace ScryfallApiConsole
     public class ApiAction
     {
         private readonly ILogger<ApiAction> _logger;
-        private readonly IScryfallService _scryfallService;
         private readonly IMtgDatabaseService _mtgDatabaseService;
-
+        private readonly IScryfallService _scryfallService;
 
         public ApiAction(
             ILogger<ApiAction> logger,
@@ -23,10 +22,8 @@ namespace ScryfallApiConsole
 
         public int RunAction(ApiOptions options)
         {
-            // _scryfallService.RefreshLocalMirror(options.Clear);
-            
-            _mtgDatabaseService.RefreshLocalDatabase(options.ClearScryfall, options.ClearMtgDatabase);
-            
+            var task = _mtgDatabaseService.RefreshLocalDatabaseAsync(options.ClearScryfall, options.ClearMtgDatabase);
+            task.GetAwaiter().GetResult();
             _logger.LogInformation("Done creating database.");
             return -1;
         }

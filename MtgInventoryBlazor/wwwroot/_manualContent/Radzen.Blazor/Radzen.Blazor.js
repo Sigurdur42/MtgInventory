@@ -83,7 +83,7 @@ window.Radzen = {
      var el = document.getElementById(id);
      if (el) {
         var handler = function (e) {
-            ref.invokeMethodAsync('RadzenComponent.RaiseMouseLeave');;
+            ref.invokeMethodAsync('RadzenComponent.RaiseMouseLeave');
         };
         Radzen[id + 'mouseleave'] = handler;
         el.addEventListener('mouseleave', handler, false);

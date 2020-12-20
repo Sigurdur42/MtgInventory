@@ -80,16 +80,15 @@ namespace ScryfallApiServices.Database
                     cardsToInsert.Add(card);
                     continue;
                 }
-                
+
                 cardsToUpdate.Add(card);
             }
-
 
             if (cardsToInsert.Any())
             {
                 ScryfallCards?.InsertBulk(cardsToInsert);
             }
-            
+
             if (cardsToUpdate.Any())
             {
                 ScryfallCards?.Update(cardsToUpdate);

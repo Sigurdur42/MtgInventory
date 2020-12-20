@@ -8,14 +8,14 @@ namespace MtgDatabase.Tests
         // TODO: Deserialize test data
         public ScryfallTestData()
         {
-            BasicLandSwamp = new ScryfallCard()
+            BasicLandSwamp = new ScryfallCard
             {
                 Name = "Swamp",
                 TypeLine = "Basic Land - Swamp",
-                Legalities = new Dictionary<string, string>(),
+                Legalities = new Dictionary<string, string>()
             };
         }
-        
+
         public ScryfallCard BasicLandSwamp { get; }
     }
 }

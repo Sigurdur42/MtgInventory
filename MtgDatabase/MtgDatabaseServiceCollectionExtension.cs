@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MtgDatabase.Scryfall;
 using ScryfallApiServices;
 
 namespace MtgDatabase
@@ -13,6 +14,7 @@ namespace MtgDatabase
             serviceCollection.AddSingleton<Database.MtgDatabase>();
             serviceCollection.AddSingleton<IMkmMapper, MkmMapper>();
 
+            serviceCollection.AddSingleton<IMirrorScryfallDatabase, MirrorScryfallDatabase>();
             return serviceCollection;
         }
     }

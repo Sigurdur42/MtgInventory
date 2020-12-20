@@ -18,13 +18,15 @@ namespace ScryfallApiServices
         ScryfallCard[] RetrieveCardsByCardNameAndSet(string cardName, string setCode, SearchOptions.RollupMode rollupMode);
 
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
-        
+
         void ShutDown();
-        void RefreshLocalMirror(bool cleanDatabase);
+        void RefreshLocalMirror(bool cleanDatabase, bool downloadSetsOnly);
 
         void MarkSetCardsAsOutdated(string setCode);
         void MarkSetsAsOutdated();
 
         ScryfallCard[] RefreshLocalMirrorForSet(string setCode);
+
+        Task DownloadBulkData();
     }
 }

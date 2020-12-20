@@ -26,7 +26,7 @@ namespace MtgInventoryBlazor
         public MtgDatabaseQueryData DatabaseQueryData { get; set; } = new MtgDatabaseQueryData();
 
         public event EventHandler<RequestToastToDisplayEventArgs> RequestToastToDisplay = (sender, args) => { };
-        public event EventHandler<DatabaseRebuildingEventArgs> OnRebuildingDatabase= (sender, args) => { };
+        public event EventHandler<DatabaseRebuildingEventArgs> OnRebuildingDatabase = (sender, args) => { };
 
         public void Test() =>
             RequestToastToDisplay?.Invoke(
@@ -55,28 +55,28 @@ namespace MtgInventoryBlazor
 
         public SetInfo[] GetAllSets() => _mtgDatabaseService.GetAllSets().OrderBy(s => s.Name).ToArray();
 
-        public async Task RebuildSetDataAsync(SetInfo setInfo) =>
-            await Task.Run(() =>
-            {
-                RequestToastInfo($"Start set rebuild for {setInfo.Code}...", "Sets");
-
-                _mtgDatabaseService.RebuildSetData(setInfo);
-                RequestToastSuccess($"Done rebuilding for set {setInfo.Code}...", "Sets");
-            });
-
-        public async Task DownloadRebuildSetDataAsync(SetInfo setInfo) =>
-            await Task.Run(() =>
-            {
-                RequestToastInfo($"Start set download rebuild for {setInfo.Code}...", "Sets");
-                _mtgDatabaseService.DownloadRebuildSetData(setInfo);
-                RequestToastSuccess($"Done rebuilding for set {setInfo.Code}...", "Sets");
-            });
+        // public async Task RebuildSetDataAsync(SetInfo setInfo) =>
+        //     await Task.Run(() =>
+        //     {
+        //         RequestToastInfo($"Start set rebuild for {setInfo.Code}...", "Sets");
+        //
+        //         _mtgDatabaseService.RebuildSetData(setInfo);
+        //         RequestToastSuccess($"Done rebuilding for set {setInfo.Code}...", "Sets");
+        //     });
+        //
+        // public async Task DownloadRebuildSetDataAsync(SetInfo setInfo) =>
+        //     await Task.Run(() =>
+        //     {
+        //         RequestToastInfo($"Start set download rebuild for {setInfo.Code}...", "Sets");
+        //         _mtgDatabaseService.DownloadRebuildSetData(setInfo);
+        //         RequestToastSuccess($"Done rebuilding for set {setInfo.Code}...", "Sets");
+        //     });
 
         public async Task DownloadAndRebuildAll(bool clearScryfallDatabase) =>
             await Task.Run(() =>
             {
                 RequestToastInfo("Start download card database...", "Rebuild Database");
-                _mtgDatabaseService.RefreshLocalDatabase(clearScryfallDatabase, true);
+                _mtgDatabaseService.RefreshLocalDatabaseAsync(clearScryfallDatabase, true);
                 RequestToastSuccess("Done downloading card database ...", "Rebuild Database");
             });
 

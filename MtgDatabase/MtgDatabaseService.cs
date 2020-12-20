@@ -8,6 +8,7 @@ using LiteDB;
 using Microsoft.Extensions.Logging;
 using MtgDatabase.Database;
 using MtgDatabase.Models;
+using MtgDatabase.Scryfall;
 using ScryfallApiServices;
 using ScryfallApiServices.Models;
 
@@ -15,17 +16,16 @@ namespace MtgDatabase
 {
     public interface IMtgDatabaseService : IQueryableCardsProvider, IDisposable
     {
-        void Configure(DirectoryInfo folder, ScryfallConfiguration configuration);
-        void RefreshLocalDatabase(bool clearScryfallMirror, bool clearMtgDatabase);
-        void RebuildSetData(SetInfo setInfo);
-        void DownloadRebuildSetData(SetInfo setInfo);
+        bool IsRebuilding { get; }
+        void Configure(DirectoryInfo folder, ScryfallConfiguration configuration, int downloadCardBatchSize);
+        Task RefreshLocalDatabaseAsync(bool clearScryfallMirror, bool clearMtgDatabase);
+        // void RebuildSetData(SetInfo setInfo);
+        // void DownloadRebuildSetData(SetInfo setInfo);
 
         Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
         SetInfo[] GetAllSets();
 
         DatabaseSummary GetDatabaseSummary();
-
-        bool IsRebuilding { get; }
         event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding;
     }
 
@@ -34,22 +34,40 @@ namespace MtgDatabase
         private readonly Database.MtgDatabase _database;
         private readonly ILogger<MtgDatabaseService> _logger;
         private readonly IScryfallService _scryfallService;
-
-        private ScryfallConfiguration? _scryfallConfiguration;
+        private readonly IMirrorScryfallDatabase _mirrorScryfallDatabase;
 
         private readonly object _sync = new object();
+
+        private bool _isRebuilding;
+
+        private ScryfallConfiguration? _scryfallConfiguration;
 
         public MtgDatabaseService(
             ILogger<MtgDatabaseService> logger,
             Database.MtgDatabase database,
-            IScryfallService scryfallService)
+            IScryfallService scryfallService,
+            IMirrorScryfallDatabase mirrorScryfallDatabase)
         {
             _logger = logger;
             _database = database;
             _scryfallService = scryfallService;
+            _mirrorScryfallDatabase = mirrorScryfallDatabase;
+            
+            _mirrorScryfallDatabase.CardBatchDownloaded += OnMirrorScryfallCardsDownloaded;
         }
 
-        private bool _isRebuilding;
+        private void OnMirrorScryfallCardsDownloaded(object sender, DownloadedCardsEventArgs e)
+        {
+            var supportedLanguages = e.DownloadedCards
+                .Where(c => "EN".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase) || "DE".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase))
+                .ToArray();
+
+            if (supportedLanguages.Any())
+            {
+                RebuildCardsFromScryfall(supportedLanguages);
+            }
+        }
+
         public event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding = (sender, args) => { };
 
         public bool IsRebuilding
@@ -69,21 +87,22 @@ namespace MtgDatabase
                     _isRebuilding = value;
                 }
 
-                OnRebuilding?.Invoke(this, new DatabaseRebuildingEventArgs()
+                OnRebuilding?.Invoke(this, new DatabaseRebuildingEventArgs
                 {
                     RebuildingStarted = value
                 });
             }
         }
 
-        public void RefreshLocalDatabase(bool clearScryfallMirror, bool clearMtgDatabase)
+        public async Task RefreshLocalDatabaseAsync(bool clearScryfallMirror, bool clearMtgDatabase)
         {
             IsRebuilding = true;
             try
             {
-                _scryfallService.RefreshLocalMirror(clearScryfallMirror);
-
-                RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
+                _scryfallService.RefreshLocalMirror(true, true);
+                
+                // RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
+                await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize);
             }
             finally
             {
@@ -91,50 +110,57 @@ namespace MtgDatabase
             }
         }
 
-        public void RebuildSetData(SetInfo setInfo)
-        {
-            IsRebuilding = true;
-            try
-            {
-                var found = _scryfallService.ScryfallSets?.Query()?.Where(s => s.Code == setInfo.Code)?.FirstOrDefault();
-                if (found == null)
-                {
-                    return;
-                }
+        // public void RebuildSetData(SetInfo setInfo)
+        // {
+        //     IsRebuilding = true;
+        //     try
+        //     {
+        //         var found = _scryfallService.ScryfallSets?.Query()?.Where(s => s.Code == setInfo.Code)?.FirstOrDefault();
+        //         if (found == null)
+        //         {
+        //             return;
+        //         }
+        //
+        //         var oldDate = found.UpdateDateUtc;
+        //         found.UpdateDateUtc = DateTime.MinValue;
+        //         _scryfallService.ScryfallSets?.Update(found);
+        //         RebuildInternalDatabase(false);
+        //
+        //         found.UpdateDateUtc = oldDate;
+        //         _scryfallService.ScryfallSets?.Update(found);
+        //     }
+        //     finally
+        //     {
+        //         IsRebuilding = false;
+        //     }
+        // }
+        //
+        // public void DownloadRebuildSetData(SetInfo setInfo)
+        // {
+        //     IsRebuilding = true;
+        //     try
+        //     {
+        //         _scryfallService.MarkSetCardsAsOutdated(setInfo.Code);
+        //         var cards = _scryfallService.RefreshLocalMirrorForSet(setInfo.Code);
+        //
+        //         RebuildCardsFromScryfall(cards);
+        //     }
+        //     finally
+        //     {
+        //         IsRebuilding = false;
+        //     }
+        // }
 
-                var oldDate = found.UpdateDateUtc;
-                found.UpdateDateUtc = DateTime.MinValue;
-                _scryfallService.ScryfallSets?.Update(found);
-                RebuildInternalDatabase(false);
-
-                found.UpdateDateUtc = oldDate;
-                _scryfallService.ScryfallSets?.Update(found);
-            }
-            finally
-            {
-                IsRebuilding = false;
-            }
-        }
-
-        public void DownloadRebuildSetData(SetInfo setInfo)
-        {
-            IsRebuilding = true;
-            try
-            {
-                _scryfallService.MarkSetCardsAsOutdated(setInfo.Code);
-                var cards = _scryfallService.RefreshLocalMirrorForSet(setInfo.Code);
-
-                RebuildCardsFromScryfall(cards);
-            }
-            finally
-            {
-                IsRebuilding = false;
-            }
-        }
-
-        public void Configure(DirectoryInfo folder, ScryfallConfiguration configuration)
+        private int _downloadCardBachSize = 100;
+        
+        public void Configure(
+            DirectoryInfo folder, 
+            ScryfallConfiguration configuration,
+            int downloadCardBachSize)
         {
             _scryfallConfiguration = configuration;
+            _downloadCardBachSize = downloadCardBachSize;
+            
             _logger.LogInformation(
                 $"Configuring {nameof(Database.MtgDatabase)} in {folder.FullName} with {Environment.NewLine}{configuration.DumpSettings()}");
             _scryfallService.Configure(folder, configuration);
@@ -163,15 +189,13 @@ namespace MtgDatabase
                 ?.ToArray()
             ?? Array.Empty<SetInfo>();
 
-        public DatabaseSummary GetDatabaseSummary()
-        {
-            return new DatabaseSummary()
+        public DatabaseSummary GetDatabaseSummary() =>
+            new DatabaseSummary
             {
                 LastUpdated = _scryfallService.ScryfallSets?.Query().OrderByDescending(s => s.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ?? DateTime.MinValue,
                 NumberOfCards = _scryfallService?.ScryfallCards?.Count() ?? 0,
-                NumberOfSets = _scryfallService?.ScryfallSets?.Count() ?? 0,
+                NumberOfSets = _scryfallService?.ScryfallSets?.Count() ?? 0
             };
-        }
 
         public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData) =>
             Task.Run(() =>
@@ -271,6 +295,47 @@ namespace MtgDatabase
         }
 
         private void RebuildCardsFromScryfall(ScryfallCard[] allCards)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var cardFactory = new QueryableMagicCardFactory();
+            var cardsToInsert = new List<QueryableMagicCard>();
+            var cardsToUpdate = new List<QueryableMagicCard>();
+            foreach (var group in allCards)
+            {
+                var card = cardFactory.Create(group);
+                var found = _database.Cards?.Query()?.Where(c => c.UniqueId == card.UniqueId)?.FirstOrDefault();
+                if (found == null)
+                {
+                    cardsToInsert.Add(card);
+                }
+                else
+                {
+                    cardsToUpdate.Add(card);
+                }
+            }
+
+            if (cardsToInsert.Any())
+            {
+                _database.Cards?.InsertBulk(cardsToInsert);
+            }
+
+            if (cardsToUpdate.Any())
+            {
+                _database.Cards?.Update(cardsToUpdate);
+            }
+
+            if (cardsToInsert.Any() || cardsToUpdate.Any())
+            {
+                _database.EnsureIndex();
+            }
+
+            stopwatch.Stop();
+
+            _logger.LogTrace(
+                $"Inserted: {cardsToInsert.Count()}, Updated: {cardsToUpdate.Count()} in {stopwatch.Elapsed}");
+        }
+        
+        private void RebuildCardsFromScryfall(ScryfallJsonCard[] allCards)
         {
             var stopwatch = Stopwatch.StartNew();
             var cardFactory = new QueryableMagicCardFactory();
