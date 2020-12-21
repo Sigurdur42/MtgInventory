@@ -18,6 +18,7 @@ namespace MtgDatabase
     {
         bool IsRebuilding { get; }
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration, int downloadCardBatchSize);
+
         Task RefreshLocalDatabaseAsync();
         // void RebuildSetData(SetInfo setInfo);
         // void DownloadRebuildSetData(SetInfo setInfo);
@@ -52,7 +53,7 @@ namespace MtgDatabase
             _database = database;
             _scryfallService = scryfallService;
             _mirrorScryfallDatabase = mirrorScryfallDatabase;
-            
+
             _mirrorScryfallDatabase.CardBatchDownloaded += OnMirrorScryfallCardsDownloaded;
         }
 
@@ -100,7 +101,7 @@ namespace MtgDatabase
             try
             {
                 _scryfallService.RefreshLocalMirror(true, true);
-                
+
                 // RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
                 await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize);
             }
@@ -152,15 +153,15 @@ namespace MtgDatabase
         // }
 
         private int _downloadCardBachSize = 100;
-        
+
         public void Configure(
-            DirectoryInfo folder, 
+            DirectoryInfo folder,
             ScryfallConfiguration configuration,
             int downloadCardBachSize)
         {
             _scryfallConfiguration = configuration;
             _downloadCardBachSize = downloadCardBachSize;
-            
+
             _logger.LogInformation(
                 $"Configuring {nameof(Database.MtgDatabase)} in {folder.FullName} with {Environment.NewLine}{configuration.DumpSettings()}");
             _scryfallService.Configure(folder, configuration);
@@ -195,9 +196,9 @@ namespace MtgDatabase
                 LastUpdated = _scryfallService.ScryfallSets?.Query().OrderByDescending(s => s.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ?? DateTime.MinValue,
                 NumberOfCards = _database.Cards?.Count() ?? 0,
                 NumberOfSets = _scryfallService?.ScryfallSets?.Count() ?? 0,
-                NumberOfCardsDe = _database.Cards?.Query()?.Where(c=>"DE".Equals(c.Language, StringComparison.InvariantCultureIgnoreCase))?.Count() ?? 0,
-                NumberOfCardsEn = _database.Cards?.Query()?.Where(c=>"EN".Equals(c.Language, StringComparison.InvariantCultureIgnoreCase)).Count() ?? 0,
-                NumberOfCardsNoLanguage = _database.Cards?.Query()?.Where(c=>string.IsNullOrEmpty(c.Language)).Count() ?? 0,
+                NumberOfCardsDe = _database.Cards?.Query()?.Where(c => "DE".Equals(c.Language, StringComparison.InvariantCultureIgnoreCase))?.Count() ?? 0,
+                NumberOfCardsEn = _database.Cards?.Query()?.Where(c => "EN".Equals(c.Language, StringComparison.InvariantCultureIgnoreCase)).Count() ?? 0,
+                NumberOfCardsNoLanguage = _database.Cards?.Query()?.Where(c => string.IsNullOrEmpty(c.Language)).Count() ?? 0,
             };
 
         public Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData) =>
@@ -243,7 +244,7 @@ namespace MtgDatabase
 
                     var result = queryData.ResultSortOrder switch
                     {
-                        ResultSortOrder.ByName => query?.OrderBy(c => c.Name)?.ToArray(),
+                        ResultSortOrder.ByName => query?.ToArray()?.OrderBy(c => c.Name)?.ThenBy(c => c.SetCode)?.ThenBy(c=>c.CollectorNumber)?.ToArray(),
                         ResultSortOrder.ByCollectorNumber => query?.OrderBy(c => c.CollectorNumber)?.ToArray(),
                         _ => query?.ToArray()
                     };
@@ -337,7 +338,7 @@ namespace MtgDatabase
             _logger.LogTrace(
                 $"Inserted: {cardsToInsert.Count()}, Updated: {cardsToUpdate.Count()} in {stopwatch.Elapsed}");
         }
-        
+
         private void RebuildCardsFromScryfall(ScryfallJsonCard[] allCards)
         {
             var stopwatch = Stopwatch.StartNew();

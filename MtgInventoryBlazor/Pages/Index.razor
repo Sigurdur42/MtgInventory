@@ -20,28 +20,32 @@
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Sets</label>
             <div class="col-xl-6">
-                <RadzenAutoComplete AllowClear="true" TValue="string"
-                                    Data="@_setData"
-                                    TextProperty="Name"
-                                    ValueProperty="Code"
-                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                    Change=@(args => OnChange(args, "SetFilter"))/>
+                @* <RadzenAutoComplete AllowClear="true" TValue="string" *@
+                @*                     Data="@_setData" *@
+                @*                     TextProperty="Name" *@
+                @*                     ValueProperty="Code" *@
+                @*                     FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" *@
+                @*                     Change=@(args => OnChange(args, "SetFilter"))/> *@
+                
+                <MudAutocomplete  T="SetInfo" Label="This set only" 
+                                 @bind-Value="@_selectedSet" SearchFunc="@Search" ToStringFunc="@(e=> e==null?null : $"{e.Name} ({e.Code})")" 
+                                 />
             </div>
             <div class="col-xl-2">
                 <label>@_databaseQueryData.SetCode</label>
             </div>
 
         </div>
-        <div class="col-12 row">
-            <label class="col-2 font-weight-bold">Sets</label>
-            <div class="col-xl-6">
-                <AutoComplete Options="@_setData" OptionFormat='x => $"{x.Value.Name}"' OnSelectionChange="OnSelectedSetChange" Placeholder="input here"/>
-            </div>
-            <div class="col-xl-2">
-                <label>@_databaseQueryData.SetCode</label>
-            </div>
-
-        </div>
+        @* <div class="col-12 row"> *@
+        @*     <label class="col-2 font-weight-bold">Sets</label> *@
+        @*     <div class="col-xl-6"> *@
+        @*         <AutoComplete Options="@_setData" OptionFormat='x => $"{x.Value.Name}"' OnSelectionChange="OnSelectedSetChange" Placeholder="input here"/> *@
+        @*     </div> *@
+        @*     <div class="col-xl-2"> *@
+        @*         <label>@_databaseQueryData.SetCode</label> *@
+        @*     </div> *@
+        @* *@
+        @* </div> *@
         <div class="col-12 row">
             <label class="col-2 font-weight-bold">Match exact</label>
             <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
@@ -62,16 +66,6 @@
 </p>
 <hr/>
 <p>
-    <p>
-        Result count: @resultCount
-        <RadzenRadioButtonList @bind-Value="@_imageWidth" TValue="int">
-            <Items>
-                <RadzenRadioButtonListItem Text="Small" Value="100"/>
-                <RadzenRadioButtonListItem Text="Medium" Value="200"/>
-                <RadzenRadioButtonListItem Text="Large" Value="300"/>
-            </Items>
-        </RadzenRadioButtonList>
-    </p>
     <table class="table" id="searchResult">
         <thead>
         <tr>
@@ -90,7 +84,8 @@
                     <img src="@card.Images?.Normal" width="@_imageWidth"/>
                 </td>
                 <td>
-                    <RadzenLink Path="@MkmMapper.GenerateUrl(card)" Text="Show in MKM" target="_blank"/>
+                    <MudLink Href="@MkmMapper.GenerateUrl(card)" Target="_blank">Show in MKM</MudLink>
+
                     <br/>
                     @card.Name+
                     <br/>
@@ -111,6 +106,7 @@
                     <br/>
                     Tix:&nbsp;@card.Tix
                     <br/>
+                    Language:&nbsp;@card.Language<br/>
                     Updated:&nbsp;@card.UpdateDateUtc
                 </td>
                 <td>
@@ -126,6 +122,17 @@
 
 @code
 {
+    private async Task<IEnumerable<SetInfo>> Search(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return _setData;
+        }
+        
+        return _setData.Where(e => $"{e.Name} ({e.Code})".Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+    
+    
     private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();
 
     private int resultCount = 0;
@@ -135,6 +142,7 @@
 
     private async void StartSearchAsync()
     {
+        _databaseQueryData.SetCode = _selectedSet?.Code ?? "";
         var result = await InventoryService.SearchCardsAsync(_databaseQueryData);
         _queryResult.Clear();
         foreach (var res in result)
@@ -149,7 +157,7 @@
     }
 
     private SetInfo[] _setData = Array.Empty<SetInfo>();
-
+    private SetInfo? _selectedSet = null;
     protected override void OnInitialized()
     {
         _setData = InventoryService.GetAllSets();
