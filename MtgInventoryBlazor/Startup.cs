@@ -11,7 +11,6 @@ using MtgDatabase;
 using MtgInventoryBlazor.Data;
 using MudBlazor;
 using MudBlazor.Services;
-using Radzen;
 using ScryfallApiServices;
 using FileInfo = System.IO.FileInfo;
 
@@ -50,13 +49,6 @@ namespace MtgInventoryBlazor
             });
 
             services.AddMudBlazorResizeListener();
-
-            services.AddAntDesign();
-
-            services.AddScoped<DialogService>();
-            services.AddScoped<NotificationService>();
-            services.AddScoped<TooltipService>();
-            services.AddScoped<ContextMenuService>();
 
             services.AddLogging(cfg =>
             {

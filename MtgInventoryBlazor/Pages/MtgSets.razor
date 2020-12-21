@@ -5,45 +5,40 @@
 @inject MtgInventoryService InventoryService
 @inject IMkmMapper MkmMapper
 
-<p>
-    MY SETS<br/> TODO: Summary
-    <br/>
-</p>
 
-<p>
-    <div class="row">
-        <RadzenGrid AllowFiltering="true"
-                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                    FilterMode="FilterMode.Advanced"
-                    AllowPaging="false" PageSize="100"
-                    AllowSorting="true" Data="@_setData" TItem="SetInfo">
-            <Columns>
-                <RadzenGridColumn TItem="SetInfo" Property="Code" Title="Code"/>
-                <RadzenGridColumn TItem="SetInfo" Property="ParentSetCode" Title="ParentSetCode"/>
-                <RadzenGridColumn TItem="SetInfo" Property="Name" Title="Name" Width="250"/>
-                <RadzenGridColumn TItem="SetInfo" Property="ReleaseDate" Title="ReleaseDate"/>
-                <RadzenGridColumn TItem="SetInfo" Property="IsDigital" Title="IsDigital"/>
-                <RadzenGridColumn TItem="SetInfo" Property="CardCount" Title="CardCount"/>
-                <RadzenGridColumn TItem="SetInfo" Property="SetType" Title="SetType"/>
-                <RadzenGridColumn TItem="SetInfo" Property="UpdateDateUtc" Title="Updated"/>
-            </Columns>
-        </RadzenGrid>
-    </div>
-</p>
+
+    <MudTable Items="@_setData" Hover="true" Breakpoint="Breakpoint.Sm" FixedHeader="true" Height="@(fixed_header?"800px":"")">
+        <HeaderContent>
+            <MudTh>Code</MudTh>
+            <MudTh>Parent SetCode</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>ReleaseDate</MudTh>
+            <MudTh>IsDigital</MudTh>
+            <MudTh>CardCount</MudTh>
+            <MudTh>SetType</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Code">@context.Code</MudTd>
+            <MudTd DataLabel="Parent Set Code">@context.ParentSetCode</MudTd>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="ReleaseDate">@context.ReleaseDate</MudTd>
+            <MudTd DataLabel="IsDigital">@context.IsDigital</MudTd>
+            <MudTd DataLabel="CardCount">@context.CardCount</MudTd>
+            <MudTd DataLabel="SetType">@context.SetType</MudTd>
+        </RowTemplate>
+    </MudTable>
+
 
 
 @code
 {
-
-  
-
+    bool fixed_header = true;
     private SetInfo[] _setData = Array.Empty<SetInfo>();
 
     protected override void OnInitialized()
     {
         _setData = InventoryService.GetAllSets();
     }
-
 
     void OnChange(object value, string name)
     {

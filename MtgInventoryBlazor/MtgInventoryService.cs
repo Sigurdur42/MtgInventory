@@ -53,7 +53,10 @@ namespace MtgInventoryBlazor
             return await task;
         }
 
-        public SetInfo[] GetAllSets() => _mtgDatabaseService.GetAllSets().OrderBy(s => s.Name).ToArray();
+        public SetInfo[] GetAllSets()
+        {
+            return _mtgDatabaseService.GetAllSets().OrderBy(s => s.Name).ToArray();
+        }
 
         // public async Task RebuildSetDataAsync(SetInfo setInfo) =>
         //     await Task.Run(() =>

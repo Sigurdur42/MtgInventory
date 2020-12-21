@@ -6,62 +6,22 @@
 @inject IMkmMapper MkmMapper
 
 <p>
-    <MudText Typo="Typo.h6">MudBlazor is </MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary">some content</MudButton>
-</p>
-
-<p>
     <EditForm Model="@_databaseQueryData" OnValidSubmit="@StartSearchAsync">
-        <div class="col-12 row">
-            <label class="col-2 font-weight-bold">Card Name:</label>
-            <InputText class="col-4 form-control" @bind-Value="_databaseQueryData.Name" placeholder="the card name"></InputText>
-        </div>
+        <MudCard>
+            <MudCardContent>
+                <MudTextField @bind-Value="_databaseQueryData.Name" Label="Card Name" HelperText="Card name to look for" Variant="Variant.Text"/>
+                <MudAutocomplete T="SetInfo" Label="This set only"
+                                 @bind-Value="@_selectedSet" SearchFunc="@Search"
+                                 ToStringFunc="@(e => e == null ? null : $"{e.Name} ({e.Code})")"/>
+                <MudSwitch @bind-Checked="@_databaseQueryData.MatchExactName" Label="Match Exact"/>
+                <MudSwitch @bind-Checked="@_databaseQueryData.IsToken" Label="Token Only"/>
+                <MudSwitch @bind-Checked="@_databaseQueryData.IsBasicLand" Label="Basic Land Only"/>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Search Cards!</MudButton>
+            </MudCardActions>
+        </MudCard>
 
-        <div class="col-12 row">
-            <label class="col-2 font-weight-bold">Sets</label>
-            <div class="col-xl-6">
-                @* <RadzenAutoComplete AllowClear="true" TValue="string" *@
-                @*                     Data="@_setData" *@
-                @*                     TextProperty="Name" *@
-                @*                     ValueProperty="Code" *@
-                @*                     FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" *@
-                @*                     Change=@(args => OnChange(args, "SetFilter"))/> *@
-                
-                <MudAutocomplete  T="SetInfo" Label="This set only" 
-                                 @bind-Value="@_selectedSet" SearchFunc="@Search" ToStringFunc="@(e=> e==null?null : $"{e.Name} ({e.Code})")" 
-                                 />
-            </div>
-            <div class="col-xl-2">
-                <label>@_databaseQueryData.SetCode</label>
-            </div>
-
-        </div>
-        @* <div class="col-12 row"> *@
-        @*     <label class="col-2 font-weight-bold">Sets</label> *@
-        @*     <div class="col-xl-6"> *@
-        @*         <AutoComplete Options="@_setData" OptionFormat='x => $"{x.Value.Name}"' OnSelectionChange="OnSelectedSetChange" Placeholder="input here"/> *@
-        @*     </div> *@
-        @*     <div class="col-xl-2"> *@
-        @*         <label>@_databaseQueryData.SetCode</label> *@
-        @*     </div> *@
-        @* *@
-        @* </div> *@
-        <div class="col-12 row">
-            <label class="col-2 font-weight-bold">Match exact</label>
-            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.MatchExactName" displayname="Match Exact"></InputCheckbox>
-        </div>
-        <div class="col-12 row">
-            <label class="col-2 font-weight-bold">Token Only</label>
-            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsToken">Token only</InputCheckbox>
-        </div>
-        <div class="col-12 row">
-            <label class="col-2 font-weight-bold">Basic Land Only</label>
-            <InputCheckbox class="col-4 form-control" @bind-Value="_databaseQueryData.IsBasicLand">Basic only</InputCheckbox>
-        </div>
-        <div class="col-12 row">
-            <span class="col-2"/>
-            <input type="submit" class="form-control col-1 btn-primary" value="Search!"/>
-        </div>
     </EditForm>
 </p>
 <hr/>
@@ -128,15 +88,13 @@
         {
             return _setData;
         }
-        
+
         return _setData.Where(e => $"{e.Name} ({e.Code})".Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
-    
-    
+
     private readonly MtgDatabaseQueryData _databaseQueryData = new MtgDatabaseQueryData();
 
-    private int resultCount = 0;
-    private int _imageWidth = 300;
+    private readonly int _imageWidth = 300;
 
     public ObservableCollection<QueryableMagicCard> _queryResult = new ObservableCollection<QueryableMagicCard>();
 
@@ -150,38 +108,14 @@
             _queryResult.Add(res);
         }
 
-        resultCount = result.Length;
-    // _queryResult.AddRange(result);
-
         StateHasChanged();
     }
 
     private SetInfo[] _setData = Array.Empty<SetInfo>();
-    private SetInfo? _selectedSet = null;
+    private SetInfo _selectedSet = null;
+
     protected override void OnInitialized()
     {
         _setData = InventoryService.GetAllSets();
     }
-
-    void OnChange(object value, string name)
-    {
-        if ("SetFilter".Equals(name))
-        {
-            _databaseQueryData.SetCode = _setData.FirstOrDefault(s => s.Name == (value?.ToString() ?? ""))?.Code ?? "";
-        }
-    // console.Log($"{name} value changed to {value}");
-    }
-
-    void OnSelectedSetChange(AutoCompleteOption item)
-    {
-        if (item?.Value is SetInfo value)
-        {
-            _databaseQueryData.SetCode = value.Code;
-        }
-        else
-        {
-            _databaseQueryData.SetCode = "";
-        }
-    }
-
 }
