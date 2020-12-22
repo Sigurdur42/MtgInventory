@@ -17,6 +17,7 @@ namespace MtgDatabase.Models
 
         public string OracleText { get; set; } = "";
 
+        // TODO: Legalities
         // public Legality[] Legalities { get; set; } = Array.Empty<Legality>();
         public CardImages Images { get; set; } = new CardImages();
 
