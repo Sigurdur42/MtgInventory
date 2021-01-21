@@ -63,7 +63,9 @@ namespace ScryfallApiServices
 
             if (!downloadSetsOnly)
             {
-                DownloadCardsForAllSets();
+                // DownloadCardsForAllSets();
+
+               // var task = DownloadBulkData().GetAwaiter();
             }
         }
 
@@ -92,6 +94,10 @@ namespace ScryfallApiServices
                         using (var downloadStream = await httpClient.GetStreamAsync(responseRead.download_uri))
                         {
                             var downloadedCards = ReadFromStream(downloadStream);
+
+                            var scryfallCards = downloadedCards.Select(c => new ScryfallCard(c));
+                            _database.InsertOrUpdateScryfallCards(scryfallCards);
+                            
 
                             // var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
                             // using (var fileStream = new FileStream(Path.Combine(baseFolder.FullName, "Downloaded.json"),
@@ -200,19 +206,20 @@ namespace ScryfallApiServices
             var result = new List<ScryfallBulkCard>();
             var serializer = new JsonSerializer();
 
-            using (StreamReader sr = new StreamReader(inputStream))
+            using StreamReader sr = new StreamReader(inputStream);
+            using JsonReader reader = new JsonTextReader(sr);
+            while (reader.Read())
             {
-                using (JsonReader reader = new JsonTextReader(sr))
+                // deserialize only when there's "{" character in the stream
+                if (reader.TokenType != JsonToken.StartObject)
                 {
-                    while (reader.Read())
-                    {
-                        // deserialize only when there's "{" character in the stream
-                        if (reader.TokenType == JsonToken.StartObject)
-                        {
-                            var single = serializer.Deserialize<ScryfallBulkCard>(reader);
-                            result.Add(single);
-                        }
-                    }
+                    continue;
+                }
+
+                var single = serializer.Deserialize<ScryfallBulkCard>(reader);
+                if (single != null)
+                {
+                    result.Add(single);
                 }
             }
 

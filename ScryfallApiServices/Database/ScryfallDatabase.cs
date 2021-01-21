@@ -19,7 +19,7 @@ namespace ScryfallApiServices.Database
         void Configure(DirectoryInfo folder);
         void ShutDown();
         void ClearDatabase();
-        void InsertOrUpdateScryfallCards(ScryfallCard[] cards);
+        void InsertOrUpdateScryfallCards(IEnumerable<ScryfallCard> cards);
         void InsertOrUpdateScryfallSets(ScryfallSet[] sets);
     }
 
@@ -65,15 +65,18 @@ namespace ScryfallApiServices.Database
             ScryfallCards?.DeleteAll();
         }
 
-        public void InsertOrUpdateScryfallCards(ScryfallCard[] cards)
+        public void InsertOrUpdateScryfallCards(IEnumerable<ScryfallCard> cards)
         {
             VerifyConfigured();
 
-            _logger.LogTrace($"Inserting {cards.Count()} new scryfall cards...");
+            _logger.LogTrace($"Inserting new scryfall cards...");
             var cardsToInsert = new List<ScryfallCard>();
             var cardsToUpdate = new List<ScryfallCard>();
+
+            var inserted = 0;
             foreach (var card in cards)
             {
+                ++inserted;
                 var found = ScryfallCards?.Query()?.Where(c => c.Id == card.Id)?.FirstOrDefault();
                 if (found == null)
                 {
@@ -93,6 +96,8 @@ namespace ScryfallApiServices.Database
             {
                 ScryfallCards?.Update(cardsToUpdate);
             }
+
+            _logger.LogTrace($"Inserted/Updated {inserted} scryfall cards...");
 
             ScryfallCards?.EnsureIndex(e => e.Set);
             ScryfallCards?.EnsureIndex(e => e.Name);

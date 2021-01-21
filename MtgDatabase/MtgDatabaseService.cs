@@ -10,24 +10,24 @@ using MtgDatabase.Database;
 using MtgDatabase.Models;
 using MtgDatabase.Scryfall;
 using ScryfallApiServices;
-using ScryfallApiServices.Models;
 
 namespace MtgDatabase
 {
     public interface IMtgDatabaseService : IQueryableCardsProvider, IDisposable
     {
+        event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding;
+
         bool IsRebuilding { get; }
+
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration, int downloadCardBatchSize);
 
         Task RefreshLocalDatabaseAsync();
-        // void RebuildSetData(SetInfo setInfo);
-        // void DownloadRebuildSetData(SetInfo setInfo);
 
         Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
+
         SetInfo[] GetAllSets();
 
         DatabaseSummary GetDatabaseSummary();
-        event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding;
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -43,6 +43,8 @@ namespace MtgDatabase
 
         private ScryfallConfiguration? _scryfallConfiguration;
 
+        private int _downloadCardBachSize = 100;
+
         public MtgDatabaseService(
             ILogger<MtgDatabaseService> logger,
             Database.MtgDatabase database,
@@ -55,18 +57,6 @@ namespace MtgDatabase
             _mirrorScryfallDatabase = mirrorScryfallDatabase;
 
             _mirrorScryfallDatabase.CardBatchDownloaded += OnMirrorScryfallCardsDownloaded;
-        }
-
-        private void OnMirrorScryfallCardsDownloaded(object sender, DownloadedCardsEventArgs e)
-        {
-            var supportedLanguages = e.DownloadedCards
-                .Where(c => string.IsNullOrWhiteSpace(c.Lang) || "EN".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase) || "DE".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase))
-                .ToArray();
-
-            if (supportedLanguages.Any())
-            {
-                RebuildCardsFromScryfall(supportedLanguages);
-            }
         }
 
         public event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding = (sender, args) => { };
@@ -95,6 +85,8 @@ namespace MtgDatabase
             }
         }
 
+        public ILiteCollection<QueryableMagicCard>? Cards => _database?.Cards;
+
         public async Task RefreshLocalDatabaseAsync()
         {
             IsRebuilding = true;
@@ -102,7 +94,6 @@ namespace MtgDatabase
             {
                 _scryfallService.RefreshLocalMirror(true, true);
 
-                // RebuildInternalDatabase(clearMtgDatabase || clearScryfallMirror);
                 await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize);
             }
             finally
@@ -110,49 +101,6 @@ namespace MtgDatabase
                 IsRebuilding = false;
             }
         }
-
-        // public void RebuildSetData(SetInfo setInfo)
-        // {
-        //     IsRebuilding = true;
-        //     try
-        //     {
-        //         var found = _scryfallService.ScryfallSets?.Query()?.Where(s => s.Code == setInfo.Code)?.FirstOrDefault();
-        //         if (found == null)
-        //         {
-        //             return;
-        //         }
-        //
-        //         var oldDate = found.UpdateDateUtc;
-        //         found.UpdateDateUtc = DateTime.MinValue;
-        //         _scryfallService.ScryfallSets?.Update(found);
-        //         RebuildInternalDatabase(false);
-        //
-        //         found.UpdateDateUtc = oldDate;
-        //         _scryfallService.ScryfallSets?.Update(found);
-        //     }
-        //     finally
-        //     {
-        //         IsRebuilding = false;
-        //     }
-        // }
-        //
-        // public void DownloadRebuildSetData(SetInfo setInfo)
-        // {
-        //     IsRebuilding = true;
-        //     try
-        //     {
-        //         _scryfallService.MarkSetCardsAsOutdated(setInfo.Code);
-        //         var cards = _scryfallService.RefreshLocalMirrorForSet(setInfo.Code);
-        //
-        //         RebuildCardsFromScryfall(cards);
-        //     }
-        //     finally
-        //     {
-        //         IsRebuilding = false;
-        //     }
-        // }
-
-        private int _downloadCardBachSize = 100;
 
         public void Configure(
             DirectoryInfo folder,
@@ -169,8 +117,6 @@ namespace MtgDatabase
         }
 
         public void Dispose() => _database?.ShutDown();
-
-        public ILiteCollection<QueryableMagicCard>? Cards => _database?.Cards;
 
         public SetInfo[] GetAllSets() =>
             _scryfallService.ScryfallSets
@@ -244,7 +190,7 @@ namespace MtgDatabase
 
                     var result = queryData.ResultSortOrder switch
                     {
-                        ResultSortOrder.ByName => query?.ToArray()?.OrderBy(c => c.Name)?.ThenBy(c => c.SetCode)?.ThenBy(c=>c.CollectorNumber)?.ToArray(),
+                        ResultSortOrder.ByName => query?.ToArray()?.OrderBy(c => c.Name)?.ThenBy(c => c.SetCode)?.ThenBy(c => c.CollectorNumber)?.ToArray(),
                         ResultSortOrder.ByCollectorNumber => query?.OrderBy(c => c.CollectorNumber)?.ToArray(),
                         _ => query?.ToArray()
                     };
@@ -258,126 +204,62 @@ namespace MtgDatabase
                 }
             });
 
-        private void RebuildInternalDatabase(bool clearDatabase)
+        private void OnMirrorScryfallCardsDownloaded(object sender, DownloadedCardsEventArgs e)
         {
-            if (clearDatabase)
-            {
-                _database.Cards?.DeleteAll();
-            }
+            var supportedLanguages = e.DownloadedCards
+                ?.Where(c => string.IsNullOrWhiteSpace(c.Lang) || "EN".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase) || "DE".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase))
+                ?? Array.Empty<ScryfallJsonCard>();
 
-            var oldestCard =
-                _database.Cards?.Query().OrderBy(c => c.UpdateDateUtc).FirstOrDefault()?.UpdateDateUtc ??
-                DateTime.MinValue;
-            var oldestDate = _scryfallConfiguration?.IsCardOutdated(oldestCard) ?? false;
-            if (!clearDatabase && oldestDate)
-            {
-                // Cards are up to date - skip this
-                _logger.LogTrace("All cards are up to date - skip rebuild");
-                return;
-            }
-
-            _logger.LogTrace("Retrieving all cards from cache...");
-            var stopwatch = Stopwatch.StartNew();
-            var allCards = _scryfallService.ScryfallCards?.FindAll().ToArray() ?? Array.Empty<ScryfallCard>();
-            _logger.LogTrace($"Retrieving all cards from cache took {stopwatch.Elapsed} for {allCards.Length} cards");
-
-            stopwatch.Restart();
-            // var groupedByName = allCards.GroupBy(c => c.Name).ToArray();
-            // _logger.LogTrace($"Found {groupedByName.Length} distinct cards in {stopwatch.Elapsed}");
-            // stopwatch.Restart();
-
-            // TEST ONLY
-            // var groupedTypelines = allCards
-            //     .GroupBy(c => c.TypeLine)
-            //     .OrderBy(c=>c.Key)
-            //     .Select(c=>c.Key)
-            //     .ToArray();
-            // var dummy = string.Join(Environment.NewLine, groupedTypelines);
-            // File.WriteAllText(@"C:\temp\typelines.txt", dummy);
-
-            RebuildCardsFromScryfall(allCards);
+            RebuildCardsFromScryfall(supportedLanguages);
         }
 
-        private void RebuildCardsFromScryfall(ScryfallCard[] allCards)
+        private void RebuildCardsFromScryfall(IEnumerable<ScryfallJsonCard> allCards)
         {
-            var stopwatch = Stopwatch.StartNew();
-            var cardFactory = new QueryableMagicCardFactory();
-            var cardsToInsert = new List<QueryableMagicCard>();
-            var cardsToUpdate = new List<QueryableMagicCard>();
-            foreach (var group in allCards)
+            IsRebuilding = true;
+            try
             {
-                var card = cardFactory.Create(group);
-                var found = _database.Cards?.Query()?.Where(c => c.UniqueId == card.UniqueId)?.FirstOrDefault();
-                if (found == null)
+                var stopwatch = Stopwatch.StartNew();
+                var cardFactory = new QueryableMagicCardFactory();
+                var cardsToInsert = new List<QueryableMagicCard>();
+                var cardsToUpdate = new List<QueryableMagicCard>();
+                foreach (var group in allCards)
                 {
-                    cardsToInsert.Add(card);
+                    var card = cardFactory.Create(group);
+                    var found = _database.Cards?.Query()?.Where(c => c.UniqueId == card.UniqueId)?.FirstOrDefault();
+                    if (found == null)
+                    {
+                        cardsToInsert.Add(card);
+                    }
+                    else
+                    {
+                        cardsToUpdate.Add(card);
+                    }
                 }
-                else
+
+                if (cardsToInsert.Any())
                 {
-                    cardsToUpdate.Add(card);
+                    _database.Cards?.InsertBulk(cardsToInsert);
                 }
-            }
 
-            if (cardsToInsert.Any())
-            {
-                _database.Cards?.InsertBulk(cardsToInsert);
-            }
-
-            if (cardsToUpdate.Any())
-            {
-                _database.Cards?.Update(cardsToUpdate);
-            }
-
-            if (cardsToInsert.Any() || cardsToUpdate.Any())
-            {
-                _database.EnsureIndex();
-            }
-
-            stopwatch.Stop();
-
-            _logger.LogTrace(
-                $"Inserted: {cardsToInsert.Count()}, Updated: {cardsToUpdate.Count()} in {stopwatch.Elapsed}");
-        }
-
-        private void RebuildCardsFromScryfall(ScryfallJsonCard[] allCards)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            var cardFactory = new QueryableMagicCardFactory();
-            var cardsToInsert = new List<QueryableMagicCard>();
-            var cardsToUpdate = new List<QueryableMagicCard>();
-            foreach (var group in allCards)
-            {
-                var card = cardFactory.Create(group);
-                var found = _database.Cards?.Query()?.Where(c => c.UniqueId == card.UniqueId)?.FirstOrDefault();
-                if (found == null)
+                if (cardsToUpdate.Any())
                 {
-                    cardsToInsert.Add(card);
+                    _database.Cards?.Update(cardsToUpdate);
                 }
-                else
+
+                if (cardsToInsert.Any() || cardsToUpdate.Any())
                 {
-                    cardsToUpdate.Add(card);
+                    _database.EnsureIndex();
                 }
-            }
 
-            if (cardsToInsert.Any())
+                stopwatch.Stop();
+
+                _logger.LogTrace(
+                    $"Inserted: {cardsToInsert.Count}, Updated: {cardsToUpdate.Count} in {stopwatch.Elapsed}");
+            }
+            finally
             {
-                _database.Cards?.InsertBulk(cardsToInsert);
+                IsRebuilding = false;
             }
-
-            if (cardsToUpdate.Any())
-            {
-                _database.Cards?.Update(cardsToUpdate);
-            }
-
-            if (cardsToInsert.Any() || cardsToUpdate.Any())
-            {
-                _database.EnsureIndex();
-            }
-
-            stopwatch.Stop();
-
-            _logger.LogTrace(
-                $"Inserted: {cardsToInsert.Count()}, Updated: {cardsToUpdate.Count()} in {stopwatch.Elapsed}");
         }
     }
 }
