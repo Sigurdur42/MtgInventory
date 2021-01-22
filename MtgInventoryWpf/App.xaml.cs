@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace MtgInventoryWpf
 {
@@ -31,7 +27,14 @@ namespace MtgInventoryWpf
         private void ConfigureServices(IConfiguration configuration,
             IServiceCollection services)
         {
-            // ...
+            services.AddLogging(cfg =>
+            {
+                cfg.AddConfiguration(configuration.GetSection("Logging"));
+                cfg.AddConsole();
+                cfg.AddDebug();
+                //// cfg.AddProvider(new PanelLogSinkProvider());
+            });
+
             services.AddSingleton<MainWindow>();
         }
 
