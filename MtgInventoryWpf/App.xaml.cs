@@ -1,9 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
+using LocalSettings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MtgDatabase;
 
 namespace MtgInventoryWpf
 {
@@ -22,6 +25,25 @@ namespace MtgInventoryWpf
                    })
 
                    .Build();
+
+            var localSettings = host.Services.GetService<ILocalSettingService>();
+
+            var localPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgInventory");
+            var configFile = new FileInfo(Path.Combine(localPath, "MtgInventorySettings.yaml"));
+            localSettings?.Initialize(configFile, SettingWriteMode.OnChange);
+
+            var downloadBatchSize = localSettings?.GetInt("ScryfallDownloadBatchSize") ?? 0;
+            if (downloadBatchSize < 100)
+            {
+                downloadBatchSize = 1000;
+                localSettings?.Set("ScryfallDownloadBatchSize", downloadBatchSize);
+            }
+
+            var mtgService = host.Services.GetService<IMtgDatabaseService>();
+            mtgService?.Configure(
+                new DirectoryInfo(localPath),
+                new ScryfallApiServices.ScryfallConfiguration(),
+                downloadBatchSize);
         }
 
         private void ConfigureServices(
@@ -35,10 +57,12 @@ namespace MtgInventoryWpf
                 cfg.AddDebug();
             });
 
+            services.AddSingleton<ILocalSettingService, LocalSettingService>();
+            services.AddMtgDatabase();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<CardSearchViewModel>();
-             services.AddSingleton<InventoryViewModel>();
-           services.AddSingleton<DatabaseInfoViewModel>();
+            services.AddSingleton<InventoryViewModel>();
+            services.AddSingleton<DatabaseInfoViewModel>();
 
             services.AddSingleton<MainWindow>();
         }
