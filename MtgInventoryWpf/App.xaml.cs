@@ -24,7 +24,8 @@ namespace MtgInventoryWpf
                    .Build();
         }
 
-        private void ConfigureServices(IConfiguration configuration,
+        private void ConfigureServices(
+            IConfiguration configuration,
             IServiceCollection services)
         {
             services.AddLogging(cfg =>
@@ -32,8 +33,10 @@ namespace MtgInventoryWpf
                 cfg.AddConfiguration(configuration.GetSection("Logging"));
                 cfg.AddConsole();
                 cfg.AddDebug();
-                //// cfg.AddProvider(new PanelLogSinkProvider());
             });
+
+            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<DatabaseInfoViewModel>();
 
             services.AddSingleton<MainWindow>();
         }
