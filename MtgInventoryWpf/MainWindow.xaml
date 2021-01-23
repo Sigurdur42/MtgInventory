@@ -1,19 +1,46 @@
 ﻿<Window x:Class="MtgInventoryWpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MtgInventoryWpf"
-         xmlns:ui="http://schemas.modernwpf.com/2019"
-    ui:WindowHelper.UseModernWindowStyle="True"
+        ui:WindowHelper.UseModernWindowStyle="True"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MTG Inventory"
+        Height="450" Width="800">
     <Grid>
         <TabControl TabStripPlacement="Left">
-            <TabItem Header="Tab 1">
+            <TabItem DataContext="{Binding CardSearchViewModel}">
+                <TabItem.Header>
+                    <TextBlock
+                        fa:Awesome.Inline=":search:"
+    TextAlignment="Center"
+                        ToolTip="Search for cards, tokes, etc.">
+                    </TextBlock>
+                </TabItem.Header>
 
             </TabItem>
-            <TabItem Header="{Binding HeaderName}" DataContext="{Binding DatabaseInfoViewModel}">
+            <TabItem DataContext="{Binding InventoryViewModel}">
+                <TabItem.Header>
+                    <TextBlock
+                        fa:Awesome.Inline=":table:"
+    TextAlignment="Center"
+                        ToolTip="The local inventory.">
+                    </TextBlock>
+                </TabItem.Header>
+
+            </TabItem>
+
+            <TabItem  DataContext="{Binding DatabaseInfoViewModel}">
+                <TabItem.Header>
+                    <TextBlock
+                        fa:Awesome.Inline=":database:"
+    TextAlignment="Center"
+                        ToolTip="Display the local database status.">
+                    </TextBlock>
+                </TabItem.Header>
                 <local:DatabaseInfoView />
             </TabItem>
         </TabControl>

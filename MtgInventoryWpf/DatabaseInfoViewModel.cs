@@ -6,6 +6,6 @@ namespace MtgInventoryWpf
 {
     public class DatabaseInfoViewModel
     {
-        public string HeaderName => "Database";
+        public string HeaderName => ":database:"; // database icon in font-awesome
     }
 }
