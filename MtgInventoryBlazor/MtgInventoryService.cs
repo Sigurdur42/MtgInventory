@@ -79,7 +79,7 @@ namespace MtgInventoryBlazor
         {
             RequestToastInfo("Start download card database...", "Rebuild Database");
             var stopwatch = Stopwatch.StartNew();
-            await _mtgDatabaseService.RefreshLocalDatabaseAsync();
+            await _mtgDatabaseService.RefreshLocalDatabaseAsync(null);
             stopwatch.Stop();
             RequestToastSuccess($"Done downloading card database in {stopwatch.Elapsed}...", "Rebuild Database");
         }

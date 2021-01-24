@@ -12,24 +12,31 @@
         Height="450" Width="800">
     <Grid>
         <DockPanel>
-            <StatusBar DockPanel.Dock="Bottom">
+            <StatusBar DockPanel.Dock="Bottom" Height="20">
                 <StatusBar.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Grid>
                             <Grid.ColumnDefinitions>
-
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
-
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                         </Grid>
                     </ItemsPanelTemplate>
                 </StatusBar.ItemsPanel>
                 <StatusBarItem>
-                    <TextBlock Name="Dummy" />
+                    <TextBlock fa:Awesome.Inline="{Binding StatusLineMessage}" />
                 </StatusBarItem>
-                <StatusBarItem Grid.Column="1">
-                    <TextBlock  fa:Awesome.Inline="{Binding DatabaseStatusSymbol}"
+
+                <StatusBarItem Grid.Column="1" Visibility="{Binding DatabaseUpdateProgress}">
+                    <StackPanel Orientation="Horizontal">
+                    <TextBlock fa:Awesome.Inline=":database:" />
+                        <ProgressBar Width="150" Minimum="0" Maximum="100" Value="{Binding DatabaseUpdateProgressValue}" Height="20" VerticalAlignment="Stretch" VerticalContentAlignment="center"/>
+                    </StackPanel>
+                </StatusBarItem>
+
+                <StatusBarItem Grid.Column="2">
+                    <TextBlock fa:Awesome.Inline="{Binding DatabaseStatusSymbol}"
     TextAlignment="Center"/>
                 </StatusBarItem>
             </StatusBar>

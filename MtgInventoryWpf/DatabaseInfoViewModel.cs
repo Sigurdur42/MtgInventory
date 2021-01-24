@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using MtgDatabase;
 using MtgDatabase.Models;
@@ -27,7 +28,12 @@ namespace MtgInventoryWpf
 
             Task.Factory.StartNew(() =>
             {
-                // _autoAupdateMtgDatabaseService.Start();
+                if (!Debugger.IsAttached
+                || (_mtgDatabaseService?.GetDatabaseSummary()?.NumberOfCards ?? 0) == 0)
+                {
+                    _autoAupdateMtgDatabaseService.Start();
+                }
+
                 UpdateDatabaseStatistics();
             });
             _mtgDatabaseService = mtgDatabaseService;

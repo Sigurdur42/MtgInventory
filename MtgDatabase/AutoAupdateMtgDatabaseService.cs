@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace MtgDatabase
 {
-    public class AutoAupdateMtgDatabaseService : IAutoAupdateMtgDatabaseService
+    public class AutoAupdateMtgDatabaseService : IAutoAupdateMtgDatabaseService, IProgress<int>
     {
         public AutoAupdateMtgDatabaseService(
             IMtgDatabaseService databaseService,
@@ -15,6 +16,7 @@ namespace MtgDatabase
         }
 
         public event EventHandler UpdateStarted = (sender, args) => { };
+        public event EventHandler<int> UpdateProgress = (sender, args) => { };
 
         public event EventHandler UpdateFinished = (sender, args) => { };
 
@@ -52,6 +54,7 @@ namespace MtgDatabase
             }
 
             _stopRequested.Reset();
+            Task.Factory.StartNew(InternalRunner);
         }
 
         public void Stop()
@@ -74,7 +77,7 @@ namespace MtgDatabase
                         UpdateStarted.Invoke(this, EventArgs.Empty);
                         try
                         {
-                            _databaseService.RefreshLocalDatabaseAsync();
+                            _databaseService.RefreshLocalDatabaseAsync(this).GetAwaiter().GetResult() ;
                         }
                         finally
                         {
@@ -88,12 +91,13 @@ namespace MtgDatabase
             catch (Exception error)
             {
                 _logger.LogError($"Error updating database...", error);
-                // TODO: Handle error
             }
             finally
             {
                 IsRunning = false;
             }
         }
+
+        public void Report(int value) => UpdateProgress?.Invoke(this, value);
     }
 }

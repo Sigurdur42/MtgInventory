@@ -33,9 +33,9 @@ namespace MtgInventoryWpf
             localSettings?.Initialize(configFile, SettingWriteMode.OnChange);
 
             var downloadBatchSize = localSettings?.GetInt("ScryfallDownloadBatchSize") ?? 0;
-            if (downloadBatchSize < 100)
+            if (downloadBatchSize < 1000)
             {
-                downloadBatchSize = 1000;
+                downloadBatchSize = 5000;
                 localSettings?.Set("ScryfallDownloadBatchSize", downloadBatchSize);
             }
 

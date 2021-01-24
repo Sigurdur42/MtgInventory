@@ -8,6 +8,7 @@ namespace MtgDatabase
 
         event EventHandler UpdateFinished;
         event EventHandler UpdateStarted;
+        event EventHandler<int> UpdateProgress;
 
         void Start();
         void Stop();

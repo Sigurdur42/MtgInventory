@@ -21,7 +21,7 @@ namespace MtgDatabase
 
         void Configure(DirectoryInfo folder, ScryfallConfiguration configuration, int downloadCardBatchSize);
 
-        Task RefreshLocalDatabaseAsync();
+        Task RefreshLocalDatabaseAsync(IProgress<int> progress);
 
         Task<QueryableMagicCard[]> SearchCardsAsync(MtgDatabaseQueryData queryData);
 
@@ -87,14 +87,14 @@ namespace MtgDatabase
 
         public ILiteCollection<QueryableMagicCard>? Cards => _database?.Cards;
 
-        public async Task RefreshLocalDatabaseAsync()
+        public async Task RefreshLocalDatabaseAsync(IProgress<int> progress)
         {
             IsRebuilding = true;
             try
             {
                 _scryfallService.RefreshLocalMirror(true, true);
 
-                await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize);
+                await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize, progress);
             }
             finally
             {
