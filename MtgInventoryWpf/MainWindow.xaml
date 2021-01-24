@@ -11,39 +11,65 @@
         Title="MTG Inventory"
         Height="450" Width="800">
     <Grid>
-        <TabControl TabStripPlacement="Left">
-            <TabItem DataContext="{Binding CardSearchViewModel}">
-                <TabItem.Header>
-                    <TextBlock
+        <DockPanel>
+            <StatusBar DockPanel.Dock="Bottom">
+                <StatusBar.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+
+                            </Grid.ColumnDefinitions>
+                        </Grid>
+                    </ItemsPanelTemplate>
+                </StatusBar.ItemsPanel>
+                <StatusBarItem>
+                    <TextBlock Name="Dummy" />
+                </StatusBarItem>
+                <StatusBarItem Grid.Column="1">
+                    <TextBlock  fa:Awesome.Inline="{Binding DatabaseStatusSymbol}"
+    TextAlignment="Center"/>
+                </StatusBarItem>
+            </StatusBar>
+            <TabControl TabStripPlacement="Left">
+                <TabItem DataContext="{Binding CardSearchViewModel}">
+                    <TabItem.Header>
+                        <TextBlock
                         fa:Awesome.Inline=":search:"
     TextAlignment="Center"
                         ToolTip="Search for cards, tokes, etc.">
-                    </TextBlock>
-                </TabItem.Header>
+                        </TextBlock>
+                    </TabItem.Header>
 
-            </TabItem>
-            <TabItem DataContext="{Binding InventoryViewModel}">
-                <TabItem.Header>
-                    <TextBlock
+                </TabItem>
+                <TabItem DataContext="{Binding InventoryViewModel}">
+                    <TabItem.Header>
+                        <TextBlock
                         fa:Awesome.Inline=":table:"
     TextAlignment="Center"
                         ToolTip="The local inventory.">
-                    </TextBlock>
-                </TabItem.Header>
+                        </TextBlock>
+                    </TabItem.Header>
 
-            </TabItem>
+                </TabItem>
 
-            <TabItem  DataContext="{Binding DatabaseInfoViewModel}">
-                <TabItem.Header>
-                    <TextBlock
+                <TabItem  DataContext="{Binding DatabaseInfoViewModel}">
+                    <TabItem.Header>
+                        <TextBlock
                         fa:Awesome.Inline=":database:"
     TextAlignment="Center"
                         ToolTip="Display the local database status.">
-                    </TextBlock>
-                </TabItem.Header>
-                <local:DatabaseInfoView />
-            </TabItem>
-        </TabControl>
+                        </TextBlock>
+                    </TabItem.Header>
+                    <local:DatabaseInfoView />
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+
+
+
 
         <!--<ui:SimpleStackPanel Margin="12" Spacing="24">
             <TextBlock Text="My first ModernWPF app" Style="{StaticResource HeaderTextBlockStyle}" />

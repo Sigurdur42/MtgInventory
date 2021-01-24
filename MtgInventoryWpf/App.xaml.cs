@@ -44,6 +44,7 @@ namespace MtgInventoryWpf
                 new DirectoryInfo(localPath),
                 new ScryfallApiServices.ScryfallConfiguration(),
                 downloadBatchSize);
+
         }
 
         private void ConfigureServices(

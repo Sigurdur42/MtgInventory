@@ -13,6 +13,7 @@ namespace MtgDatabase
             serviceCollection.AddSingleton<IMtgDatabaseService, MtgDatabaseService>();
             serviceCollection.AddSingleton<Database.MtgDatabase>();
             serviceCollection.AddSingleton<IMkmMapper, MkmMapper>();
+            serviceCollection.AddSingleton<IAutoAupdateMtgDatabaseService, AutoAupdateMtgDatabaseService>();
 
             serviceCollection.AddSingleton<IMirrorScryfallDatabase, MirrorScryfallDatabase>();
             return serviceCollection;

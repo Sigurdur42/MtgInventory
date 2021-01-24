@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 using MtgDatabase;
 using MtgDatabase.Models;
@@ -12,17 +10,26 @@ namespace MtgInventoryWpf
     public class DatabaseInfoViewModel
     {
         private readonly IMtgDatabaseService _mtgDatabaseService;
-
+        private readonly IAutoAupdateMtgDatabaseService _autoAupdateMtgDatabaseService;
 
         public DatabaseSummary? DatabaseSummary { get; set; }
         public string LastUpdate { get; set; }
         private string _noUpdateYet = "Never";
 
         public DatabaseInfoViewModel(
-            IMtgDatabaseService mtgDatabaseService)
+            IMtgDatabaseService mtgDatabaseService,
+            IAutoAupdateMtgDatabaseService autoAupdateMtgDatabaseService)
         {
+            _autoAupdateMtgDatabaseService = autoAupdateMtgDatabaseService;
             LastUpdate = _noUpdateYet;
-            Task.Factory.StartNew(UpdateDatabaseStatistics);
+
+            autoAupdateMtgDatabaseService.UpdateFinished += (sender, e) => UpdateDatabaseStatistics();
+
+            Task.Factory.StartNew(() =>
+            {
+                // _autoAupdateMtgDatabaseService.Start();
+                UpdateDatabaseStatistics();
+            });
             _mtgDatabaseService = mtgDatabaseService;
         }
 
