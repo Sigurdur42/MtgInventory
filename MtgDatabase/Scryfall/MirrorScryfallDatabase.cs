@@ -21,7 +21,8 @@ namespace MtgDatabase.Scryfall
     {
         private readonly ILogger<MirrorScryfallDatabase> _logger;
         private readonly ILocalSettingService _settingService;
-        private int _totalCardCount = 306000;
+        private const int _knownMaxCardCount = 305000;
+        private int _totalCardCount;
         private const string _totalCountKey = "ScryfallLastDatabaseCardCount";
 
         public MirrorScryfallDatabase(
@@ -31,9 +32,11 @@ namespace MtgDatabase.Scryfall
             _logger = logger;
             _settingService = settingService;
             _totalCardCount = settingService.GetInt(_totalCountKey);
-            if (_totalCardCount < 306000)
+
+            if (_totalCardCount < _knownMaxCardCount)
             {
-                settingService.Set(_totalCountKey, 306000);
+                _totalCardCount = _knownMaxCardCount;
+                settingService.Set(_totalCountKey, _totalCardCount);
             }
         }
 

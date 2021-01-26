@@ -69,6 +69,11 @@ namespace MtgDatabase
             {
                 do
                 {
+                    if (_stopRequested.Wait(0))
+                    {
+                        break;
+                    }
+
                     var summary = _databaseService.GetDatabaseSummary();
                     var isOutdated = summary.LastUpdated.AddDays(1).Date < DateTime.Now.Date;
                     if (isOutdated)
