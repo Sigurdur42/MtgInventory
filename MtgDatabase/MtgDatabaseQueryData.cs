@@ -15,6 +15,7 @@ namespace MtgDatabase
         public bool MatchExactName { get; set; }
 
         public bool IsToken { get; set; }
+
         public bool IsBasicLand { get; set; }
 
         public bool FilterBySet => !string.IsNullOrWhiteSpace(SetCode);
