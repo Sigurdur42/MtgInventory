@@ -57,6 +57,16 @@
 
                 <local:CardSearchView  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Green"/>
             </TabItem>
+            <TabItem DataContext="{Binding CardListViewModel}">
+                <TabItem.Header>
+                    <TextBlock
+                        fa:Awesome.Inline=":dice:"
+                        TextAlignment="Center"
+                        ToolTip="Card list handling - Import, Export, Viewing. Use this to quickly check decks as well">
+                    </TextBlock>
+                </TabItem.Header>
+<local:CardListView HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </TabItem>
             <TabItem DataContext="{Binding InventoryViewModel}">
                 <TabItem.Header>
                     <TextBlock

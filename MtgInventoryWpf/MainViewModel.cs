@@ -12,11 +12,13 @@ namespace MtgInventoryWpf
             DatabaseInfoViewModel databaseInfoViewModel,
             CardSearchViewModel cardSearchViewModel,
             InventoryViewModel inventoryViewModel,
+            CardListViewModel cardListViewModel,
             IAutoAupdateMtgDatabaseService autoAupdateMtgDatabaseService)
         {
             DatabaseInfoViewModel = databaseInfoViewModel;
             CardSearchViewModel = cardSearchViewModel;
             InventoryViewModel = inventoryViewModel;
+            CardListViewModel = cardListViewModel;
 
             autoAupdateMtgDatabaseService.UpdateStarted += (sender, e) =>
             {
@@ -41,6 +43,7 @@ namespace MtgInventoryWpf
         public DatabaseInfoViewModel DatabaseInfoViewModel { get; }
         public CardSearchViewModel CardSearchViewModel { get; }
         public InventoryViewModel InventoryViewModel { get; }
+        public CardListViewModel CardListViewModel { get; }
         public string StatusLineMessage { get; set; } = "";
 
         public Visibility DatabaseUpdateProgress { get; set; } = Visibility.Collapsed;
