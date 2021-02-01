@@ -20,4 +20,8 @@
       <ProjectReference Include="..\ScryfallApiServices\ScryfallApiServices.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Decks\" />
+    </ItemGroup>
+
 </Project>

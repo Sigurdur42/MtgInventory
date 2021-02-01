@@ -15,4 +15,10 @@
       <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Decks\TestData\Gavi Cycle.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
