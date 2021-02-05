@@ -65,6 +65,7 @@ namespace MtgInventoryWpf
             services.AddSingleton<CardListViewModel>();
             services.AddSingleton<InventoryViewModel>();
             services.AddSingleton<DatabaseInfoViewModel>();
+            services.AddSingleton<CardListViewModel>();
 
             services.AddSingleton<MainWindow>();
         }

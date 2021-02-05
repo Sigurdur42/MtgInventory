@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using MtgDatabase.Models;
 
 namespace MtgDatabase.Decks
@@ -22,12 +23,20 @@ namespace MtgDatabase.Decks
 
     public class TextDeckReader : ITextDeckReader
     {
+        private readonly ILogger<TextDeckReader> _logger;
+
+        public TextDeckReader(ILogger<TextDeckReader> logger)
+        {
+            _logger = logger;
+        }
+
         public DeckReaderResult ReadDeck(
             string deckContent,
             string deckName)
         {
             if (string.IsNullOrWhiteSpace(deckContent))
             {
+                _logger.LogError($"Deck content is empty (Name: {deckName}");
                 throw new InvalidOperationException("cannot read deck content from empty data.");
             }
 
@@ -84,7 +93,7 @@ namespace MtgDatabase.Decks
             };
         }
 
-        private DeckLine AnalyseLine(
+        private DeckLine? AnalyseLine(
             string line)
         {
             if (string.IsNullOrWhiteSpace(line))
@@ -98,7 +107,7 @@ namespace MtgDatabase.Decks
 
             if (!match.Success)
             {
-                // Log.Warning($"{nameof(TextDeckReader)}: Cannot read line '{line}'");
+                _logger.LogTrace($"Cannot read line '{line}'");
                 return new DeckLine();
             }
 
@@ -117,5 +126,7 @@ namespace MtgDatabase.Decks
 
             return result;
         }
+
+
     }
 }

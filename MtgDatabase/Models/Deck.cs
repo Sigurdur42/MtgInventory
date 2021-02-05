@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace MtgDatabase.Models
 {
+    [DebuggerDisplay("{Name} {GetTotalCardCount()} cards")]
     public class Deck
     {
         public string Name { get; set; } = "";

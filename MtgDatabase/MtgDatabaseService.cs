@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using MtgDatabase.Database;
+using MtgDatabase.Decks;
 using MtgDatabase.Models;
 using MtgDatabase.Scryfall;
 using ScryfallApiServices;
@@ -28,6 +29,8 @@ namespace MtgDatabase
         SetInfo[] GetAllSets();
 
         DatabaseSummary GetDatabaseSummary();
+
+        Task<DeckReaderResult> ReadDeck(string name, string deckContent);
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -36,7 +39,7 @@ namespace MtgDatabase
         private readonly ILogger<MtgDatabaseService> _logger;
         private readonly IScryfallService _scryfallService;
         private readonly IMirrorScryfallDatabase _mirrorScryfallDatabase;
-
+        private readonly ITextDeckReader _deckReader;
         private readonly object _sync = new object();
 
         private bool _isRebuilding;
@@ -49,13 +52,14 @@ namespace MtgDatabase
             ILogger<MtgDatabaseService> logger,
             Database.MtgDatabase database,
             IScryfallService scryfallService,
-            IMirrorScryfallDatabase mirrorScryfallDatabase)
+            IMirrorScryfallDatabase mirrorScryfallDatabase,
+            ITextDeckReader deckReader)
         {
             _logger = logger;
             _database = database;
             _scryfallService = scryfallService;
             _mirrorScryfallDatabase = mirrorScryfallDatabase;
-
+            _deckReader = deckReader;
             _mirrorScryfallDatabase.CardBatchDownloaded += OnMirrorScryfallCardsDownloaded;
         }
 
@@ -260,6 +264,17 @@ namespace MtgDatabase
             {
                 IsRebuilding = false;
             }
+        }
+
+        public async Task<DeckReaderResult> ReadDeck(string name, string deckContent)
+        {
+            return await Task.Run(() =>
+            {
+                var result = _deckReader.ReadDeck(deckName: name, deckContent: deckContent);
+
+                return result;
+            }
+            );
         }
     }
 }

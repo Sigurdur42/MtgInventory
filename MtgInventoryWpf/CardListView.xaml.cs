@@ -22,5 +22,13 @@ namespace MtgInventoryWpf
         {
             InitializeComponent();
         }
+
+        private async void OnPasteFromClipboard(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is CardListViewModel viewModel)
+            {
+                await viewModel.CopyFromClipboard();
+            }
+        }
     }
 }

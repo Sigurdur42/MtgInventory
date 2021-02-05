@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using Microsoft.Extensions.Logging;
+using Moq;
 using MtgDatabase.Decks;
 using NUnit.Framework;
 
@@ -21,11 +23,11 @@ namespace MtgDatabase.Tests.Decks
             var inputFile = Path.Combine(_testDataFolder, "Gavi Cycle.txt");
             Assert.That(File.Exists(inputFile), $"Cannot find input file {inputFile}");
 
-            var reader = new TextDeckReader();
+            var reader = new TextDeckReader(new Mock<ILogger<TextDeckReader>>().Object);
             var result = reader.ReadDeck(File.ReadAllText(inputFile), inputFile);
             Assert.That(result != null);
 
-            Assert.AreEqual(100, result.Deck.GetTotalCardCount());
+            Assert.AreEqual(100, result?.Deck.GetTotalCardCount() ?? -1);
         }
     }
 }
