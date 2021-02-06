@@ -6,8 +6,26 @@
              xmlns:local="clr-namespace:MtgInventoryWpf"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <Style x:Key="groupheaderstyle" TargetType="{x:Type GroupItem}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                        <Expander IsExpanded="True">
+                            <Expander.Header>
+                                <TextBlock Text="{Binding Name}" />
+                            </Expander.Header>
+                            <ItemsPresenter />
+                        </Expander>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -38,7 +56,31 @@
 
         </Grid>
 
-        <DataGrid Grid.Row="1" Grid.ColumnSpan="3" AutoGenerateColumns="False"
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <TextBlock Text="{Binding CurrentDeckSummary, Mode=OneWay}" />
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding CardLineItems}" Grid.Row="2" Grid.ColumnSpan="3" AutoGenerateColumns="False" >
+            <DataGrid.GroupStyle>
+                <GroupStyle ContainerStyle="{StaticResource groupheaderstyle}">
+                    <GroupStyle.Panel>
+                        <ItemsPanelTemplate>
+                            <DataGridRowsPresenter />
+                        </ItemsPanelTemplate>
+                    </GroupStyle.Panel>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Card.Name}" />
+                <DataGridTextColumn Header="Type" Binding="{Binding Card.TypeLine}" />
+                <DataGridTextColumn Header="Oracle" Binding="{Binding Card.OracleText}" />
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!--<DataGrid Grid.Row="1" Grid.ColumnSpan="3" AutoGenerateColumns="False"
                   ItemsSource="{Binding DeckReaderResult}"
                   VerticalScrollBarVisibility="Visible"
                   HorizontalScrollBarVisibility="Visible">
@@ -55,6 +97,6 @@
                 </DataGridTemplateColumn>
 
             </DataGrid.Columns>
-        </DataGrid>
+        </DataGrid>-->
     </Grid>
 </UserControl>
