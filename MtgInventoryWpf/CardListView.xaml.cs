@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MtgDatabase.Models;
 
 namespace MtgInventoryWpf
 {
@@ -29,6 +30,31 @@ namespace MtgInventoryWpf
             {
                 await viewModel.CopyFromClipboard();
             }
+        }
+
+
+
+        private void ComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+            var model = (sender as ComboBox)?.DataContext as CardListViewLineViewModel;
+            model?.UpdateReprints();
+
+        }
+
+        private void OnChangeSetOfCard(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count == 0)
+            {
+                return;
+            }
+
+            var model = (sender as ComboBox)?.DataContext as CardListViewLineViewModel;
+
+            if (e.AddedItems[0] is QueryableMagicCard newSelection)
+            {
+                model?.ChangeSetOfCard(newSelection);
+            }
+
         }
     }
 }

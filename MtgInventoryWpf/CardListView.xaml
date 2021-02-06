@@ -75,7 +75,21 @@
                 <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Card.Name}" />
                 <DataGridTextColumn Header="Type" Binding="{Binding Card.TypeLine}" />
-                <DataGridTextColumn Header="Set" Binding="{Binding Card.SetCode}" />
+
+                <DataGridTemplateColumn Header="Set">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <!--<TextBox Text="{Binding Card.SetCode}" Width="40" ToolTip="{Binding Card.SetName}"/>-->
+                                <ComboBox Width="80" DropDownOpened="ComboBox_DropDownOpened"
+                                          ItemsSource="{Binding Reprints}"
+                                          DisplayMemberPath="SetCode" SelectedItem="{Binding Card, Mode=OneWay}"
+                                          SelectionChanged="OnChangeSetOfCard"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <DataGridTextColumn Header="Oracle" Binding="{Binding Card.OracleText}" />
 
             </DataGrid.Columns>

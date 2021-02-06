@@ -62,9 +62,8 @@ namespace MtgInventoryWpf
             {
                 foreach (var line in category.Lines)
                 {
-                    CardLines.Add(new CardListViewLineViewModel
+                    CardLines.Add(new CardListViewLineViewModel(_mtgDatabaseService, line.Card)
                     {
-                        Card = line.Card,
                         Category = category.CategoryName,
                         Quantity = line.Quantity
                     });
