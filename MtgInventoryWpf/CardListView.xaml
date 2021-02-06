@@ -75,6 +75,7 @@
                 <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Card.Name}" />
                 <DataGridTextColumn Header="Type" Binding="{Binding Card.TypeLine}" />
+                <DataGridTextColumn Header="Set" Binding="{Binding Card.SetCode}" />
                 <DataGridTextColumn Header="Oracle" Binding="{Binding Card.OracleText}" />
 
             </DataGrid.Columns>
