@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using MtgDatabase.Models;
 
 namespace MtgDatabase.Decks
 {
@@ -124,6 +123,7 @@ namespace MtgDatabase.Decks
 
             // TODO: line type
 
+            result.OriginalLine = line;
             return result;
         }
 

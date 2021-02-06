@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using MtgDatabase.Database;
+using MtgDatabase.DatabaseDecks;
 using MtgDatabase.Decks;
 using MtgDatabase.Models;
 using MtgDatabase.Scryfall;
@@ -30,7 +31,7 @@ namespace MtgDatabase
 
         DatabaseSummary GetDatabaseSummary();
 
-        Task<DeckReaderResult> ReadDeck(string name, string deckContent);
+        Task<DatabaseDeckReaderResult> ReadDeck(string name, string deckContent);
     }
 
     public class MtgDatabaseService : IMtgDatabaseService
@@ -266,13 +267,72 @@ namespace MtgDatabase
             }
         }
 
-        public async Task<DeckReaderResult> ReadDeck(string name, string deckContent)
+        public async Task<DatabaseDeckReaderResult> ReadDeck(string name, string deckContent)
         {
             return await Task.Run(() =>
             {
                 var result = _deckReader.ReadDeck(deckName: name, deckContent: deckContent);
 
-                return result;
+                _logger.LogTrace($"Read deck with {result.Deck.GetTotalCardCount()} cards. Now matching with database...");
+                var errorLines = new List<DatabaseDeckErrorLine>();
+                errorLines.AddRange(result.UnreadLines.Select(c => new DatabaseDeckErrorLine
+                {
+                    Line = c,
+                    Reason = DeckErrorLineReason.CannotParse,
+                }));
+
+                var databaseDeck = new DatabaseDeck()
+                {
+                    Name = result.Name,
+                };
+
+                foreach (var category in result.Deck.Categories)
+                {
+                    var deckCategory = new DatabaseDeckCategory()
+                    {
+                        CategoryName = category.CategoryName,
+                    };
+
+                    databaseDeck.Categories.Add(deckCategory);
+
+                    foreach (var line in category.Lines)
+                    {
+                        var databaseLine = new DatabaseDeckLine
+                        {
+
+                            Quantity = line.Quantity,
+                        };
+
+                        // TODO: Read card from database
+
+                        var foundCards = _database.Cards?
+                            .Query()
+                            .Where(c => c.Name.Equals(line.CardName, StringComparison.InvariantCultureIgnoreCase))
+                            .ToArray();
+
+                        if (!foundCards.Any())
+                        {
+                            // Card could not be found at all
+                            errorLines.Add(new DatabaseDeckErrorLine()
+                            {
+                                Line = line.OriginalLine,
+                                Reason = DeckErrorLineReason.CannotFindCardInDatabase
+                            });
+                        }
+                        else
+                        {
+                            databaseLine.Card = foundCards.First();
+                            deckCategory.Lines.Add(databaseLine);
+                        }
+
+                    }
+                }
+                return new DatabaseDeckReaderResult
+                {
+                    Deck = databaseDeck,
+                    Name = result.Name,
+                    UnreadLines = errorLines.ToArray(),
+                };
             }
             );
         }

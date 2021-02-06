@@ -39,7 +39,7 @@
         </Grid>
 
         <DataGrid Grid.Row="1" Grid.ColumnSpan="3" AutoGenerateColumns="False"
-                  ItemsSource="{Binding SearchResult}"
+                  ItemsSource="{Binding DeckReaderResult}"
                   VerticalScrollBarVisibility="Visible"
                   HorizontalScrollBarVisibility="Visible">
             <DataGrid.Columns>

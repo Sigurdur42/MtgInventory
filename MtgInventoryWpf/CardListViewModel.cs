@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
+using MtgDatabase.DatabaseDecks;
 using PropertyChanged;
 
 namespace MtgInventoryWpf
@@ -25,6 +26,8 @@ namespace MtgInventoryWpf
 
         public string PasteButtonToolTip => $"Paste a deck list from clipboard.{Environment.NewLine}Copy any deck list from Web sites or your favorite editor.";
 
+        public DatabaseDeckReaderResult DeckReaderResult { get; private set; } = new DatabaseDeckReaderResult();
+
         internal async Task CopyFromClipboard()
         {
             if (!Clipboard.ContainsText())
@@ -35,7 +38,7 @@ namespace MtgInventoryWpf
 
             var content = Clipboard.GetText();
 
-            var result = await _mtgDatabaseService.ReadDeck(
+            DeckReaderResult = await _mtgDatabaseService.ReadDeck(
                 name: "Clipboard deck",
                 deckContent: content);
         }

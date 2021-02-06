@@ -1,6 +1,4 @@
-﻿using MtgDatabase.Models;
-
-namespace MtgDatabase.Decks
+﻿namespace MtgDatabase.Decks
 {
     public class DeckReaderResult
     {

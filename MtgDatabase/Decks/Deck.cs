@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace MtgDatabase.Models
+namespace MtgDatabase.Decks
 {
     [DebuggerDisplay("{Name} {GetTotalCardCount()} cards")]
     public class Deck
@@ -13,7 +13,7 @@ namespace MtgDatabase.Models
 
         public IList<DeckCategory> Categories { get; } = new List<DeckCategory>();
 
-        // TODO: Wanted format, etx
+        // TODO: Wanted format, etc
 
         public int GetTotalCardCount() => Categories.Sum(c => c.Lines.Sum(l => l.Quantity));
     }
