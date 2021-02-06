@@ -44,7 +44,7 @@
     TextAlignment="Center"/>
             </StatusBarItem>
         </StatusBar>
-        <TabControl Grid.Row="0" TabStripPlacement="Left" Background="BlueViolet">
+        <TabControl Grid.Row="0" TabStripPlacement="Left" >
             <TabItem DataContext="{Binding CardSearchViewModel}">
                 <TabItem.Header>
                     <TextBlock
@@ -53,9 +53,9 @@
                         ToolTip="Search for cards, tokes, etc.">
                     </TextBlock>
                 </TabItem.Header>
-                
 
-                <local:CardSearchView  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Green"/>
+
+                <local:CardSearchView  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
             </TabItem>
             <TabItem DataContext="{Binding CardListViewModel}">
                 <TabItem.Header>

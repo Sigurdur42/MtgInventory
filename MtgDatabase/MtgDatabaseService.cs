@@ -213,7 +213,7 @@ namespace MtgDatabase
         {
             var supportedLanguages = e.DownloadedCards
                 ?.Where(c => string.IsNullOrWhiteSpace(c.Lang) || "EN".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase) || "DE".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase))
-                ?.Where(c=> c.Digital == false)
+                ?.Where(c => c.Digital == false)
                 ?? Array.Empty<ScryfallJsonCard>();
 
             RebuildCardsFromScryfall(supportedLanguages);
@@ -309,6 +309,7 @@ namespace MtgDatabase
                         var foundCards = _database.Cards?
                             .Query()
                             .Where(c => c.Name.Equals(line.CardName, StringComparison.InvariantCultureIgnoreCase))
+                            .Where(c => c.Language == "en")
                             .ToArray();
 
                         if (!foundCards.Any())
@@ -322,7 +323,8 @@ namespace MtgDatabase
                         }
                         else
                         {
-                            databaseLine.Card = foundCards.First();
+                            var cardWithPrice = foundCards.OrderBy(c => c.Eur ?? 100000).ToArray();
+                            databaseLine.Card = cardWithPrice.First();
                             deckCategory.Lines.Add(databaseLine);
                         }
 

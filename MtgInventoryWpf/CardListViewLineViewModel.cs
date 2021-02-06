@@ -22,7 +22,7 @@ namespace MtgInventoryWpf
             Card = card;
             Quantity = quantity;
 
-            Reprints = new[] { Card };
+            Reprints = Card != null ? new[] { Card } : Array.Empty<QueryableMagicCard>();
             // UpdateReprints();
             UpdatePrice();
         }
@@ -35,7 +35,7 @@ namespace MtgInventoryWpf
 
         public QueryableMagicCard[] Reprints { get; set; } = Array.Empty<QueryableMagicCard>();
 
-        public string Price { get; set; }
+        public string Price { get; set; } = "---";
         public decimal? PriceValue { get; set; }
 
         public void UpdateReprints()
@@ -79,7 +79,7 @@ namespace MtgInventoryWpf
             if (Card?.Eur.HasValue ?? false)
             {
                 PriceValue = Quantity * Card.Eur;
-                Price = PriceValue.Value.ToString("F2", CultureInfo.CurrentUICulture) ?? "---";
+                Price = PriceValue?.ToString("F2", CultureInfo.CurrentUICulture) ?? "---";
                 return;
             }
 
