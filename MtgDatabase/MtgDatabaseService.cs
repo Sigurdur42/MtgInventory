@@ -213,6 +213,7 @@ namespace MtgDatabase
         {
             var supportedLanguages = e.DownloadedCards
                 ?.Where(c => string.IsNullOrWhiteSpace(c.Lang) || "EN".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase) || "DE".Equals(c.Lang, StringComparison.InvariantCultureIgnoreCase))
+                ?.Where(c=> c.Digital == false)
                 ?? Array.Empty<ScryfallJsonCard>();
 
             RebuildCardsFromScryfall(supportedLanguages);

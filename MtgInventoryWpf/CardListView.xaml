@@ -74,6 +74,7 @@
 
                 <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Card.Name}" />
+                <DataGridTextColumn Header="Price" Binding="{Binding Price}" />
                 <DataGridTextColumn Header="Type" Binding="{Binding Card.TypeLine}" />
 
                 <DataGridTemplateColumn Header="Set">
@@ -83,7 +84,8 @@
                                 <!--<TextBox Text="{Binding Card.SetCode}" Width="40" ToolTip="{Binding Card.SetName}"/>-->
                                 <ComboBox Width="80" DropDownOpened="ComboBox_DropDownOpened"
                                           ItemsSource="{Binding Reprints}"
-                                          DisplayMemberPath="SetCode" SelectedItem="{Binding Card, Mode=OneWay}"
+                                          DisplayMemberPath="SetCode"
+                                          SelectedItem="{Binding Card, Mode=OneWay}"
                                           SelectionChanged="OnChangeSetOfCard"/>
                             </StackPanel>
                         </DataTemplate>

@@ -55,6 +55,8 @@ namespace MtgInventoryWpf
                 model?.ChangeSetOfCard(newSelection);
             }
 
+            var dataContext = DataContext as CardListViewModel;
+            dataContext?.UpdateDeckSummary();
         }
     }
 }

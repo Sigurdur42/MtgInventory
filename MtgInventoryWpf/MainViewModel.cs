@@ -38,6 +38,16 @@ namespace MtgInventoryWpf
                 StatusLineMessage = "Database update finished.";
                 DatabaseUpdateProgress = Visibility.Collapsed;
             };
+
+            cardListViewModel.Reading += (sender, e) =>
+            {
+                StatusLineMessage = "Reading deck list...";
+            };
+
+            cardListViewModel.ReadingDone += (sender, e) =>
+            {
+                StatusLineMessage = $"Read deck in {e}".Replace(":", "\\:");
+            };
         }
 
         public DatabaseInfoViewModel DatabaseInfoViewModel { get; }

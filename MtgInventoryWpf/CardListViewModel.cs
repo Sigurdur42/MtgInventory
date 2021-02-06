@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -50,9 +51,13 @@ namespace MtgInventoryWpf
             await ReadDeck(content);
         }
 
+        public event EventHandler Reading = (sender, args) => { };
+        public event EventHandler<TimeSpan> ReadingDone = (sender, args) => { };
 
         private async Task ReadDeck(string content)
         {
+            var stopwatch = Stopwatch.StartNew();
+            Reading?.Invoke(this, EventArgs.Empty);
             DeckReaderResult = await _mtgDatabaseService.ReadDeck(
                     name: "Clipboard deck",
                     deckContent: content);
@@ -62,10 +67,12 @@ namespace MtgInventoryWpf
             {
                 foreach (var line in category.Lines)
                 {
-                    CardLines.Add(new CardListViewLineViewModel(_mtgDatabaseService, line.Card)
+                    CardLines.Add(new CardListViewLineViewModel(
+                        _mtgDatabaseService,
+                        line.Card,
+                        line.Quantity)
                     {
                         Category = category.CategoryName,
-                        Quantity = line.Quantity
                     });
 
                 }
@@ -76,9 +83,12 @@ namespace MtgInventoryWpf
             CardLineItems = collection;
 
             UpdateDeckSummary();
+
+            stopwatch.Stop();
+            ReadingDone?.Invoke(this, stopwatch.Elapsed);
         }
 
-        private void UpdateDeckSummary()
+        public void UpdateDeckSummary()
         {
             if (!CardLines.Any())
             {
@@ -86,7 +96,8 @@ namespace MtgInventoryWpf
             }
 
             var allCards = CardLines.Sum(c => c.Quantity);
-            CurrentDeckSummary = $"{allCards} cards in deck.";
+            var totalPrice = CardLines.Where(c => c.PriceValue.HasValue).Sum(c => c.PriceValue);
+            CurrentDeckSummary = $"{allCards} cards in deck: {totalPrice:f2} €";
         }
     }
 }
