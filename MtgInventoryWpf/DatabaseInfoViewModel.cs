@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using MtgDatabase;
+using MtgDatabase.Cache;
 using MtgDatabase.Models;
 using PropertyChanged;
 
@@ -12,6 +13,7 @@ namespace MtgInventoryWpf
     {
         private readonly IMtgDatabaseService _mtgDatabaseService;
         private readonly IAutoAupdateMtgDatabaseService _autoAupdateMtgDatabaseService;
+        private readonly IImageCache _imageCache;
 
         public DatabaseSummary? DatabaseSummary { get; set; }
         public string LastUpdate { get; set; }
@@ -19,9 +21,11 @@ namespace MtgInventoryWpf
 
         public DatabaseInfoViewModel(
             IMtgDatabaseService mtgDatabaseService,
-            IAutoAupdateMtgDatabaseService autoAupdateMtgDatabaseService)
+            IAutoAupdateMtgDatabaseService autoAupdateMtgDatabaseService,
+            IImageCache imageCache)
         {
             _autoAupdateMtgDatabaseService = autoAupdateMtgDatabaseService;
+            _imageCache = imageCache;
             LastUpdate = _noUpdateYet;
 
             autoAupdateMtgDatabaseService.UpdateFinished += (sender, e) => UpdateDatabaseStatistics();
@@ -37,6 +41,21 @@ namespace MtgInventoryWpf
                 UpdateDatabaseStatistics();
             });
             _mtgDatabaseService = mtgDatabaseService;
+        }
+
+        internal void DownloadAllImages()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                var allCards = _mtgDatabaseService.Cards
+                ?.Query()
+                ?.Where(c => c.Language == "en")
+                ?.ToArray()
+                ?? Array.Empty<QueryableMagicCard>();
+
+                _imageCache.QueueForDownload(allCards);
+
+            });
         }
 
         private void UpdateDatabaseStatistics()

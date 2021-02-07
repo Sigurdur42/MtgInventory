@@ -35,5 +35,7 @@
 
         <Label Grid.Row="4">Last Updated:</Label>
         <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding LastUpdate}" VerticalAlignment="Center" />
+
+        <Button Grid.Row="5" Grid.Column="1" Click="OnDownloadAllImages">Download all images</Button>
     </Grid>
 </UserControl>

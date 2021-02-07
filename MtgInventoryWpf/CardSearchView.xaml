@@ -15,7 +15,12 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0" Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -29,13 +34,11 @@
             <Label VerticalAlignment="Center">Card Name:</Label>
             <TextBox Grid.Column="1" Text="{Binding SearchToken}" VerticalAlignment="Center"/>
             <Button Grid.Column="2"  VerticalAlignment="Center" Click="OnSearchButtonClick">Search!</Button>
-
-
-
         </Grid>
 
-        <DataGrid Grid.Row="1" Grid.ColumnSpan="3" AutoGenerateColumns="False"
+        <DataGrid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" AutoGenerateColumns="False"
                   ItemsSource="{Binding SearchResult}"
+                  SelectedItem="{Binding SearchResultSelectedItem}"
                   VerticalScrollBarVisibility="Visible"
                   HorizontalScrollBarVisibility="Visible">
             <DataGrid.Columns>
@@ -64,5 +67,9 @@
 
             </DataGrid.Columns>
         </DataGrid>
+
+        <Image Grid.Row="1" Grid.Column="0" Width="300"
+               Source="{Binding SelectedImage}">
+        </Image>
     </Grid>
 </UserControl>

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
+using MtgDatabase.Cache;
 
 namespace MtgInventoryWpf
 {
@@ -38,6 +39,9 @@ namespace MtgInventoryWpf
                 downloadBatchSize = 5000;
                 localSettings?.Set("ScryfallDownloadBatchSize", downloadBatchSize);
             }
+
+            var imageCache = host.Services.GetService<IImageCache>();
+            imageCache?.Initialize(new DirectoryInfo(localPath));
 
             var mtgService = host.Services.GetService<IMtgDatabaseService>();
             mtgService?.Configure(

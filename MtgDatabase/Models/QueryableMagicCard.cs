@@ -21,6 +21,7 @@ namespace MtgDatabase.Models
         // public Legality[] Legalities { get; set; } = Array.Empty<Legality>();
         public CardImages Images { get; set; } = new CardImages();
 
+
         public Rarity Rarity { get; set; } = Rarity.Unknown;
 
         public string CollectorNumber { get; set; } = "";
