@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LiteDB;
 using Microsoft.Extensions.Logging;
+using MtgDatabase.Cache;
 using MtgDatabase.Database;
 using MtgDatabase.DatabaseDecks;
 using MtgDatabase.Decks;
@@ -41,6 +42,7 @@ namespace MtgDatabase
         private readonly IScryfallService _scryfallService;
         private readonly IMirrorScryfallDatabase _mirrorScryfallDatabase;
         private readonly ITextDeckReader _deckReader;
+        private readonly IImageCache _imageCache;
         private readonly object _sync = new object();
 
         private bool _isRebuilding;
@@ -54,13 +56,15 @@ namespace MtgDatabase
             Database.MtgDatabase database,
             IScryfallService scryfallService,
             IMirrorScryfallDatabase mirrorScryfallDatabase,
-            ITextDeckReader deckReader)
+            ITextDeckReader deckReader,
+            IImageCache imageCache)
         {
             _logger = logger;
             _database = database;
             _scryfallService = scryfallService;
             _mirrorScryfallDatabase = mirrorScryfallDatabase;
             _deckReader = deckReader;
+            _imageCache = imageCache;
             _mirrorScryfallDatabase.CardBatchDownloaded += OnMirrorScryfallCardsDownloaded;
         }
 
@@ -200,6 +204,12 @@ namespace MtgDatabase
                         _ => query?.ToArray()
                     };
 
+                    if (result?.Any() ?? false)
+                    {
+                        // TODO: Make this configurable
+                        _imageCache.QueueForDownload(result);
+                    }
+
                     return result ?? Array.Empty<QueryableMagicCard>();
                 }
                 catch (Exception error)
@@ -208,6 +218,84 @@ namespace MtgDatabase
                     return Array.Empty<QueryableMagicCard>();
                 }
             });
+
+        public async Task<DatabaseDeckReaderResult> ReadDeck(string name, string deckContent)
+        {
+            return await Task.Run(() =>
+            {
+                var result = _deckReader.ReadDeck(deckName: name, deckContent: deckContent);
+
+                _logger.LogTrace($"Read deck with {result.Deck.GetTotalCardCount()} cards. Now matching with database...");
+                var errorLines = new List<DatabaseDeckErrorLine>();
+                errorLines.AddRange(result.UnreadLines.Select(c => new DatabaseDeckErrorLine
+                {
+                    Line = c,
+                    Reason = DeckErrorLineReason.CannotParse,
+                }));
+
+                var foundCardsToCache = new List<QueryableMagicCard>();
+                var databaseDeck = new DatabaseDeck()
+                {
+                    Name = result.Name,
+                };
+
+                foreach (var category in result.Deck.Categories)
+                {
+                    var deckCategory = new DatabaseDeckCategory()
+                    {
+                        CategoryName = category.CategoryName,
+                    };
+
+                    databaseDeck.Categories.Add(deckCategory);
+
+                    foreach (var line in category.Lines)
+                    {
+                        var databaseLine = new DatabaseDeckLine
+                        {
+                            Quantity = line.Quantity,
+                        };
+
+                        var foundCards = _database.Cards?
+                            .Query()
+                            .Where(c => c.Name.Equals(line.CardName, StringComparison.InvariantCultureIgnoreCase))
+                            .Where(c => c.Language == "en")
+                            .ToArray();
+
+                        if (!foundCards.Any())
+                        {
+                            // Card could not be found at all
+                            errorLines.Add(new DatabaseDeckErrorLine()
+                            {
+                                Line = line.OriginalLine,
+                                Reason = DeckErrorLineReason.CannotFindCardInDatabase
+                            });
+                        }
+                        else
+                        {
+                            var cardWithPrice = foundCards.OrderBy(c => c.Eur ?? 100000).ToArray();
+                            databaseLine.Card = cardWithPrice.First();
+                            deckCategory.Lines.Add(databaseLine);
+
+                            foundCardsToCache.Add(databaseLine.Card);
+                        }
+                    }
+                }
+
+                if (foundCardsToCache.Any())
+                {
+                    // TODO: Make this configurable
+                    _imageCache.QueueForDownload(foundCardsToCache.ToArray());
+                }
+
+                return new DatabaseDeckReaderResult
+                {
+                    Deck = databaseDeck,
+                    Name = result.Name,
+                    UnreadLines = errorLines.ToArray(),
+                };
+            }
+            );
+        }
 
         private void OnMirrorScryfallCardsDownloaded(object sender, DownloadedCardsEventArgs e)
         {
@@ -266,78 +354,6 @@ namespace MtgDatabase
             {
                 IsRebuilding = false;
             }
-        }
-
-        public async Task<DatabaseDeckReaderResult> ReadDeck(string name, string deckContent)
-        {
-            return await Task.Run(() =>
-            {
-                var result = _deckReader.ReadDeck(deckName: name, deckContent: deckContent);
-
-                _logger.LogTrace($"Read deck with {result.Deck.GetTotalCardCount()} cards. Now matching with database...");
-                var errorLines = new List<DatabaseDeckErrorLine>();
-                errorLines.AddRange(result.UnreadLines.Select(c => new DatabaseDeckErrorLine
-                {
-                    Line = c,
-                    Reason = DeckErrorLineReason.CannotParse,
-                }));
-
-                var databaseDeck = new DatabaseDeck()
-                {
-                    Name = result.Name,
-                };
-
-                foreach (var category in result.Deck.Categories)
-                {
-                    var deckCategory = new DatabaseDeckCategory()
-                    {
-                        CategoryName = category.CategoryName,
-                    };
-
-                    databaseDeck.Categories.Add(deckCategory);
-
-                    foreach (var line in category.Lines)
-                    {
-                        var databaseLine = new DatabaseDeckLine
-                        {
-
-                            Quantity = line.Quantity,
-                        };
-
-                        // TODO: Read card from database
-
-                        var foundCards = _database.Cards?
-                            .Query()
-                            .Where(c => c.Name.Equals(line.CardName, StringComparison.InvariantCultureIgnoreCase))
-                            .Where(c => c.Language == "en")
-                            .ToArray();
-
-                        if (!foundCards.Any())
-                        {
-                            // Card could not be found at all
-                            errorLines.Add(new DatabaseDeckErrorLine()
-                            {
-                                Line = line.OriginalLine,
-                                Reason = DeckErrorLineReason.CannotFindCardInDatabase
-                            });
-                        }
-                        else
-                        {
-                            var cardWithPrice = foundCards.OrderBy(c => c.Eur ?? 100000).ToArray();
-                            databaseLine.Card = cardWithPrice.First();
-                            deckCategory.Lines.Add(databaseLine);
-                        }
-
-                    }
-                }
-                return new DatabaseDeckReaderResult
-                {
-                    Deck = databaseDeck,
-                    Name = result.Name,
-                    UnreadLines = errorLines.ToArray(),
-                };
-            }
-            );
         }
     }
 }

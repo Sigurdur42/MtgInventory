@@ -11,15 +11,18 @@ namespace MtgDatabase.Cache
 {
     public class ImageCache : IImageCache
     {
+        private readonly ILogger<ImageCache> _logger;
+
+        private readonly GoodCiticenAutoSleep _goodCiticenAutoSleep = new GoodCiticenAutoSleep();
+
+        private DirectoryInfo? _baseFolder;
+
+        private bool _isInitialized;
+
         public ImageCache(ILogger<ImageCache> logger)
         {
             _logger = logger;
         }
-
-        private DirectoryInfo? _baseFolder;
-        private bool _isInitialized;
-        private readonly ILogger<ImageCache> _logger;
-        private readonly GoodCiticenAutoSleep _goodCiticenAutoSleep = new GoodCiticenAutoSleep();
 
         public bool IsInitialized => _isInitialized;
 
@@ -32,6 +35,12 @@ namespace MtgDatabase.Cache
 
         public void QueueForDownload(QueryableMagicCard[] cards)
         {
+            if (!IsInitialized)
+            {
+                _logger.LogTrace($"Ignoring {nameof(QueueForDownload)} call as we are not initialized");
+                return;
+            }
+
             Task.Factory.StartNew(() =>
             {
                 var stopwatch = Stopwatch.StartNew();
@@ -43,34 +52,22 @@ namespace MtgDatabase.Cache
 
                 stopwatch.Stop();
                 _logger.LogInformation($"Finished download of {cards.Length} cards in {stopwatch.Elapsed}.");
-
             });
         }
 
         public string GetCachedImage(QueryableMagicCard card)
         {
             return DownloadSingleFile(card);
-
-
-        }
-
-        private string GetLocalName(QueryableMagicCard card)
-        {
-            var uniqueId = card.UniqueId
-                .Replace(":", "_")
-                .Replace(".", "_")
-                .Replace("/", "_")
-                .Replace("*", "_STAR_")
-                .Replace(",", "_");
-
-            var patchedSetCode = card.SetCode
-                .Replace("con", "conflux");
-
-            return Path.Combine(_baseFolder!.FullName, "ImageCache", "normal", patchedSetCode, $"{uniqueId}.png");
         }
 
         public string DownloadSingleFile(QueryableMagicCard card)
         {
+            if (!IsInitialized)
+            {
+                _logger.LogTrace($"Ignoring {nameof(DownloadSingleFile)} call as we are not initialized");
+                return card.Images.Normal;
+            }
+
             var localName = GetLocalName(card);
             if (File.Exists(localName))
             {
@@ -92,12 +89,25 @@ namespace MtgDatabase.Cache
             return card.Images.Normal;
         }
 
+        private string GetLocalName(QueryableMagicCard card)
+        {
+            var uniqueId = card.UniqueId
+                .Replace(":", "_")
+                .Replace(".", "_")
+                .Replace("/", "_")
+                .Replace("*", "_STAR_")
+                .Replace(",", "_");
+
+            var patchedSetCode = card.SetCode
+                .Replace("con", "conflux");
+
+            return Path.Combine(_baseFolder!.FullName, "ImageCache", "normal", patchedSetCode, $"{uniqueId}.png");
+        }
 
         private void DownloadSingleFile(
             string localFileName,
             string remoteUri)
         {
-
             try
             {
                 if (string.IsNullOrWhiteSpace(remoteUri))
