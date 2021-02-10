@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using MtgDatabase.MtgJson.JsonModels;
 using MtgDatabase.Scryfall;
 using Newtonsoft.Json;
 
@@ -43,7 +45,7 @@ namespace MtgDatabase.MtgJson
             using var reader = new StreamReader(inputStream);
 
             var buffer = new Span<char>(new[] { ' ' });
-            
+
             // skip root {
 
             reader.Read(buffer);
@@ -52,19 +54,144 @@ namespace MtgDatabase.MtgJson
             var metaHeader = SkipUntilNextStart(reader);
 
             var metaLine = ReadUntilMatchingEnd(reader);
+            var jsonMeta = JsonConvert.DeserializeObject<JsonMeta>("{"+metaLine+"}");
             Console.WriteLine(metaLine);
 
-            var dataHeader = SkipUntilNextStart(reader);
+            ReadDataBlock(reader);
 
+        }
+
+        /// <summary>
+        /// Reads the block starting with "data": {
+        /// </summary>
+        private void ReadDataBlock(StreamReader reader)
+        {
+            var dataHeader = SkipUntilNextStart(reader);
+            ReadCardPriceBlock(reader);
+        }
+
+        /// <summary>
+        /// Reads a block starting with the card UID
+        /// </summary>
+        private void ReadCardPriceBlock(StreamReader reader)
+        {
+            var cardPriceHeader = SkipUntilNextStart(reader);
+
+            var uid = ExtractToken(cardPriceHeader).FirstOrDefault() ?? "";
+
+            // TODO: Read UID
+            var next = ' ';
+            do
+            {
+                next = (char)reader.Peek();
+                if (next != '"')
+                {
+                    continue;
+                }
+
+                // Read card type (paper, online, etc.)
+                var cardTypeInput = SkipUntilNextStart(reader);
+                var cardType = ExtractToken(cardTypeInput).FirstOrDefault() ?? "";
+                ReadPriceByMarketPlace(reader);
+
+            }
+            while (next == '"');
+        }
+
+        private void ReadPriceByMarketPlace(StreamReader reader)
+        {
+            var marketPlaceInput = SkipUntilNextStart(reader);
+            var marketPlace = ExtractToken(marketPlaceInput).FirstOrDefault() ?? "";
+
+            var next = ' ';
+            do
+            {
+                next = (char)reader.Peek();
+                if (next != '"')
+                {
+                    continue;
+                }
+
+                ReadMarketPlaceBuyListOrRetailLevel(reader);
+
+            }
+            while (next == '"');
+
+        }
+
+        private void ReadMarketPlaceBuyListOrRetailLevel(StreamReader reader)
+        {
+            var levelInput = SkipUntilNextStart(reader);
+            var level = ExtractToken(levelInput).FirstOrDefault() ?? "";
+
+            switch (level)
+            {
+                case "buylist":
+                    ReadPriceFoilOrNot(reader);
+                    break;
+
+                case "currency":
+                    break;
+
+                case "retail":
+                    ReadPriceFoilOrNot(reader);
+                    break;
+            }
+        }
+
+        private void ReadPriceFoilOrNot(StreamReader reader)
+        {
+            var tokenInput = SkipUntilNextStart(reader);
+            var token = ExtractToken(tokenInput).FirstOrDefault() ?? "";
+
+            var next = ' ';
+            do
+            {
+                next = (char)reader.Peek();
+                if (next != '"')
+                {
+                    continue;
+                }
+
+                // ReadMarketPlaceBuyListOrRetailLevel(reader);
+
+            }
+            while (next == '"');
+        }
+
+
+
+
+        private Regex _regexToken = new Regex("\"(?<token>[^\"]+)\"", RegexOptions.IgnorePatternWhitespace);
+        private string[] ExtractToken(string input)
+        {
+            var result = new List<string>();
+            var matches = _regexToken.Matches(input);
+            foreach (Match match in matches)
+            {
+                result.Add(match.Groups["token"].Value);
+            }
+
+            return result.ToArray();
         }
 
         private string SkipUntilNextStart(StreamReader reader)
         {
+            return SkipUntilNextToken(reader, '}');
+        }
+
+        private string SkipUntilNextComma(StreamReader reader)
+        {
+            return SkipUntilNextToken(reader, ',');
+        }
+
+
+        private string SkipUntilNextToken(StreamReader reader, char token)
+        {
             var currentLine = new StringBuilder();
             var done = false;
-            var buffer = new Span<char>(new[] { ' ' });
+            var buffer = new Span<char>(new[] { token });
 
-            var endCount = 1;
             do
             {
                 var count = reader.Read(buffer);
@@ -83,7 +210,7 @@ namespace MtgDatabase.MtgJson
                         break;
 
 
-                  
+
 
                     default:
                         currentLine.Append(buffer);

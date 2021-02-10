@@ -32,7 +32,7 @@ namespace ScryfallApiConsole
             ////_logger.LogInformation("Done creating database.");
 
             var service = new MtgJsonService();
-            service.DownloadPriceData(new FileInfo(@"C:\Users\michael.wagner\Downloads\AllPrices.json"));
+            service.DownloadPriceData(new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"));
 
 
             return -1;
