@@ -10,6 +10,7 @@
       <PackageReference Include="LocalSettings" Version="1.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     </ItemGroup>
 
     <ItemGroup>

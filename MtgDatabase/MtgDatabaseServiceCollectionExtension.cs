@@ -12,13 +12,13 @@ namespace MtgDatabase
         {
             serviceCollection.AddScryfallApi();
 
+            serviceCollection.AddSingleton<IMirrorScryfallDatabase, MirrorScryfallDatabase>();
             serviceCollection.AddSingleton<IMtgDatabaseService, MtgDatabaseService>();
             serviceCollection.AddSingleton<IImageCache, ImageCache>();
             serviceCollection.AddSingleton<Database.MtgDatabase>();
             serviceCollection.AddSingleton<IMkmMapper, MkmMapper>();
             serviceCollection.AddSingleton<IAutoAupdateMtgDatabaseService, AutoAupdateMtgDatabaseService>();
 
-            serviceCollection.AddSingleton<IMirrorScryfallDatabase, MirrorScryfallDatabase>();
             serviceCollection.AddSingleton<ITextDeckReader, TextDeckReader>();
             return serviceCollection;
         }

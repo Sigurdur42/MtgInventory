@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
+using MtgDatabase.MtgJson;
 using ScryfallApiServices;
 
 namespace ScryfallApiConsole
@@ -25,9 +27,14 @@ namespace ScryfallApiConsole
 
         public int RunAction(ApiOptions options)
         {
-            var task = _mtgDatabaseService.RefreshLocalDatabaseAsync(this);
-            task.GetAwaiter().GetResult();
-            _logger.LogInformation("Done creating database.");
+            ////var task = _mtgDatabaseService.RefreshLocalDatabaseAsync(this);
+            ////task.GetAwaiter().GetResult();
+            ////_logger.LogInformation("Done creating database.");
+
+            var service = new MtgJsonService();
+            service.DownloadPriceData(new FileInfo(@"C:\Users\michael.wagner\Downloads\AllPrices.json"));
+
+
             return -1;
         }
     }

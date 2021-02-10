@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using CommandLine;
+using LocalSettings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -73,9 +74,16 @@ namespace ScryfallApiConsole
 
                 serviceCollection
                     .AddMtgDatabase()
+                    .AddSingleton<ILocalSettingService, LocalSettingService>()
                     .AddSingleton<ApiAction>();
 
                 serviceProvider = serviceCollection.BuildServiceProvider();
+
+                var localSettings = serviceProvider.GetService<ILocalSettingService>();
+                var localPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgInventory");
+                var configFile = new FileInfo(Path.Combine(localPath, "MtgInventorySettings.yaml"));
+                localSettings?.Initialize(configFile, SettingWriteMode.OnChange);
+
 
                 // TODO: Add other DI configs
                 var loggerFactory = serviceProvider.GetService<ILoggerFactory>();

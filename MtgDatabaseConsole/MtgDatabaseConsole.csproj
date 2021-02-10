@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>net5.0</TargetFramework>
         <AssemblyName>MtgDatabaseConsole</AssemblyName>
         <RootNamespace>MtgDatabaseConsole</RootNamespace>
         <Company>MtgDatabaseConsole</Company>
@@ -12,6 +12,7 @@
 
     <ItemGroup>
       <PackageReference Include="CommandLineParser" Version="2.8.0" />
+      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.1" />
