@@ -65,6 +65,16 @@ namespace MtgDatabase.Models
                 Eur = ConvertToNullableDecimal(card.Prices.Eur),
                 EurFoil = ConvertToNullableDecimal(card.Prices.EurFoil),
                 Tix = ConvertToNullableDecimal(card.Prices.Tix),
+
+                WebSiteEdhRec = card.RelatedUris.Edhrec,
+                WebSiteGatherer=card.RelatedUris.Gatherer,
+                WebSiteScryfall=card.ScryfallUri,
+
+                Oversized = card.Oversized,
+                Reserved = card.Reserved,
+                OracleId = card.OracleId,
+                MultiverseIds = card.MultiverseIds,
+
                 UpdateDateUtc = DateTime.Now
             };
 
@@ -162,7 +172,7 @@ namespace MtgDatabase.Models
                 ArtCrop = card.ImageUris?.ArtCrop ?? "",
                 BorderCrop = card.ImageUris?.BorderCrop ?? ""
             };
-            
+
             return result;
         }
 

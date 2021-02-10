@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MtgDatabase.Models
 {
@@ -43,6 +44,10 @@ namespace MtgDatabase.Models
 
         public DateTime UpdateDateUtc { get; set; }
 
+        public string WebSiteEdhRec { get; set; } = "";
+        public string WebSiteGatherer { get; set; } = "";
+        public string WebSiteScryfall { get; internal set; } = "";
+
         #region Price Data
 
         public Decimal? Usd { get; set; }
@@ -54,6 +59,10 @@ namespace MtgDatabase.Models
         public Decimal? EurFoil { get; set; }
 
         public Decimal? Tix { get; set; }
+        public string OracleId { get; internal set; } = "";
+        public List<int> MultiverseIds { get; internal set; } = new List<int>();
+        public bool Reserved { get; internal set; }
+        public bool Oversized { get; internal set; }
 
         #endregion
 
