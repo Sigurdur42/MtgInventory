@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
-using MtgDatabase.MtgJson;
 using MtgJson;
+using ScryfallApiConsole;
 using ScryfallApiServices;
 
-namespace ScryfallApiConsole
+namespace MtgDatabaseConsole
 {
     public class ApiAction : IProgress<int>
     {

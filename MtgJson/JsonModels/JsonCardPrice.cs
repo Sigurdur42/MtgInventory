@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace MtgDatabase.MtgJson.JsonModels
+namespace MtgJson.JsonModels
 {
     public class JsonCardPrice
     {

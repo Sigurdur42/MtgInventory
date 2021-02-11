@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using MtgDatabase.MtgJson.JsonModels;
 using MtgJson.JsonModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

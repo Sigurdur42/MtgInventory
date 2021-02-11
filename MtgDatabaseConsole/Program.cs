@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
+using MtgDatabaseConsole;
 using ScryfallApiServices;
 
 namespace ScryfallApiConsole
