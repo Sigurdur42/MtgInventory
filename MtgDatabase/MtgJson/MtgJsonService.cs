@@ -16,35 +16,21 @@ namespace MtgDatabase.MtgJson
     public class MtgJsonService
     {
 
-        public void DownloadPriceData(FileInfo localFile)
+        public void DownloadPriceData(FileInfo localFile, Action<IEnumerable<JsonCardPrice>> loadedBatch)
         {
             var stopwatch = Stopwatch.StartNew();
             using var sr = File.OpenRead(localFile.FullName);
-            ReadFromStreamByText(sr, 1000, null);
+            ReadFromStreamByText(sr, 1000, loadedBatch);
 
-            ////var content = File.ReadAllText(localFile.FullName);
-            ////dynamic config = JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
 
             stopwatch.Stop();
             Console.WriteLine("Took " + stopwatch.Elapsed);
-            ////var metaVersion = config.meta.version;
-            ////var metaDate = config.meta.date;
-
-            ////foreach (dynamic dataSection in config.data)
-            ////{
-
-            ////}
-            ////////var meta = new
-            ////////{
-            ////////    Date = "",
-            ////////    Version = "",
-            ////////};
-
-            ////////var root = JsonConvert.DeserializeObject<Root>(content);
-            ////int debug = 0;
         }
 
-        private void ReadFromStreamByText(Stream inputStream, int batchSize, IProgress<int>? progress)
+        private void ReadFromStreamByText(
+            Stream inputStream,
+            int batchSize,
+            Action<IEnumerable<JsonCardPrice>> loadedBatch)
         {
             var currentLine = new StringBuilder();
 
@@ -63,14 +49,16 @@ namespace MtgDatabase.MtgJson
             var jsonMeta = JsonConvert.DeserializeObject<JsonMeta>("{" + metaLine + "}");
             Console.WriteLine(metaLine);
 
-            ReadDataBlock(reader);
+            ReadDataBlock(reader, batchSize, loadedBatch);
 
         }
 
         /// <summary>
         /// Reads the block starting with "data": {
         /// </summary>
-        private void ReadDataBlock(StreamReader reader)
+        private void ReadDataBlock(StreamReader reader,
+            int batchSize,
+            Action<IEnumerable<JsonCardPrice>> loadedBatch)
         {
             var dataHeader = SkipUntilNextStart(reader);
 
@@ -85,19 +73,20 @@ namespace MtgDatabase.MtgJson
                     continue;
                 }
 
-
                 dynamic analysedBlock = JsonConvert.DeserializeObject<ExpandoObject>(
                     "{" + completeBlock + "}",
                     new ExpandoObjectConverter());
 
 
-
-
-
                 foreach (var level1 in analysedBlock)
                 {
-                    Console.WriteLine($"key: {level1.Key}");
                     readCardPrices.Add(ReadCardLevel(level1));
+                }
+
+                if (readCardPrices.Count >= batchSize)
+                {
+                    loadedBatch?.Invoke(readCardPrices);
+                    readCardPrices.Clear();
                 }
 
                 var next = (char)reader.Peek();
@@ -115,13 +104,17 @@ namespace MtgDatabase.MtgJson
 
 
 
-                ////// Read card type (paper, online, etc.)
-                ////var cardTypeInput = SkipUntilNextStart(reader);
-                ////var cardType = ExtractToken(cardTypeInput).FirstOrDefault() ?? "";
-                ////ReadPriceByMarketPlace(reader);
 
             }
             while (!end);
+
+            if (readCardPrices.Any())
+            {
+                loadedBatch?.Invoke(readCardPrices);
+
+            }
+
+
         }
 
         private JsonCardPrice ReadCardLevel(dynamic cardLevel)
@@ -135,7 +128,7 @@ namespace MtgDatabase.MtgJson
             {
                 foreach (var sellerLevel in paperLevel.Value)
                 {
-                  
+
 
                     var currency = sellerLevel.Value.currency;
 

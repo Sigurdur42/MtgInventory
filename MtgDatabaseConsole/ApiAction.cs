@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using MtgDatabase;
 using MtgDatabase.MtgJson;
@@ -31,8 +32,16 @@ namespace ScryfallApiConsole
             ////task.GetAwaiter().GetResult();
             ////_logger.LogInformation("Done creating database.");
 
+            var total = 0;
             var service = new MtgJsonService();
-            service.DownloadPriceData(new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"));
+            service.DownloadPriceData(
+                new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
+                (loaded)=>
+                {
+                    var step = loaded.Count();
+                    total += step;
+                    Console.WriteLine($"Loaded {total} cards");
+                });
 
 
             return -1;
