@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,6 +9,7 @@ using System.Text.RegularExpressions;
 using MtgDatabase.MtgJson.JsonModels;
 using MtgDatabase.Scryfall;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace MtgDatabase.MtgJson
 {
@@ -15,12 +18,15 @@ namespace MtgDatabase.MtgJson
 
         public void DownloadPriceData(FileInfo localFile)
         {
+            var stopwatch = Stopwatch.StartNew();
             using var sr = File.OpenRead(localFile.FullName);
             ReadFromStreamByText(sr, 1000, null);
 
             ////var content = File.ReadAllText(localFile.FullName);
             ////dynamic config = JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
 
+            stopwatch.Stop();
+            Console.WriteLine("Took " + stopwatch.Elapsed);
             ////var metaVersion = config.meta.version;
             ////var metaDate = config.meta.date;
 
@@ -53,8 +59,8 @@ namespace MtgDatabase.MtgJson
             // read meta
             var metaHeader = SkipUntilNextStart(reader);
 
-            var metaLine = ReadUntilMatchingEnd(reader);
-            var jsonMeta = JsonConvert.DeserializeObject<JsonMeta>("{"+metaLine+"}");
+            var metaLine = ReadUntilMatchingEnd(reader, false);
+            var jsonMeta = JsonConvert.DeserializeObject<JsonMeta>("{" + metaLine + "}");
             Console.WriteLine(metaLine);
 
             ReadDataBlock(reader);
@@ -67,97 +73,109 @@ namespace MtgDatabase.MtgJson
         private void ReadDataBlock(StreamReader reader)
         {
             var dataHeader = SkipUntilNextStart(reader);
-            ReadCardPriceBlock(reader);
-        }
 
-        /// <summary>
-        /// Reads a block starting with the card UID
-        /// </summary>
-        private void ReadCardPriceBlock(StreamReader reader)
-        {
-            var cardPriceHeader = SkipUntilNextStart(reader);
+            var readCardPrices = new List<JsonCardPrice>();
 
-            var uid = ExtractToken(cardPriceHeader).FirstOrDefault() ?? "";
-
-            // TODO: Read UID
-            var next = ' ';
+            var end = false;
             do
             {
-                next = (char)reader.Peek();
-                if (next != '"')
+                var completeBlock = ReadUntilMatchingEnd(reader, true).Trim(new[] { ',' });
+                if (string.IsNullOrWhiteSpace(completeBlock))
                 {
                     continue;
                 }
 
-                // Read card type (paper, online, etc.)
-                var cardTypeInput = SkipUntilNextStart(reader);
-                var cardType = ExtractToken(cardTypeInput).FirstOrDefault() ?? "";
-                ReadPriceByMarketPlace(reader);
 
-            }
-            while (next == '"');
-        }
+                dynamic analysedBlock = JsonConvert.DeserializeObject<ExpandoObject>(
+                    "{" + completeBlock + "}",
+                    new ExpandoObjectConverter());
 
-        private void ReadPriceByMarketPlace(StreamReader reader)
-        {
-            var marketPlaceInput = SkipUntilNextStart(reader);
-            var marketPlace = ExtractToken(marketPlaceInput).FirstOrDefault() ?? "";
 
-            var next = ' ';
-            do
-            {
-                next = (char)reader.Peek();
-                if (next != '"')
+
+
+
+                foreach (var level1 in analysedBlock)
                 {
-                    continue;
+                    Console.WriteLine($"key: {level1.Key}");
+                    readCardPrices.Add(ReadCardLevel(level1));
                 }
 
-                ReadMarketPlaceBuyListOrRetailLevel(reader);
-
-            }
-            while (next == '"');
-
-        }
-
-        private void ReadMarketPlaceBuyListOrRetailLevel(StreamReader reader)
-        {
-            var levelInput = SkipUntilNextStart(reader);
-            var level = ExtractToken(levelInput).FirstOrDefault() ?? "";
-
-            switch (level)
-            {
-                case "buylist":
-                    ReadPriceFoilOrNot(reader);
-                    break;
-
-                case "currency":
-                    break;
-
-                case "retail":
-                    ReadPriceFoilOrNot(reader);
-                    break;
-            }
-        }
-
-        private void ReadPriceFoilOrNot(StreamReader reader)
-        {
-            var tokenInput = SkipUntilNextStart(reader);
-            var token = ExtractToken(tokenInput).FirstOrDefault() ?? "";
-
-            var next = ' ';
-            do
-            {
-                next = (char)reader.Peek();
-                if (next != '"')
+                var next = (char)reader.Peek();
+                switch (next)
                 {
-                    continue;
+                    case ',':
+                    case '\0':
+                        end = false;
+                        break;
+
+                    default:
+                        end = true;
+                        break;
                 }
 
-                // ReadMarketPlaceBuyListOrRetailLevel(reader);
+
+
+                ////// Read card type (paper, online, etc.)
+                ////var cardTypeInput = SkipUntilNextStart(reader);
+                ////var cardType = ExtractToken(cardTypeInput).FirstOrDefault() ?? "";
+                ////ReadPriceByMarketPlace(reader);
 
             }
-            while (next == '"');
+            while (!end);
         }
+
+        private JsonCardPrice ReadCardLevel(dynamic cardLevel)
+        {
+            var result = new JsonCardPrice
+            {
+                Id = cardLevel.Key,
+            };
+
+            foreach (var paperLevel in cardLevel.Value)
+            {
+                foreach (var sellerLevel in paperLevel.Value)
+                {
+                  
+
+                    var currency = sellerLevel.Value.currency;
+
+
+                    foreach (var buylistOrRetail in sellerLevel.Value)
+                    {
+                        if (buylistOrRetail.Key == "currency")
+                        {
+                            continue;
+                        }
+                        foreach (var foilOrNormal in buylistOrRetail.Value)
+                        {
+                            foreach (var priceRow in foilOrNormal.Value)
+                            {
+                                var row = new JsonCardPriceItem
+                                {
+                                    Type = paperLevel.Key,
+                                    Currency = currency,
+                                    Seller = sellerLevel.Key,
+                                };
+
+                                row.BuylistOrRetail = buylistOrRetail.Key;
+                                row.FoilOrNormal = foilOrNormal.Key;
+                                row.PaperOrOnline = paperLevel.Key;
+                                row.Date = priceRow.Key;
+                                row.Price = priceRow.Value;
+
+                                result.Items.Add(row);
+                            }
+                        }
+                    }
+
+                }
+
+
+            }
+
+            return result;
+        }
+
 
 
 
@@ -223,13 +241,13 @@ namespace MtgDatabase.MtgJson
             return currentLine.ToString();
         }
 
-        private string ReadUntilMatchingEnd(StreamReader reader)
+        private string ReadUntilMatchingEnd(StreamReader reader, bool includesStart)
         {
             var currentLine = new StringBuilder();
             var done = false;
             var buffer = new Span<char>(new[] { ' ' });
 
-            var endCount = 1;
+            var endCount = includesStart ? 0 : 1;
             do
             {
                 var count = reader.Read(buffer);
@@ -243,14 +261,18 @@ namespace MtgDatabase.MtgJson
                 switch (buffer[0])
                 {
                     case '{':
-
+                        currentLine.Append(buffer);
                         endCount++;
                         break;
 
 
                     case '}':
                         endCount--;
-                        done = endCount == 0;
+                        done = endCount <= 0;
+                        if (!done || includesStart)
+                        {
+                            currentLine.Append(buffer);
+                        }
                         break;
 
                     default:
