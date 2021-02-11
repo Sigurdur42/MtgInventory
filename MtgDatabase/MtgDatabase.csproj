@@ -18,7 +18,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\MtgJson\MtgJson.csproj" />
       <ProjectReference Include="..\ScryfallApiServices\ScryfallApiServices.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="MtgJson\" />
     </ItemGroup>
 
 </Project>
