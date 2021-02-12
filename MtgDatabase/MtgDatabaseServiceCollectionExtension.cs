@@ -2,6 +2,7 @@
 using MtgDatabase.Cache;
 using MtgDatabase.Decks;
 using MtgDatabase.Scryfall;
+using MtgJson;
 using ScryfallApiServices;
 
 namespace MtgDatabase
@@ -20,6 +21,9 @@ namespace MtgDatabase
             serviceCollection.AddSingleton<IAutoAupdateMtgDatabaseService, AutoAupdateMtgDatabaseService>();
 
             serviceCollection.AddSingleton<ITextDeckReader, TextDeckReader>();
+
+            serviceCollection.AddMtgJsonServices();
+
             return serviceCollection;
         }
     }

@@ -13,16 +13,19 @@ namespace MtgDatabaseConsole
     {
         private readonly ILogger<ApiAction> _logger;
         private readonly IMtgDatabaseService _mtgDatabaseService;
+        private readonly IMtgJsonService _mtgJsonService;
         private readonly IScryfallService _scryfallService;
 
         public ApiAction(
             ILogger<ApiAction> logger,
             IScryfallService scryfallService,
-            IMtgDatabaseService mtgDatabaseService)
+            IMtgDatabaseService mtgDatabaseService,
+            IMtgJsonService mtgJsonService)
         {
             _logger = logger;
             _scryfallService = scryfallService;
             _mtgDatabaseService = mtgDatabaseService;
+            _mtgJsonService = mtgJsonService;
         }
 
         public void Report(int value) => Console.WriteLine($"Database progress: {value}%");
@@ -30,9 +33,8 @@ namespace MtgDatabaseConsole
         public int RunAction(ApiOptions options)
         {
             var total = 0;
-            var service = new MtgJsonService();
-            service.DownloadPriceData(
-                new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
+            _mtgJsonService.DownloadPriceDataAsync(
+                // new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
                 (header) =>
                 {
                     Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
@@ -43,7 +45,9 @@ namespace MtgDatabaseConsole
                     var step = loaded.Count();
                     total += step;
                     Console.WriteLine($"Loaded {total} cards");
-                });
+                })
+                .GetAwaiter()
+                .GetResult();
 
             return -1;
         }

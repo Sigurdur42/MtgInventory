@@ -4,17 +4,27 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MtgJson.JsonModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace MtgJson
 {
-    public class MtgJsonService
+    public class MtgJsonService : IMtgJsonService
     {
+        private readonly ILogger<MtgJsonService> _logger;
         private readonly Regex _regexToken = new Regex("\"(?<token>[^\"]+)\"", RegexOptions.IgnorePatternWhitespace);
+
+        public MtgJsonService(
+            ILogger<MtgJsonService> logger)
+        {
+            _logger = logger;
+        }
 
         public void DownloadPriceData(
             FileInfo localFile,
@@ -26,7 +36,31 @@ namespace MtgJson
             ReadFromStreamByText(sr, 5000, headerLoaded, loadedBatch);
 
             stopwatch.Stop();
-            Console.WriteLine("Took " + stopwatch.Elapsed);
+            _logger.LogInformation("DownloadPriceData took " + stopwatch.Elapsed);
+        }
+
+        public async Task DownloadPriceDataAsync(
+            Func<JsonMeta, bool> headerLoaded,
+            Action<IEnumerable<JsonCardPrice>> loadedBatch)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            const string remotePriceFile = @"https://mtgjson.com/api/v5/AllPrices.json";
+
+            using (var client = new HttpClient())
+            {
+                using (var result = await client.GetAsync(remotePriceFile))
+                {
+                    if (result.IsSuccessStatusCode)
+                    {
+                        var stream = await result.Content.ReadAsStreamAsync();
+                        ReadFromStreamByText(stream, 5000, headerLoaded, loadedBatch);
+                    }
+                }
+            }
+
+            stopwatch.Stop();
+            _logger.LogInformation($"{nameof(DownloadPriceDataAsync)} took " + stopwatch.Elapsed);
         }
 
         private string[] ExtractToken(string input)
