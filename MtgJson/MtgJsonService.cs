@@ -141,9 +141,15 @@ namespace MtgJson
                     continue;
                 }
 
-                dynamic analyzedBlock = JsonConvert.DeserializeObject<ExpandoObject>(
-                    "{" + completeBlock + "}",
+                var deserializationInput = "{" + completeBlock + "}";
+                dynamic? analyzedBlock = JsonConvert.DeserializeObject<ExpandoObject>(
+                    deserializationInput,
                     new ExpandoObjectConverter());
+
+                if (analyzedBlock == null)
+                {
+                    continue;
+                }
 
                 foreach (var level1 in analyzedBlock)
                 {
