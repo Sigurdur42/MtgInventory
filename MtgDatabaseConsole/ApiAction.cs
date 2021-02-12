@@ -14,18 +14,21 @@ namespace MtgDatabaseConsole
         private readonly ILogger<ApiAction> _logger;
         private readonly IMtgDatabaseService _mtgDatabaseService;
         private readonly IMtgJsonService _mtgJsonService;
+        private readonly ILiteDbService _mtgJsonLiteDbService;
         private readonly IScryfallService _scryfallService;
 
         public ApiAction(
             ILogger<ApiAction> logger,
             IScryfallService scryfallService,
             IMtgDatabaseService mtgDatabaseService,
-            IMtgJsonService mtgJsonService)
+            IMtgJsonService mtgJsonService,
+            ILiteDbService mtgJsonLiteDbService)
         {
             _logger = logger;
             _scryfallService = scryfallService;
             _mtgDatabaseService = mtgDatabaseService;
             _mtgJsonService = mtgJsonService;
+            _mtgJsonLiteDbService = mtgJsonLiteDbService;
         }
 
         public void Report(int value) => Console.WriteLine($"Database progress: {value}%");
@@ -38,10 +41,11 @@ namespace MtgDatabaseConsole
                 (header) =>
                 {
                     Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
-                    return true;
+                    return _mtgJsonLiteDbService.OnPriceDataHeaderLoaded(header);
                 },
                 (loaded) =>
                 {
+                    _mtgJsonLiteDbService.OnPriceDataBatchLoaded(loaded);
                     var step = loaded.Count();
                     total += step;
                     Console.WriteLine($"Loaded {total} cards");

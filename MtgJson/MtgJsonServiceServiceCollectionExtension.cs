@@ -7,6 +7,7 @@ namespace MtgJson
         public static IServiceCollection AddMtgJsonServices(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IMtgJsonService, MtgJsonService>();
+            serviceCollection.AddSingleton<ILiteDbService, LiteDbService>();
 
             return serviceCollection;
         }

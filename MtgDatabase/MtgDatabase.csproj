@@ -6,6 +6,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="MtgJson\**" />
+      <EmbeddedResource Remove="MtgJson\**" />
+      <None Remove="MtgJson\**" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="LiteDB" Version="5.0.9" />
       <PackageReference Include="LocalSettings" Version="1.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
@@ -20,10 +26,6 @@
     <ItemGroup>
       <ProjectReference Include="..\MtgJson\MtgJson.csproj" />
       <ProjectReference Include="..\ScryfallApiServices\ScryfallApiServices.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="MtgJson\" />
     </ItemGroup>
 
 </Project>

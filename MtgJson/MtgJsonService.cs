@@ -79,7 +79,7 @@ namespace MtgJson
         {
             var result = new JsonCardPrice
             {
-                Id = cardLevel.Key,
+                Id = Guid.Parse(cardLevel.Key),
             };
 
             foreach (var paperLevel in cardLevel.Value)
@@ -128,7 +128,7 @@ namespace MtgJson
             int batchSize,
             Action<IEnumerable<JsonCardPrice>> loadedBatch)
         {
-            var dataHeader = SkipUntilNextStart(reader);
+            SkipUntilNextStart(reader);
 
             var readCardPrices = new List<JsonCardPrice>();
 

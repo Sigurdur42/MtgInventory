@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MtgJson.JsonModels
 {
     public class JsonCardPrice
     {
-        public string Id { get; set; } = "";
+        public Guid Id { get; set; } = Guid.Empty;
         public IList<JsonCardPriceItem> Items { get; set; } = new List<JsonCardPriceItem>();
     }
 }
