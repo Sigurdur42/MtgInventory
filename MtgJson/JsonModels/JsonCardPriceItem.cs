@@ -8,7 +8,7 @@
         public string PaperOrOnline { get; set; } = "";
 
         public string BuylistOrRetail { get; set; } = "";
-        public string FoilOrNormal { get; set; } = "";
+        public string IsFoil { get; set; } = "";
         public string Date { get; set; } = "";
         public double Price { get; set; }
     }

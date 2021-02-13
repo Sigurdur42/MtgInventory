@@ -11,10 +11,12 @@ namespace MtgJson
         void DownloadPriceData(
             FileInfo localFile,
             Func<JsonMeta, bool> headerLoaded,
-            Action<IEnumerable<JsonCardPrice>> loadedBatch);
+            Action<IEnumerable<JsonCardPrice>> loadedBatch,
+            MtgJsonPriceFilter priceFilter);
 
         Task DownloadPriceDataAsync(
             Func<JsonMeta, bool> headerLoaded,
-            Action<IEnumerable<JsonCardPrice>> loadedBatch);
+            Action<IEnumerable<JsonCardPrice>> loadedBatch,
+            MtgJsonPriceFilter priceFilter);
     }
 }

@@ -36,22 +36,48 @@ namespace MtgDatabaseConsole
         public int RunAction(ApiOptions options)
         {
             var total = 0;
-            _mtgJsonService.DownloadPriceDataAsync(
-                // new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
-                (header) =>
-                {
-                    Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
-                    return _mtgJsonLiteDbService.OnPriceDataHeaderLoaded(header);
-                },
-                (loaded) =>
-                {
-                    _mtgJsonLiteDbService.OnPriceDataBatchLoaded(loaded);
-                    var step = loaded.Count();
-                    total += step;
-                    Console.WriteLine($"Loaded {total} cards");
-                })
-                .GetAwaiter()
-                .GetResult();
+
+            _logger.LogInformation("Deleting mirror database...");
+            _mtgJsonLiteDbService.DeleteExistingDatabase();
+
+            _logger.LogInformation("Starting download...");
+            ////_mtgJsonService.DownloadPriceDataAsync(
+            ////    //new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
+            ////    (header) =>
+            ////    {
+            ////        Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
+            ////        return _mtgJsonLiteDbService.OnPriceDataHeaderLoaded(header);
+            ////    },
+            ////    (loaded) =>
+            ////    {
+            ////        _mtgJsonLiteDbService.OnPriceDataBatchLoaded(loaded);
+            ////        var step = loaded.Count();
+            ////        total += step;
+            ////        Console.WriteLine($"Loaded {total} cards");
+            ////    },
+            ////    new MtgJsonPriceFilter())
+            ////    .GetAwaiter()
+            ////    .GetResult();
+
+            _mtgJsonService.DownloadPriceData(
+                    new FileInfo(@"C:\Users\Micha\Downloads\AllPrices.json"),
+                    (header) =>
+                    {
+                        Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
+                        return _mtgJsonLiteDbService.OnPriceDataHeaderLoaded(header);
+                    },
+                    (loaded) =>
+                    {
+                        _mtgJsonLiteDbService.OnPriceDataBatchLoaded(loaded);
+                        var step = loaded.Count();
+                        total += step;
+                        Console.WriteLine($"Loaded {total} cards");
+                    },
+                    new MtgJsonPriceFilter());
+            _logger.LogInformation("Waiting for insert tasks ...");
+            _mtgJsonLiteDbService.WaitOnInsertTasksAndClear();
+
+            _logger.LogInformation("All done");
 
             return -1;
         }

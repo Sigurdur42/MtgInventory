@@ -29,11 +29,12 @@ namespace MtgJson
         public void DownloadPriceData(
             FileInfo localFile,
             Func<JsonMeta, bool> headerLoaded,
-            Action<IEnumerable<JsonCardPrice>> loadedBatch)
+            Action<IEnumerable<JsonCardPrice>> loadedBatch,
+            MtgJsonPriceFilter priceFilter)
         {
             var stopwatch = Stopwatch.StartNew();
             using var sr = File.OpenRead(localFile.FullName);
-            ReadFromStreamByText(sr, 5000, headerLoaded, loadedBatch);
+            ReadFromStreamByText(sr, 5000, headerLoaded, loadedBatch, priceFilter);
 
             stopwatch.Stop();
             _logger.LogInformation("DownloadPriceData took " + stopwatch.Elapsed);
@@ -41,7 +42,8 @@ namespace MtgJson
 
         public async Task DownloadPriceDataAsync(
             Func<JsonMeta, bool> headerLoaded,
-            Action<IEnumerable<JsonCardPrice>> loadedBatch)
+            Action<IEnumerable<JsonCardPrice>> loadedBatch,
+            MtgJsonPriceFilter priceFilter)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -54,7 +56,7 @@ namespace MtgJson
                     if (result.IsSuccessStatusCode)
                     {
                         var stream = await result.Content.ReadAsStreamAsync();
-                        ReadFromStreamByText(stream, 5000, headerLoaded, loadedBatch);
+                        ReadFromStreamByText(stream, 5000, headerLoaded, loadedBatch, priceFilter);
                     }
                 }
             }
@@ -75,7 +77,9 @@ namespace MtgJson
             return result.ToArray();
         }
 
-        private JsonCardPrice ReadCardLevel(dynamic cardLevel)
+        private JsonCardPrice ReadCardLevel(
+            dynamic cardLevel,
+            MtgJsonPriceFilter priceFilter)
         {
             var result = new JsonCardPrice
             {
@@ -88,14 +92,58 @@ namespace MtgJson
                 {
                     var currency = sellerLevel.Value.currency;
 
-                    foreach (var buylistOrRetail in sellerLevel.Value)
+                    switch (sellerLevel.Key)
                     {
-                        if (buylistOrRetail.Key == "currency")
+                        case "cardmarket":
+                            if (priceFilter.HideCardMarket)
+                            {
+                                continue;
+                            }
+
+                            break;
+
+                        case "tcgplayer":
+                            if (priceFilter.HideTcgPlayer)
+                            {
+                                continue;
+                            }
+                            break;
+
+                        case "cardkingdom":
+                            if (priceFilter.HideCardKingdom)
+                            {
+                                continue;
+                            }
+                            break;
+
+                        case "cardhoarder":
+                            if (priceFilter.HideCardHoarder)
+                            {
+                                continue;
+                            }
+                            break;
+
+                        default:
+                            _logger.LogWarning($"Unknown seller key {sellerLevel.Key}");
+                            break;
+                    }
+
+                    foreach (var buyListOrRetail in sellerLevel.Value)
+                    {
+                        switch (buyListOrRetail.Key)
                         {
-                            continue;
+                            case "currency": continue;
+                            case "buylist":
+                                if (priceFilter.HideBuyList)
+                                {
+                                    continue;
+                                }
+                                break;
                         }
-                        foreach (var foilOrNormal in buylistOrRetail.Value)
+
+                        foreach (var foilOrNormal in buyListOrRetail.Value)
                         {
+                            var priceRows = new List<JsonCardPriceItem>();
                             foreach (var priceRow in foilOrNormal.Value)
                             {
                                 var row = new JsonCardPriceItem
@@ -103,16 +151,21 @@ namespace MtgJson
                                     Type = paperLevel.Key,
                                     Currency = currency,
                                     Seller = sellerLevel.Key,
+                                    BuylistOrRetail = buyListOrRetail.Key,
+                                    IsFoil = foilOrNormal.Key,
+                                    PaperOrOnline = paperLevel.Key,
+                                    Date = priceRow.Key,
+                                    Price = priceRow.Value,
                                 };
 
-                                row.BuylistOrRetail = buylistOrRetail.Key;
-                                row.FoilOrNormal = foilOrNormal.Key;
-                                row.PaperOrOnline = paperLevel.Key;
-                                row.Date = priceRow.Key;
-                                row.Price = priceRow.Value;
-
-                                result.Items.Add(row);
+                                priceRows.Add(row);
                             }
+
+                            var filtered = priceRows
+                                .OrderByDescending(p => p.Date)
+                                .Take(priceFilter.HistoryDays)
+                                .ToArray();
+                            result.Items.AddRange(filtered);
                         }
                     }
                 }
@@ -126,7 +179,8 @@ namespace MtgJson
         /// </summary>
         private void ReadDataBlock(StreamReader reader,
             int batchSize,
-            Action<IEnumerable<JsonCardPrice>> loadedBatch)
+            Action<IEnumerable<JsonCardPrice>> loadedBatch,
+            MtgJsonPriceFilter priceFilter)
         {
             SkipUntilNextStart(reader);
 
@@ -153,7 +207,7 @@ namespace MtgJson
 
                 foreach (var level1 in analyzedBlock)
                 {
-                    readCardPrices.Add(ReadCardLevel(level1));
+                    readCardPrices.Add(ReadCardLevel(level1, priceFilter));
                 }
 
                 if (readCardPrices.Count >= batchSize)
@@ -187,7 +241,8 @@ namespace MtgJson
             Stream inputStream,
             int batchSize,
             Func<JsonMeta, bool> headerLoaded,
-            Action<IEnumerable<JsonCardPrice>> loadedBatch)
+            Action<IEnumerable<JsonCardPrice>> loadedBatch,
+            MtgJsonPriceFilter priceFilter)
         {
             var currentLine = new StringBuilder();
 
@@ -205,7 +260,7 @@ namespace MtgJson
             var shallContinue = headerLoaded?.Invoke(jsonMeta) ?? true;
             if (shallContinue)
             {
-                ReadDataBlock(reader, batchSize, loadedBatch);
+                ReadDataBlock(reader, batchSize, loadedBatch, priceFilter);
             }
         }
 

@@ -8,7 +8,13 @@ namespace MtgJson
     public interface ILiteDbService : IDisposable
     {
         void Configure(DirectoryInfo folder);
-        bool OnPriceDataHeaderLoaded(JsonMeta metaData);
+
+        void DeleteExistingDatabase();
+
         void OnPriceDataBatchLoaded(IEnumerable<JsonCardPrice> loadedBatch);
+
+        bool OnPriceDataHeaderLoaded(JsonMeta metaData);
+
+        void WaitOnInsertTasksAndClear();
     }
 }
