@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CsvHelper;
+using CsvHelper.Configuration;
+using Ionic.Zip;
 using Microsoft.Extensions.Logging;
+using MtgJson.CsvModels;
 using MtgJson.JsonModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -24,6 +29,42 @@ namespace MtgJson
             ILogger<MtgJsonService> logger)
         {
             _logger = logger;
+        }
+
+        public void DownloadAllPrintingsZip(
+            FileInfo localFile,
+            Func<CsvMeta, bool> headerLoaded,
+            Func<CsvSet[], bool> setsLoaded,
+            Func<IEnumerable<CsvCard>, bool> cardsLoaded)
+        {
+            using var zip = ZipFile.Read(localFile.FullName);
+
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                // NewLine = Environment.NewLine,
+                HasHeaderRecord = true,
+                Delimiter = ",",
+                LineBreakInQuotedFieldIsBadData = false,
+            };
+
+            var headerRecord = ReadCsvMeta(zip, config);
+            var shallContinue = headerLoaded?.Invoke(headerRecord) ?? true;
+            if (!shallContinue)
+            {
+                return;
+            }
+
+            var sets = ReadCsvSet(zip, config);
+            shallContinue = setsLoaded(sets);
+            if (!shallContinue)
+            {
+                return;
+            }
+
+            if (!ReadCsvCards(zip, config, cardsLoaded))
+            {
+                return;
+            }
         }
 
         public void DownloadPriceData(
@@ -174,9 +215,46 @@ namespace MtgJson
             return result;
         }
 
-        /// <summary>
-        /// Reads the block starting with "data": {
-        /// </summary>
+        private CsvMeta ReadCsvMeta(ZipFile zipFile, CsvConfiguration csvConfig)
+        {
+            var metaEntry = zipFile["meta.csv"];
+            using var metaStream = new MemoryStream(new byte[metaEntry.UncompressedSize]);
+            metaEntry.Extract(metaStream);
+            metaStream.Seek(0, SeekOrigin.Begin);
+
+            using var reader = new StreamReader(metaStream);
+            using var csv = new CsvReader(reader, csvConfig);
+            return csv.GetRecords<CsvMeta>().FirstOrDefault() ?? new CsvMeta();
+        }
+
+        private CsvSet[] ReadCsvSet(ZipFile zipFile, CsvConfiguration csvConfig)
+        {
+            var metaEntry = zipFile["sets.csv"];
+            using var metaStream = new MemoryStream(new byte[metaEntry.UncompressedSize]);
+            metaEntry.Extract(metaStream);
+            metaStream.Seek(0, SeekOrigin.Begin);
+
+            using var reader = new StreamReader(metaStream);
+            using var csv = new CsvReader(reader, csvConfig);
+            return csv.GetRecords<CsvSet>().ToArray();
+        }
+
+        private bool ReadCsvCards(
+            ZipFile zipFile,
+            CsvConfiguration csvConfig,
+            Func<IEnumerable<CsvCard>, bool> cardsLoaded)
+        {
+            var metaEntry = zipFile["cards.csv"];
+            using var metaStream = new MemoryStream(new byte[metaEntry.UncompressedSize]);
+            metaEntry.Extract(metaStream);
+            metaStream.Seek(0, SeekOrigin.Begin);
+
+            using var reader = new StreamReader(metaStream);
+            using var csv = new CsvReader(reader, csvConfig);
+            return cardsLoaded?.Invoke(csv.GetRecords<CsvCard>()) ?? false;
+        }        /// <summary>
+                 /// Reads the block starting with "data": {
+                 /// </summary>
         private void ReadDataBlock(StreamReader reader,
             int batchSize,
             Action<IEnumerable<JsonCardPrice>> loadedBatch,

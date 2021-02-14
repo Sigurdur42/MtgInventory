@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using MtgJson.CsvModels;
 using MtgJson.JsonModels;
 
 namespace MtgJson
@@ -18,5 +19,11 @@ namespace MtgJson
             Func<JsonMeta, bool> headerLoaded,
             Action<IEnumerable<JsonCardPrice>> loadedBatch,
             MtgJsonPriceFilter priceFilter);
+
+        void DownloadAllPrintingsZip(
+            FileInfo localFile,
+            Func<CsvMeta, bool> headerLoaded,
+            Func<CsvSet[], bool> setsLoaded,
+            Func<IEnumerable<CsvCard>, bool> cardsLoaded);
     }
 }
