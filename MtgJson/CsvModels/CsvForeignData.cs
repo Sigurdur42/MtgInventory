@@ -9,8 +9,12 @@ namespace MtgJson.CsvModels
     {
         public string flavorText { get; set; } = "";
 
+        [Name("id")]
+
+        public int Id { get; set; }
+
         [Name("uuid")]
-        public Guid Id { get; set; } = Guid.Empty;
+        public Guid CardId { get; set; } = Guid.Empty;
 
         public string language { get; set; } = "";
         public string multiverseid { get; set; } = "";

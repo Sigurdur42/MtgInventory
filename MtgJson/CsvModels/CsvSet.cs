@@ -7,17 +7,32 @@ namespace MtgJson.CsvModels
 {
     public class CsvSet
     {
-        // 	booster	code	isFoilOnly	isForeignOnly	isNonFoilOnly	isPartialPreview		mcmId	mcmIdExtras	mcmName	mtgoCode		parentCode	releaseDate	tcgplayerGroupId	totalSetSize	type
         [Name("baseSetSize")]
         public int BaseSetSize { get; set; }
 
         [Name("block")] public string Block { get; set; } = "";
+        public string booster { get; set; } = "";
 
-        [Name("keyruneCode")] public string Code { get; set; } = "";
+        [Name("keyruneCode")]
+        public string Code { get; set; } = "";
 
-        [Name("name")] public string Name { get; set; } = "";
+        public string isFoilOnly { get; set; } = "";
+        public string isForeignOnly { get; set; } = "";
+        public string isNonFoilOnly { get; set; } = "";
 
         [Name("isOnlineOnly")]
         public bool IsOnlineOnly { get; set; }
+
+        public string isPartialPreview { get; set; } = "";
+        public string mcmId { get; set; } = "";
+        public string mcmIdExtras { get; set; } = "";
+        public string mcmName { get; set; } = "";
+        public string mtgoCode { get; set; } = "";
+        [Name("name")] public string Name { get; set; } = "";
+        public string parentCode { get; set; } = "";
+        public string releaseDate { get; set; } = "";
+        public string tcgplayerGroupId { get; set; } = "";
+        public string totalSetSize { get; set; } = "";
+        public string type { get; set; } = "";
     }
 }

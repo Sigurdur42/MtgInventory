@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LiteDB;
 using Microsoft.Extensions.Logging;
+using MtgJson.CsvModels;
 using MtgJson.Database;
 using MtgJson.JsonModels;
 
@@ -11,8 +12,13 @@ namespace MtgJson
 {
     public class LiteDbService : ILiteDbService
     {
-        private static object _sync = new object();
+        private static readonly object _sync = new object();
         private readonly ILogger<LiteDbService> _logger;
+        private ILiteCollection<CsvCard>? _csvCards;
+        private ILiteCollection<CsvForeignData>? _csvForeignData;
+        private ILiteCollection<CsvLegalities>? _csvLegalities;
+        private ILiteCollection<CsvMeta>? _csvMeta;
+        private ILiteCollection<CsvSet>? _csvSets;
         private LiteDatabase? _database;
 
         private ILiteCollection<DbPriceItem>? _priceItems;
@@ -37,15 +43,134 @@ namespace MtgJson
 
             _priceMeta = _database.GetCollection<DbPriceMeta>();
             _priceItems = _database.GetCollection<DbPriceItem>();
+
+            _csvMeta = _database.GetCollection<CsvMeta>();
+            _csvCards = _database.GetCollection<CsvCard>();
+            _csvLegalities = _database.GetCollection<CsvLegalities>();
+            _csvForeignData = _database.GetCollection<CsvForeignData>();
+            _csvSets = _database.GetCollection<CsvSet>();
         }
 
         public void DeleteExistingDatabase()
         {
             _priceMeta?.DeleteAll();
             _priceItems?.DeleteAll();
+            _csvMeta?.DeleteAll();
+            _csvCards?.DeleteAll();
+            _csvLegalities?.DeleteAll();
+            _csvForeignData?.DeleteAll();
+            _csvSets?.DeleteAll();
         }
 
         public void Dispose() => _database?.Dispose();
+
+        public void OnCardDataBatchLoaded(IEnumerable<CsvCard> loadedBatch)
+        {
+            if (_csvCards == null)
+            {
+                _logger.LogWarning($"Missing {nameof(Configure)} call - aborting.");
+                return;
+            }
+
+            var filteredBatch = loadedBatch.ToArray();
+            if (!filteredBatch.Any())
+            {
+                return;
+            }
+
+            var insertTask = Task.Factory.StartNew(() =>
+            {
+                _logger.LogInformation($"Inserting {filteredBatch.Length} card rows...");
+                lock (_sync)
+                {
+                    _csvCards.InsertBulk(filteredBatch);
+                    _csvCards.EnsureIndex(i => i.Name);
+                }
+            });
+
+            InsertTasks.Add(insertTask);
+        }
+
+        public void OnSetDataBatchLoaded(IEnumerable<CsvSet> loadedBatch)
+        {
+            if (_csvSets == null)
+            {
+                _logger.LogWarning($"Missing {nameof(Configure)} call - aborting.");
+                return;
+            }
+
+            var filteredBatch = loadedBatch.ToArray();
+            if (!filteredBatch.Any())
+            {
+                return;
+            }
+
+            var insertTask = Task.Factory.StartNew(() =>
+            {
+                _logger.LogInformation($"Inserting {filteredBatch.Length} set rows...");
+                lock (_sync)
+                {
+                    _csvSets.InsertBulk(filteredBatch);
+                    _csvSets.EnsureIndex(i => i.Name);
+                }
+            });
+
+            InsertTasks.Add(insertTask);
+        }
+
+        public void OnLegalitiyBatchLoaded(IEnumerable<CsvLegalities> loadedBatch)
+        {
+            if (_csvLegalities == null)
+            {
+                _logger.LogWarning($"Missing {nameof(Configure)} call - aborting.");
+                return;
+            }
+
+            var filteredBatch = loadedBatch.ToArray();
+            if (!filteredBatch.Any())
+            {
+                return;
+            }
+
+            var insertTask = Task.Factory.StartNew(() =>
+            {
+                _logger.LogInformation($"Inserting {filteredBatch.Length} legality rows...");
+                lock (_sync)
+                {
+                    _csvLegalities.InsertBulk(filteredBatch);
+             //       _csvLegalities.EnsureIndex(i => i.Name);
+                }
+            });
+
+            InsertTasks.Add(insertTask);
+        }
+
+        public void OnForeignDataBatchLoaded(IEnumerable<CsvForeignData> loadedBatch)
+        {
+            if (_csvForeignData == null)
+            {
+                _logger.LogWarning($"Missing {nameof(Configure)} call - aborting.");
+                return;
+            }
+
+            var filteredBatch = loadedBatch.ToArray();
+            if (!filteredBatch.Any())
+            {
+                return;
+            }
+
+            var insertTask = Task.Factory.StartNew(() =>
+            {
+                _logger.LogInformation($"Inserting {filteredBatch.Length} foreign data rows...");
+                lock (_sync)
+                {
+                    _csvForeignData.InsertBulk(filteredBatch);
+                    // _csvForeignData.EnsureIndex(i => i.Name);
+                }
+            });
+
+            InsertTasks.Add(insertTask);
+        }
 
         public void OnPriceDataBatchLoaded(IEnumerable<JsonCardPrice> loadedBatch)
         {

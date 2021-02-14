@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -35,16 +36,17 @@ namespace MtgDatabaseConsole
 
         public int RunAction(ApiOptions options)
         {
+            var stopwatch = Stopwatch.StartNew();
             _logger.LogInformation("Deleting mirror database...");
             _mtgJsonLiteDbService.DeleteExistingDatabase();
 
             _logger.LogInformation("Starting download...");
 
             DownloadCardDataFromLocalFile();
+            DownloadPriceDataFromLocalFile();
 
-            // DownloadPriceDataFromLocalFile();
-
-            _logger.LogInformation("All done");
+            stopwatch.Stop();
+            _logger.LogInformation($"All done in {stopwatch.Elapsed}");
 
             return -1;
         }
@@ -64,22 +66,24 @@ namespace MtgDatabaseConsole
             },
                 (sets) =>
                 {
-                    Console.WriteLine($"Found {sets.Length} sets");
+                    _mtgJsonLiteDbService.OnSetDataBatchLoaded(sets);
                     return true;
                 },
                 (cards) =>
                 {
-                    Console.WriteLine($"Found {cards.Count()} cards");
+                    _mtgJsonLiteDbService.OnCardDataBatchLoaded(cards);
                     return true;
                 },
                 (foreignData) =>
                 {
-                    Console.WriteLine($"Found {foreignData.Count()} foreign records");
+                    _mtgJsonLiteDbService.OnForeignDataBatchLoaded(foreignData);
+
                     return true;
                 },
                 (legalities) =>
                 {
-                    Console.WriteLine($"Found {legalities.Count()} legality records");
+                    _mtgJsonLiteDbService.OnLegalitiyBatchLoaded(legalities);
+
                     return true;
                 }
                 );

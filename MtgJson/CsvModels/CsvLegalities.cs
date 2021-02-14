@@ -7,10 +7,13 @@ namespace MtgJson.CsvModels
 {
     public class CsvLegalities
     {
-        public string format { get; set; } = "";
         [Name("uuid")]
-        public Guid Id { get; set; } = Guid.Empty;
+        public Guid CardId { get; set; } = Guid.Empty;
 
+        public string format { get; set; } = "";
+        [Name("id")]
+
+        public int Id { get; set; }
         public string status { get; set; } = "";
     }
 }
