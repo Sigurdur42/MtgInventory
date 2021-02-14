@@ -30,7 +30,7 @@ namespace MtgDatabase.Database
             var mapper = BsonMapper.Global;
 
             mapper.Entity<QueryableMagicCard>()
-                .Id(x => x.UniqueId);
+                .Id(x => x.Id);
 
             IsInitialized = true;
         }

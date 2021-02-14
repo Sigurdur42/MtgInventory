@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MtgDatabase.Cache;
 using MtgDatabase.Decks;
+using MtgDatabase.MtgJson;
 using MtgDatabase.Scryfall;
 using MtgJson;
 using ScryfallApiServices;
@@ -21,6 +22,7 @@ namespace MtgDatabase
             serviceCollection.AddSingleton<IAutoAupdateMtgDatabaseService, AutoAupdateMtgDatabaseService>();
 
             serviceCollection.AddSingleton<ITextDeckReader, TextDeckReader>();
+            serviceCollection.AddSingleton<IMirrorMtgJson, MirrorMtgJson>();
 
             serviceCollection.AddMtgJsonServices();
 

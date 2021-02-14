@@ -16,9 +16,9 @@ namespace MtgJson.CsvModels
         [Name("keyruneCode")]
         public string Code { get; set; } = "";
 
-        public string isFoilOnly { get; set; } = "";
-        public string isForeignOnly { get; set; } = "";
-        public string isNonFoilOnly { get; set; } = "";
+        public bool isFoilOnly { get; set; }
+        public bool isForeignOnly { get; set; }
+        public bool isNonFoilOnly { get; set; }
 
         [Name("isOnlineOnly")]
         public bool IsOnlineOnly { get; set; }

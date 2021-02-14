@@ -11,6 +11,7 @@ using MtgDatabase.Database;
 using MtgDatabase.DatabaseDecks;
 using MtgDatabase.Decks;
 using MtgDatabase.Models;
+using MtgDatabase.MtgJson;
 using MtgDatabase.Scryfall;
 using ScryfallApiServices;
 
@@ -40,7 +41,7 @@ namespace MtgDatabase
         private readonly Database.MtgDatabase _database;
         private readonly ILogger<MtgDatabaseService> _logger;
         private readonly IScryfallService _scryfallService;
-        private readonly IMirrorScryfallDatabase _mirrorScryfallDatabase;
+        private readonly IMirrorMtgJson _mirrorMtgJson;
         private readonly ITextDeckReader _deckReader;
         private readonly IImageCache _imageCache;
         private readonly object _sync = new object();
@@ -55,17 +56,16 @@ namespace MtgDatabase
             ILogger<MtgDatabaseService> logger,
             Database.MtgDatabase database,
             IScryfallService scryfallService,
-            IMirrorScryfallDatabase mirrorScryfallDatabase,
+            IMirrorMtgJson mirrorMtgJson,
             ITextDeckReader deckReader,
             IImageCache imageCache)
         {
             _logger = logger;
             _database = database;
             _scryfallService = scryfallService;
-            _mirrorScryfallDatabase = mirrorScryfallDatabase;
+            _mirrorMtgJson = mirrorMtgJson;
             _deckReader = deckReader;
             _imageCache = imageCache;
-            _mirrorScryfallDatabase.CardBatchDownloaded += OnMirrorScryfallCardsDownloaded;
         }
 
         public event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding = (sender, args) => { };
@@ -103,7 +103,8 @@ namespace MtgDatabase
             {
                 _scryfallService.RefreshLocalMirror(true, true);
 
-                await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize, progress);
+                // await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize, progress);
+                await _mirrorMtgJson.DownloadDatabase(false);
             }
             finally
             {
@@ -308,6 +309,56 @@ namespace MtgDatabase
         }
 
         private void RebuildCardsFromScryfall(IEnumerable<ScryfallJsonCard> allCards)
+        {
+            IsRebuilding = true;
+            try
+            {
+                var stopwatch = Stopwatch.StartNew();
+                var cardFactory = new QueryableMagicCardFactory();
+                var cardsToInsert = new List<QueryableMagicCard>();
+                var cardsToUpdate = new List<QueryableMagicCard>();
+                foreach (var group in allCards)
+                {
+                    var card = cardFactory.Create(group);
+                    var found = _database.Cards?.Query()?.Where(c => c.UniqueId == card.UniqueId)?.FirstOrDefault();
+                    if (found == null)
+                    {
+                        cardsToInsert.Add(card);
+                    }
+                    else
+                    {
+                        cardsToUpdate.Add(card);
+                    }
+                }
+
+                if (cardsToInsert.Any())
+                {
+                    _database.Cards?.InsertBulk(cardsToInsert);
+                }
+
+                if (cardsToUpdate.Any())
+                {
+                    _database.Cards?.Update(cardsToUpdate);
+                }
+
+                if (cardsToInsert.Any() || cardsToUpdate.Any())
+                {
+                    _database.EnsureIndex();
+                }
+
+                stopwatch.Stop();
+
+                _logger.LogTrace(
+                    $"Inserted: {cardsToInsert.Count}, Updated: {cardsToUpdate.Count} in {stopwatch.Elapsed}");
+            }
+            finally
+            {
+                IsRebuilding = false;
+            }
+        }
+
+
+        internal void InsertOrUpdate(IEnumerable<QueryableMagicCard> allCards)
         {
             IsRebuilding = true;
             try

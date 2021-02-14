@@ -32,7 +32,8 @@ namespace MtgInventoryWpf
 
             Task.Factory.StartNew(() =>
             {
-                if (!Debugger.IsAttached
+                var debuggerAttached = false; // Debugger.IsAttached;
+                if (!debuggerAttached
                 || (_mtgDatabaseService?.GetDatabaseSummary()?.NumberOfCards ?? 0) == 0)
                 {
                     _autoAupdateMtgDatabaseService.Start();

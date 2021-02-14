@@ -74,22 +74,22 @@ namespace MtgDatabase
                         break;
                     }
 
-                    var summary = _databaseService.GetDatabaseSummary();
-                    var isOutdated = summary.LastUpdated.AddDays(1).Date < DateTime.Now.Date;
-                    if (isOutdated)
-                    {
-                        _logger.LogInformation($"Database is outdated - starting update now...");
+                    //var summary = _databaseService.GetDatabaseSummary();
+                    //var isOutdated = summary.LastUpdated.AddDays(1).Date < DateTime.Now.Date;
+                    //if (isOutdated)
+                    //{
+                    //    _logger.LogInformation($"Database is outdated - starting update now...");
                         UpdateStarted.Invoke(this, EventArgs.Empty);
                         try
                         {
-                            _databaseService.RefreshLocalDatabaseAsync(this).GetAwaiter().GetResult() ;
+                            _databaseService.RefreshLocalDatabaseAsync(this).GetAwaiter().GetResult();
                         }
                         finally
                         {
                             UpdateFinished.Invoke(this, EventArgs.Empty);
                         }
 
-                    }
+                    // }
                 }
                 while (_stopRequested.Wait(new TimeSpan(1, 0, 0)));
             }
