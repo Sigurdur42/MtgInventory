@@ -82,7 +82,7 @@ namespace MtgDatabase
                         UpdateStarted.Invoke(this, EventArgs.Empty);
                         try
                         {
-                            _databaseService.RefreshLocalDatabaseAsync(this).GetAwaiter().GetResult();
+                            _databaseService.RefreshLocalDatabaseAsync(this, false).GetAwaiter().GetResult();
                         }
                         finally
                         {

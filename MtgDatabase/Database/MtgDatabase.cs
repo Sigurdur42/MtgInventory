@@ -1,5 +1,9 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using MtgDatabase.Models;
 
 namespace MtgDatabase.Database
@@ -11,11 +15,16 @@ namespace MtgDatabase.Database
 
     public class MtgDatabase : IQueryableCardsProvider
     {
+        private readonly ILogger<MtgDatabase> _logger;
         private LiteDatabase? _database;
 
-        public bool IsInitialized { get; private set; }
+        public MtgDatabase(ILogger<MtgDatabase> logger)
+        {
+            _logger = logger;
+        }
 
         public ILiteCollection<QueryableMagicCard>? Cards { get; private set; }
+        public bool IsInitialized { get; private set; }
 
         public void Configure(DirectoryInfo folder)
         {
@@ -35,10 +44,15 @@ namespace MtgDatabase.Database
             IsInitialized = true;
         }
 
+        public void ShutDown()
+        {
+            _database?.Dispose();
+            _database = null;
+        }
+
         internal void EnsureIndex()
         {
             Cards?.EnsureIndex(c => c.Name);
-            Cards?.EnsureIndex(c => c.LocalName);
             Cards?.EnsureIndex(c => c.IsBasicLand);
             Cards?.EnsureIndex(c => c.IsToken);
             Cards?.EnsureIndex(c => c.IsCreature);
@@ -48,10 +62,47 @@ namespace MtgDatabase.Database
             Cards?.EnsureIndex(c => c.UpdateDateUtc);
         }
 
-        public void ShutDown()
+        internal void InsertOrUpdate(IList<QueryableMagicCard> allCards)
         {
-            _database?.Dispose();
-            _database = null;
+            var stopwatch = Stopwatch.StartNew();
+            var cardFactory = new QueryableMagicCardFactory();
+            var cardsToInsert = new List<QueryableMagicCard>();
+            var cardsToUpdate = new List<QueryableMagicCard>();
+            foreach (var card in allCards)
+            {
+                var found = Cards?.Query()
+                    ?.Where(c => c.Id == card.Id)
+                    ?.FirstOrDefault();
+
+                if (found == null)
+                {
+                    cardsToInsert.Add(card);
+                }
+                else
+                {
+                    cardsToUpdate.Add(card);
+                }
+            }
+
+            if (cardsToInsert.Any())
+            {
+                Cards?.InsertBulk(cardsToInsert);
+            }
+
+            if (cardsToUpdate.Any())
+            {
+                Cards?.Update(cardsToUpdate);
+            }
+
+            if (cardsToInsert.Any() || cardsToUpdate.Any())
+            {
+                EnsureIndex();
+            }
+
+            stopwatch.Stop();
+
+            _logger.LogTrace(
+                $"Inserted: {cardsToInsert.Count}, Updated: {cardsToUpdate.Count} in {stopwatch.Elapsed}");
         }
     }
 }

@@ -27,5 +27,9 @@ namespace MtgInventoryWpf
         {
             (DataContext as DatabaseInfoViewModel)?.DownloadAllImages();
         }
+        private void OnDownloadDatabase(object sender, RoutedEventArgs e)
+        {
+            (DataContext as DatabaseInfoViewModel)?.DownloadDatabase();
+        }
     }
 }

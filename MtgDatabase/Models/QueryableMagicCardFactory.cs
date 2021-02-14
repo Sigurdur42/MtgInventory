@@ -15,7 +15,6 @@ namespace MtgDatabase.Models
             {
                 Name = card.Name,
                 Language = "EN",
-                LocalName = card.Name,
                 TypeLine = card.TypeLine,
                 Rarity = card.Rarity.ToRarity(card.TypeLine),
                 // ReprintInfos = reprintInfos,
@@ -48,7 +47,6 @@ namespace MtgDatabase.Models
             var result = new QueryableMagicCard
             {
                 Name = card.Name,
-                LocalName = card.PrintedName ?? card.Name,
                 Language = card.Lang,
                 TypeLine = card.TypeLine,
                 Rarity = card.Rarity.ToRarity(card.TypeLine),

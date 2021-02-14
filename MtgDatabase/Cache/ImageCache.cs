@@ -91,7 +91,7 @@ namespace MtgDatabase.Cache
 
         private string GetLocalName(QueryableMagicCard card)
         {
-            var uniqueId = card.UniqueId
+            var uniqueId = (card.UniqueId ?? "")
                 .Replace(":", "_")
                 .Replace(".", "_")
                 .Replace("/", "_")

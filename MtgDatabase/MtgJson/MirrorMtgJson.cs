@@ -6,23 +6,17 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LocalSettings;
 using Microsoft.Extensions.Logging;
+using MtgDatabase.Models;
 using MtgJson;
-using MtgJson.CsvModels;
 
 namespace MtgDatabase.MtgJson
 {
-    public interface IMirrorMtgJson
-    {
-        Task DownloadDatabase(bool force);
-    }
-
     public class MirrorMtgJson : IMirrorMtgJson
     {
         public const string SettingCardDate = "MtgJsonCardUpdated";
         public const string SettingCardOutdatedAfterDays = "MtgJsonCardOutdatedAfterDays";
         public const string SettingPriceDate = "MtgJsonPriceUpdated";
         public const string SettingPriceOutdatedAfterDays = "MtgJsonPriceOutdatedAfterDays";
-        private readonly Database.MtgDatabase _database;
         private readonly IMtgJsonService _jsonService;
         private readonly ILogger<MirrorMtgJson> _logger;
         private readonly ILocalSettingService _settingService;
@@ -31,12 +25,10 @@ namespace MtgDatabase.MtgJson
         private DateTime _priceUpdated;
 
         public MirrorMtgJson(
-                            Database.MtgDatabase database,
             IMtgJsonService jsonService,
             ILogger<MirrorMtgJson> logger,
             ILocalSettingService settingService)
         {
-            _database = database;
             _jsonService = jsonService;
             _logger = logger;
             _settingService = settingService;
@@ -75,12 +67,12 @@ namespace MtgDatabase.MtgJson
             }
         }
 
-        public async Task DownloadDatabase(bool force)
+        public async Task<IList<QueryableMagicCard>> DownloadDatabase(bool force)
         {
             if (!force && !AreCardsOutdated)
             {
                 _logger.LogInformation($"Skipping card database mirror - cards are not outdated yet.");
-                return;
+                return new List<QueryableMagicCard>();
             }
 
             var tempFile = Path.GetTempFileName();
@@ -92,7 +84,7 @@ namespace MtgDatabase.MtgJson
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogError($"Failed to download file: {response.StatusCode}");
-                    return;
+                    return new List<QueryableMagicCard>();
                 }
 
                 using (var stream = await response.Content.ReadAsStreamAsync())
@@ -104,10 +96,9 @@ namespace MtgDatabase.MtgJson
                 _logger.LogInformation($"Downloaded AllPrintingsCSVFiles to temp folder - starting analysis");
 
                 DateTime cardDate = _cardsUpdated;
-                CsvSet[] loadedSets = Array.Empty<CsvSet>();
-                Dictionary<Guid, CsvCard> allCards = new Dictionary<Guid, CsvCard>();
-                IGrouping<Guid, CsvForeignData>[]? foreignByCard = null;
-                IGrouping<Guid, CsvLegalities>[]? legalitiesByCard = null;
+
+                var cardFactory = new MtgJsonCardFactory();
+
 
                 _jsonService.DownloadAllPrintingsZip(
                     new FileInfo(tempFile),
@@ -120,26 +111,26 @@ namespace MtgDatabase.MtgJson
                     },
                     (sets) =>
                     {
-                        loadedSets = sets;
+                        cardFactory.LoadedSets = sets.ToArray();
                         return true;
                     },
                     (cards) =>
                     {
-                        allCards = cards.ToDictionary(c => c.Id);
+                        cardFactory.AllCards = cards.ToDictionary(c => c.Id);
                         return true;
                     },
                     (foreignData) =>
                     {
-                        foreignByCard = foreignData.GroupBy(f => f.CardId).ToArray();
+                        cardFactory.ForeignByCard = foreignData.GroupBy(f => f.CardId).ToArray();
                         return true;
                     },
                     (legalities) =>
                     {
-                        legalitiesByCard = legalities.GroupBy(f => f.CardId).ToArray();
+                        cardFactory.LegalitiesByCard = legalities.GroupBy(f => f.CardId).ToArray();
                         return true;
                     });
 
-                // TODO: Continue here
+                return cardFactory.CreateCards();
             }
             finally
             {

@@ -32,7 +32,7 @@ namespace MtgInventoryWpf
 
             Task.Factory.StartNew(() =>
             {
-                var debuggerAttached = false; // Debugger.IsAttached;
+                var debuggerAttached = Debugger.IsAttached;
                 if (!debuggerAttached
                 || (_mtgDatabaseService?.GetDatabaseSummary()?.NumberOfCards ?? 0) == 0)
                 {
@@ -55,6 +55,16 @@ namespace MtgInventoryWpf
                 ?? Array.Empty<QueryableMagicCard>();
 
                 _imageCache.QueueForDownload(allCards);
+
+            });
+        }
+        internal void DownloadDatabase()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                 _mtgDatabaseService.RefreshLocalDatabaseAsync(null, true)
+                     .GetAwaiter()
+                     .GetResult();
 
             });
         }
