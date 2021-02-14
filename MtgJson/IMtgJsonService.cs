@@ -24,6 +24,8 @@ namespace MtgJson
             FileInfo localFile,
             Func<CsvMeta, bool> headerLoaded,
             Func<CsvSet[], bool> setsLoaded,
-            Func<IEnumerable<CsvCard>, bool> cardsLoaded);
+            Func<IEnumerable<CsvCard>, bool> cardsLoaded,
+            Func<IEnumerable<CsvForeignData>, bool> foreignDataLoaded,
+            Func<IEnumerable<CsvLegalities>, bool> legalitiesLoaded);
     }
 }

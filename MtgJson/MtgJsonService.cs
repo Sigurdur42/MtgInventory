@@ -35,7 +35,9 @@ namespace MtgJson
             FileInfo localFile,
             Func<CsvMeta, bool> headerLoaded,
             Func<CsvSet[], bool> setsLoaded,
-            Func<IEnumerable<CsvCard>, bool> cardsLoaded)
+            Func<IEnumerable<CsvCard>, bool> cardsLoaded,
+            Func<IEnumerable<CsvForeignData>, bool> foreignDataLoaded,
+            Func<IEnumerable<CsvLegalities>, bool> legalitiesLoaded)
         {
             using var zip = ZipFile.Read(localFile.FullName);
 
@@ -62,6 +64,14 @@ namespace MtgJson
             }
 
             if (!ReadCsvCards(zip, config, cardsLoaded))
+            {
+                return;
+            }
+            if (!ReadCsvForeign(zip, config, foreignDataLoaded))
+            {
+                return;
+            }
+            if (!ReadCsvLegalities(zip, config, legalitiesLoaded))
             {
                 return;
             }
@@ -215,6 +225,51 @@ namespace MtgJson
             return result;
         }
 
+        private bool ReadCsvCards(
+            ZipFile zipFile,
+            CsvConfiguration csvConfig,
+            Func<IEnumerable<CsvCard>, bool> cardsLoaded)
+        {
+            var metaEntry = zipFile["cards.csv"];
+            using var metaStream = new MemoryStream(new byte[metaEntry.UncompressedSize]);
+            metaEntry.Extract(metaStream);
+            metaStream.Seek(0, SeekOrigin.Begin);
+
+            using var reader = new StreamReader(metaStream);
+            using var csv = new CsvReader(reader, csvConfig);
+            return cardsLoaded?.Invoke(csv.GetRecords<CsvCard>()) ?? false;
+        }
+
+        private bool ReadCsvForeign(
+            ZipFile zipFile,
+            CsvConfiguration csvConfig,
+            Func<IEnumerable<CsvForeignData>, bool> foreignDataLoaded)
+        {
+            var metaEntry = zipFile["foreign_data.csv"];
+            using var metaStream = new MemoryStream(new byte[metaEntry.UncompressedSize]);
+            metaEntry.Extract(metaStream);
+            metaStream.Seek(0, SeekOrigin.Begin);
+
+            using var reader = new StreamReader(metaStream);
+            using var csv = new CsvReader(reader, csvConfig);
+            return foreignDataLoaded?.Invoke(csv.GetRecords<CsvForeignData>()) ?? false;
+        }
+
+        private bool ReadCsvLegalities(
+            ZipFile zipFile,
+            CsvConfiguration csvConfig,
+            Func<IEnumerable<CsvLegalities>, bool> legalitiesLoaded)
+        {
+            var metaEntry = zipFile["legalities.csv"];
+            using var metaStream = new MemoryStream(new byte[metaEntry.UncompressedSize]);
+            metaEntry.Extract(metaStream);
+            metaStream.Seek(0, SeekOrigin.Begin);
+
+            using var reader = new StreamReader(metaStream);
+            using var csv = new CsvReader(reader, csvConfig);
+            return legalitiesLoaded?.Invoke(csv.GetRecords<CsvLegalities>()) ?? false;
+        }
+
         private CsvMeta ReadCsvMeta(ZipFile zipFile, CsvConfiguration csvConfig)
         {
             var metaEntry = zipFile["meta.csv"];
@@ -239,22 +294,9 @@ namespace MtgJson
             return csv.GetRecords<CsvSet>().ToArray();
         }
 
-        private bool ReadCsvCards(
-            ZipFile zipFile,
-            CsvConfiguration csvConfig,
-            Func<IEnumerable<CsvCard>, bool> cardsLoaded)
-        {
-            var metaEntry = zipFile["cards.csv"];
-            using var metaStream = new MemoryStream(new byte[metaEntry.UncompressedSize]);
-            metaEntry.Extract(metaStream);
-            metaStream.Seek(0, SeekOrigin.Begin);
-
-            using var reader = new StreamReader(metaStream);
-            using var csv = new CsvReader(reader, csvConfig);
-            return cardsLoaded?.Invoke(csv.GetRecords<CsvCard>()) ?? false;
-        }        /// <summary>
-                 /// Reads the block starting with "data": {
-                 /// </summary>
+        /// <summary>
+        /// Reads the block starting with "data": {
+        /// </summary>
         private void ReadDataBlock(StreamReader reader,
             int batchSize,
             Action<IEnumerable<JsonCardPrice>> loadedBatch,

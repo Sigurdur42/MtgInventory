@@ -71,7 +71,18 @@ namespace MtgDatabaseConsole
                 {
                     Console.WriteLine($"Found {cards.Count()} cards");
                     return true;
-                });
+                },
+                (foreignData) =>
+                {
+                    Console.WriteLine($"Found {foreignData.Count()} foreign records");
+                    return true;
+                },
+                (legalities) =>
+                {
+                    Console.WriteLine($"Found {legalities.Count()} legality records");
+                    return true;
+                }
+                );
         }
 
         private void DownloadPriceDataDirect()
