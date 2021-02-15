@@ -223,11 +223,10 @@ namespace MtgDatabase
             IsRebuilding = true;
             try
             {
-                _scryfallService.RefreshLocalMirror(true, true);
+                // _scryfallService.RefreshLocalMirror(true, true);
 
                 // await _mirrorScryfallDatabase.DownloadDatabase(_downloadCardBachSize, progress);
                 var cards = await _mirrorMtgJson.DownloadDatabase(force);
-
                 _database.InsertOrUpdate(cards);
             }
             finally

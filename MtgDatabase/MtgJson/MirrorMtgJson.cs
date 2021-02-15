@@ -99,7 +99,6 @@ namespace MtgDatabase.MtgJson
 
                 var cardFactory = new MtgJsonCardFactory();
 
-
                 _jsonService.DownloadAllPrintingsZip(
                     new FileInfo(tempFile),
                     (header) =>
@@ -130,6 +129,8 @@ namespace MtgDatabase.MtgJson
                         return true;
                     });
 
+                _cardsUpdated = DateTime.Now;
+                _settingService.SetComplexValue(SettingCardDate, _cardsUpdated);
                 return cardFactory.CreateCards();
             }
             finally
@@ -139,6 +140,95 @@ namespace MtgDatabase.MtgJson
                     File.Delete(tempFile);
                 }
             }
+        }
+
+        public async Task<IList<QueryableMagicCard>> UpdatePriceData(IList<QueryableMagicCard> allCards, bool force)
+        {
+            if (!force && !IsPriceOutdated)
+            {
+                _logger.LogInformation($"Skipping card price mirror - cards are not outdated yet.");
+                return allCards;
+            }
+
+            var byCardId = allCards.ToDictionary(c => c.Id);
+            var insertTasks = new List<Task>();
+
+            _jsonService.DownloadPriceDataAsync(
+                    //new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
+                    (header) =>
+                    {
+                        // Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
+                        return true;
+                    },
+                    (filteredBatch) =>
+                    {
+                        var filteredArray = filteredBatch.ToArray();
+                        var insertTask = Task.Factory.StartNew(() =>
+                        {
+                            foreach (var jsonCardPrice in filteredArray)
+                            {
+                                if (!byCardId.TryGetValue(jsonCardPrice.Id, out var card))
+                                {
+                                    continue;
+                                }
+
+                                // We can do MKM only at this time
+                                foreach (var jsonCardPriceItem in jsonCardPrice.Items)
+                                {
+                                    if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        card.EurFoil = (decimal)jsonCardPriceItem.Price;
+                                    }
+                                    else
+                                    {
+                                        card.Eur = (decimal)jsonCardPriceItem.Price;
+                                    }
+                                }
+                            }
+
+                            ////var items = filteredBatch
+                            ////    .AsParallel()
+                            ////    .SelectMany(i =>
+                            ////    {
+                            ////        return i.Items.ToArray().Select(b => new DbPriceItem()
+                            ////        {
+                            ////            CardId = i.Id,
+                            ////            Date = b.Date,
+                            ////            BuylistOrRetail = b.BuylistOrRetail,
+                            ////            Currency = b.Currency,
+                            ////            IsFoil = b.IsFoil == "foil",
+                            ////            PaperOrOnline = b.PaperOrOnline,
+                            ////            Price = b.Price,
+                            ////            Seller = b.Seller,
+                            ////            Type = b.Type
+                            ////        }).ToArray();
+                            ////    })
+                            ////    .ToArray();
+
+                            // _logger.LogInformation($"Inserting {items.Length} price rows...");
+                        });
+
+                        insertTasks.Add(insertTask);
+                    },
+                    new MtgJsonPriceFilter())
+                .GetAwaiter()
+                .GetResult();
+
+            while (insertTasks.Any())
+            {
+                var task = insertTasks.FirstOrDefault();
+                if (task != null)
+                {
+                    _logger.LogInformation($"{insertTasks.Count} insert tasks still in queue");
+                    task.Wait();
+                    insertTasks.Remove(task);
+                }
+            }
+
+            _priceUpdated = DateTime.Now;
+            _settingService.SetComplexValue(SettingPriceDate, _priceUpdated);
+
+            return allCards;
         }
     }
 }

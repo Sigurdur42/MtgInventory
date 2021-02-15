@@ -1,31 +1,47 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MtgDatabase.Models;
+using MtgDatabase.MtgJson;
 
 namespace MtgDatabase
 {
     public class AutoAupdateMtgDatabaseService : IAutoAupdateMtgDatabaseService, IProgress<int>
     {
+        public readonly ManualResetEventSlim _stopRequested = new ManualResetEventSlim();
+
+        private readonly object _sync = new object();
+
+        private readonly IMtgDatabaseService _databaseService;
+
+        private readonly Database.MtgDatabase _database;
+
+        private readonly IMirrorMtgJson _mirrorMtgJson;
+
+        private readonly ILogger<AutoAupdateMtgDatabaseService> _logger;
+
+        private bool _isRunning = false;
+
         public AutoAupdateMtgDatabaseService(
-            IMtgDatabaseService databaseService,
+                                                                    IMtgDatabaseService databaseService,
+            Database.MtgDatabase database,
+            IMirrorMtgJson mirrorMtgJson,
             ILogger<AutoAupdateMtgDatabaseService> logger)
         {
             _databaseService = databaseService;
+            _database = database;
+            _mirrorMtgJson = mirrorMtgJson;
             _logger = logger;
         }
 
         public event EventHandler UpdateStarted = (sender, args) => { };
+
         public event EventHandler<int> UpdateProgress = (sender, args) => { };
 
         public event EventHandler UpdateFinished = (sender, args) => { };
-
-        public readonly ManualResetEventSlim _stopRequested = new ManualResetEventSlim();
-
-        private readonly object _sync = new object();
-        private readonly IMtgDatabaseService _databaseService;
-        private readonly ILogger<AutoAupdateMtgDatabaseService> _logger;
-        private bool _isRunning = false;
 
         public bool IsRunning
         {
@@ -62,6 +78,8 @@ namespace MtgDatabase
             _stopRequested.Set();
         }
 
+        public void Report(int value) => UpdateProgress?.Invoke(this, value);
+
         private void InternalRunner()
         {
             IsRunning = true;
@@ -74,22 +92,54 @@ namespace MtgDatabase
                         break;
                     }
 
-                    //var summary = _databaseService.GetDatabaseSummary();
-                    //var isOutdated = summary.LastUpdated.AddDays(1).Date < DateTime.Now.Date;
-                    //if (isOutdated)
-                    //{
-                    //    _logger.LogInformation($"Database is outdated - starting update now...");
+                    var isDbEmpty = (_database.Cards?.Count() ?? 0) == 0;
+                    var anyUpdateRequired = _mirrorMtgJson.AreCardsOutdated || _mirrorMtgJson.IsPriceOutdated || isDbEmpty;
+
+                    if (anyUpdateRequired)
+                    {
                         UpdateStarted.Invoke(this, EventArgs.Empty);
-                        try
+                    }
+                    try
+                    {
+                        IList<QueryableMagicCard> cards = new List<QueryableMagicCard>();
+                        if (_mirrorMtgJson.AreCardsOutdated || isDbEmpty)
                         {
-                            _databaseService.RefreshLocalDatabaseAsync(this, false).GetAwaiter().GetResult();
+                            _logger.LogInformation($"Card data is outdated - starting update now...");
+
+                            cards = _mirrorMtgJson.DownloadDatabase(true)
+                                .GetAwaiter()
+                                .GetResult();
                         }
-                        finally
+
+                        if (anyUpdateRequired)
+                        {
+                            _logger.LogInformation($"Price data is outdated - starting update now...");
+
+                            if (!cards.Any())
+                            {
+                                // Need to load all cards first
+                                cards = _database.Cards?.FindAll().ToList() ?? new List<QueryableMagicCard>();
+                            }
+
+                            cards = _mirrorMtgJson.UpdatePriceData(cards, true)
+                                .GetAwaiter()
+                                .GetResult();
+                        }
+
+                        if (cards.Any())
+                        {
+                            _logger.LogInformation($"Writing updated cards now");
+
+                            _database.InsertOrUpdate(cards);
+                        }
+                    }
+                    finally
+                    {
+                        if (anyUpdateRequired)
                         {
                             UpdateFinished.Invoke(this, EventArgs.Empty);
                         }
-
-                    // }
+                    }
                 }
                 while (_stopRequested.Wait(new TimeSpan(1, 0, 0)));
             }
@@ -102,7 +152,5 @@ namespace MtgDatabase
                 IsRunning = false;
             }
         }
-
-        public void Report(int value) => UpdateProgress?.Invoke(this, value);
     }
 }
