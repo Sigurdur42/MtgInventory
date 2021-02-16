@@ -19,7 +19,7 @@ namespace MtgDatabase
             serviceCollection.AddSingleton<IImageCache, ImageCache>();
             serviceCollection.AddSingleton<Database.MtgDatabase>();
             serviceCollection.AddSingleton<IMkmMapper, MkmMapper>();
-            serviceCollection.AddSingleton<IAutoAupdateMtgDatabaseService, AutoAupdateMtgDatabaseService>();
+            serviceCollection.AddSingleton<IAutoUpdateMtgDatabaseService, AutoUpdateMtgDatabaseService>();
 
             serviceCollection.AddSingleton<ITextDeckReader, TextDeckReader>();
             serviceCollection.AddSingleton<IMirrorMtgJson, MirrorMtgJson>();

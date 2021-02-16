@@ -10,14 +10,14 @@ namespace MtgInventoryWpf
     {
         public MainWindow(
             MainViewModel mainViewModel,
-            IAutoAupdateMtgDatabaseService autoAupdateMtgDatabaseService)
+            IAutoUpdateMtgDatabaseService autoUpdateMtgDatabaseService)
         {
             InitializeComponent();
 
             DataContext = mainViewModel;
 
 
-            this.Closing += (sender, args) => autoAupdateMtgDatabaseService.Stop();
+            this.Closing += (sender, args) => autoUpdateMtgDatabaseService.Stop(true);
         }
     }
 }

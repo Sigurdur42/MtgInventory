@@ -13,7 +13,7 @@ namespace MtgInventoryWpf
             CardSearchViewModel cardSearchViewModel,
             InventoryViewModel inventoryViewModel,
             CardListViewModel cardListViewModel,
-            IAutoAupdateMtgDatabaseService autoAupdateMtgDatabaseService)
+            IAutoUpdateMtgDatabaseService autoAupdateMtgDatabaseService)
         {
             DatabaseInfoViewModel = databaseInfoViewModel;
             CardSearchViewModel = cardSearchViewModel;

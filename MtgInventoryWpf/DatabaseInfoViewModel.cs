@@ -12,7 +12,7 @@ namespace MtgInventoryWpf
     public class DatabaseInfoViewModel
     {
         private readonly IMtgDatabaseService _mtgDatabaseService;
-        private readonly IAutoAupdateMtgDatabaseService _autoAupdateMtgDatabaseService;
+        private readonly IAutoUpdateMtgDatabaseService _autoAupdateMtgDatabaseService;
         private readonly IImageCache _imageCache;
 
         public DatabaseSummary? DatabaseSummary { get; set; }
@@ -21,7 +21,7 @@ namespace MtgInventoryWpf
 
         public DatabaseInfoViewModel(
             IMtgDatabaseService mtgDatabaseService,
-            IAutoAupdateMtgDatabaseService autoAupdateMtgDatabaseService,
+            IAutoUpdateMtgDatabaseService autoAupdateMtgDatabaseService,
             IImageCache imageCache)
         {
             _autoAupdateMtgDatabaseService = autoAupdateMtgDatabaseService;

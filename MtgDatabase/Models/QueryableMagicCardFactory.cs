@@ -104,7 +104,7 @@ namespace MtgDatabase.Models
             card.IsCreature = typeLine.Contains("creature", StringComparison.InvariantCultureIgnoreCase);
             card.IsInstant = typeLine.Contains("instant", StringComparison.InvariantCultureIgnoreCase);
             card.IsSorcery = typeLine.Contains("sorcery", StringComparison.InvariantCultureIgnoreCase);
-            card.IsArtefact = typeLine.Contains("artefact", StringComparison.InvariantCultureIgnoreCase);
+            card.IsArtifact = typeLine.Contains("artefact", StringComparison.InvariantCultureIgnoreCase);
             card.IsLand = typeLine.Contains("land", StringComparison.InvariantCultureIgnoreCase);
             card.IsToken = typeLine.Contains("token", StringComparison.InvariantCultureIgnoreCase);
             card.IsEmblem = typeLine.EndsWith("emblem", StringComparison.InvariantCultureIgnoreCase);
@@ -112,7 +112,7 @@ namespace MtgDatabase.Models
             card.IsLegendary = typeLine.Contains("legendary", StringComparison.InvariantCultureIgnoreCase);
             card.IsSnow = typeLine.Contains("snow ", StringComparison.InvariantCultureIgnoreCase);
             // ReSharper disable once StringLiteralTypo
-            card.IsPlaneswalker = typeLine.Contains("planeswalker", StringComparison.InvariantCultureIgnoreCase);
+            card.IsPlanesWalker = typeLine.Contains("planeswalker", StringComparison.InvariantCultureIgnoreCase);
         }
 
         // public ReprintInfo[] CalculateReprints(ScryfallCard[] cards)
