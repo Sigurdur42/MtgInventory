@@ -10,7 +10,7 @@ using Dapper;
 
 namespace MtgJson.Sqlite
 {
-    public class MtgJsonMirrorIntoSqliteService
+    public class MtgJsonMirrorIntoSqliteService : IMtgJsonMirrorIntoSqliteService
     {
         private readonly ILogger<MtgJsonMirrorIntoSqliteService> _logger;
         private readonly IMtgJsonService _mtgJsonService;
