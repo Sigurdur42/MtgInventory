@@ -9,7 +9,7 @@ namespace MtgJson
 {
     public interface IMtgJsonService
     {
-        void DownloadPriceData(
+        Task DownloadPriceDataAsync(
             FileInfo localFile,
             Func<JsonMeta, bool> headerLoaded,
             Action<IEnumerable<JsonCardPrice>> loadedBatch,

@@ -43,7 +43,7 @@ namespace MtgDatabaseConsole
             _logger.LogInformation("Starting download...");
 
             DownloadCardDataFromLocalFile();
-            DownloadPriceDataFromLocalFile();
+            //DownloadPriceDataFromLocalFile();
 
             stopwatch.Stop();
             _logger.LogInformation($"All done in {stopwatch.Elapsed}");
@@ -115,27 +115,27 @@ namespace MtgDatabaseConsole
             _mtgJsonLiteDbService.WaitOnInsertTasksAndClear();
         }
 
-        private void DownloadPriceDataFromLocalFile()
-        {
-            var total = 0;
+        //private void DownloadPriceDataFromLocalFile()
+        //{
+        //    var total = 0;
 
-            _mtgJsonService.DownloadPriceData(
-                new FileInfo(@"C:\Users\Micha\Downloads\AllPrices.json"),
-                (header) =>
-                {
-                    Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
-                    return _mtgJsonLiteDbService.OnPriceDataHeaderLoaded(header);
-                },
-                (loaded) =>
-                {
-                    _mtgJsonLiteDbService.OnPriceDataBatchLoaded(loaded);
-                    var step = loaded.Count();
-                    total += step;
-                    Console.WriteLine($"Loaded {total} cards");
-                },
-                new MtgJsonPriceFilter());
-            _logger.LogInformation("Waiting for insert tasks ...");
-            _mtgJsonLiteDbService.WaitOnInsertTasksAndClear();
-        }
+        //    _mtgJsonService.DownloadPriceData(
+        //        new FileInfo(@"C:\Users\Micha\Downloads\AllPrices.json"),
+        //        (header) =>
+        //        {
+        //            Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
+        //            return _mtgJsonLiteDbService.OnPriceDataHeaderLoaded(header);
+        //        },
+        //        (loaded) =>
+        //        {
+        //            _mtgJsonLiteDbService.OnPriceDataBatchLoaded(loaded);
+        //            var step = loaded.Count();
+        //            total += step;
+        //            Console.WriteLine($"Loaded {total} cards");
+        //        },
+        //        new MtgJsonPriceFilter());
+        //    _logger.LogInformation("Waiting for insert tasks ...");
+        //    _mtgJsonLiteDbService.WaitOnInsertTasksAndClear();
+        //}
     }
 }

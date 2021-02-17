@@ -37,78 +37,13 @@ namespace MtgJson.Sqlite
 
             using (var context = new SqliteDatabaseContext(targetFile))
             {
-                var insertTask= context.BulkInsertAsync(cards);
-
-                UpdatePriceData(context);
-
-                await insertTask;
+                UpdatePriceData(cards);
+                await context.BulkInsertAsync(cards);
             }
 
             // var exists = connection.QueryTableExists("cards");
 
             // TODO: continue here
-        }
-
-        private void UpdatePriceData(SqliteDatabaseContext databaseContext)
-        {
-            var insertTasks = new List<Task>();
-
-            _mtgJsonService.DownloadPriceDataAsync(
-                    //new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
-                    (header) =>
-                    {
-                        // Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
-                        return true;
-                    },
-                    (filteredBatch) =>
-                    {
-                        var filteredArray = filteredBatch.ToArray();
-                        var insertTask = Task.Factory.StartNew(() =>
-                        {
-                            var priceDataToInsert = new System.Collections.Generic.List<DbPrice>();
-
-                            foreach (var jsonCardPrice in filteredArray)
-                            {
-                                var priceRow = new DbPrice()
-                                {
-                                    Uuid = jsonCardPrice.Id.ToString(),
-                                };
-
-                                priceDataToInsert.Add(priceRow);
-
-                                // We can do MKM only at this time
-                                foreach (var jsonCardPriceItem in jsonCardPrice.Items)
-                                {
-                                    if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
-                                    {
-                                        priceRow.MkmFoil = (decimal)jsonCardPriceItem.Price;
-                                    }
-                                    else
-                                    {
-                                        priceRow.MkmNormal = (decimal)jsonCardPriceItem.Price;
-                                    }
-                                }
-                            }
-
-                            databaseContext.Price.BulkInsert(priceDataToInsert);
-                        });
-
-                        insertTasks.Add(insertTask);
-                    },
-                    new MtgJsonPriceFilter())
-                .GetAwaiter()
-                .GetResult();
-
-            while (insertTasks.Any())
-            {
-                var task = insertTasks.FirstOrDefault();
-                if (task != null)
-                {
-                    _logger.LogInformation($"{insertTasks.Count} insert tasks still in queue");
-                    task.Wait();
-                    insertTasks.Remove(task);
-                }
-            }
         }
 
         private void CopyReferenceDatabase(FileInfo targetFile)
@@ -186,6 +121,63 @@ namespace MtgJson.Sqlite
                 if (File.Exists(tempFile))
                 {
                     File.Delete(tempFile);
+                }
+            }
+        }
+
+        private void UpdatePriceData(IList<DbCard> allCards)
+        {
+            var insertTasks = new List<Task>();
+            var byCardId = allCards.ToDictionary(c => c.Uuid);
+
+            _mtgJsonService.DownloadPriceDataAsync(
+                    new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
+                    (header) =>
+                    {
+                        // Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
+                        return true;
+                    },
+                    (filteredBatch) =>
+                    {
+                        var filteredArray = filteredBatch.ToArray();
+                        var insertTask = Task.Factory.StartNew(() =>
+                        {
+                            foreach (var jsonCardPrice in filteredArray)
+                            {
+                                if (!byCardId.TryGetValue(jsonCardPrice.Id.ToString(), out var card))
+                                {
+                                    continue;
+                                }
+
+                                // We can do MKM only at this time
+                                foreach (var jsonCardPriceItem in jsonCardPrice.Items)
+                                {
+                                    if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        card.MkmFoil = (decimal)jsonCardPriceItem.Price;
+                                    }
+                                    else
+                                    {
+                                        card.MkmNormal = (decimal)jsonCardPriceItem.Price;
+                                    }
+                                }
+                            }
+                        });
+
+                        insertTasks.Add(insertTask);
+                    },
+                    new MtgJsonPriceFilter())
+                .GetAwaiter()
+                .GetResult();
+
+            while (insertTasks.Any())
+            {
+                var task = insertTasks.FirstOrDefault();
+                if (task != null)
+                {
+                    _logger.LogInformation($"{insertTasks.Count} insert tasks still in queue");
+                    task.Wait();
+                    insertTasks.Remove(task);
                 }
             }
         }

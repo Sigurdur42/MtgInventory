@@ -77,14 +77,14 @@ namespace MtgJson
             }
         }
 
-        public void DownloadPriceData(
+        public async Task DownloadPriceDataAsync(
             FileInfo localFile,
             Func<JsonMeta, bool> headerLoaded,
             Action<IEnumerable<JsonCardPrice>> loadedBatch,
             MtgJsonPriceFilter priceFilter)
         {
             var stopwatch = Stopwatch.StartNew();
-            using var sr = File.OpenRead(localFile.FullName);
+            await using var sr = File.OpenRead(localFile.FullName);
             ReadFromStreamByText(sr, 5000, headerLoaded, loadedBatch, priceFilter);
 
             stopwatch.Stop();
