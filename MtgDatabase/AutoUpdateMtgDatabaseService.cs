@@ -9,7 +9,7 @@ using MtgDatabase.MtgJson;
 
 namespace MtgDatabase
 {
-    public class AutoAupdateMtgDatabaseService : IAutoAupdateMtgDatabaseService, IProgress<int>
+    public class AutoUpdateMtgDatabaseService : IAutoUpdateMtgDatabaseService, IProgress<int>
     {
         public readonly ManualResetEventSlim _stopRequested = new ManualResetEventSlim();
 
@@ -21,15 +21,15 @@ namespace MtgDatabase
 
         private readonly IMirrorMtgJson _mirrorMtgJson;
 
-        private readonly ILogger<AutoAupdateMtgDatabaseService> _logger;
+        private readonly ILogger<AutoUpdateMtgDatabaseService> _logger;
 
         private bool _isRunning = false;
 
-        public AutoAupdateMtgDatabaseService(
-                                                                    IMtgDatabaseService databaseService,
+        public AutoUpdateMtgDatabaseService(
+            IMtgDatabaseService databaseService,
             Database.MtgDatabase database,
             IMirrorMtgJson mirrorMtgJson,
-            ILogger<AutoAupdateMtgDatabaseService> logger)
+            ILogger<AutoUpdateMtgDatabaseService> logger)
         {
             _databaseService = databaseService;
             _database = database;
@@ -73,9 +73,17 @@ namespace MtgDatabase
             Task.Factory.StartNew(InternalRunner);
         }
 
-        public void Stop()
+        public void Stop(bool waitUntilStopped)
         {
             _stopRequested.Set();
+
+            if (waitUntilStopped)
+            {
+                while (IsRunning)
+                {
+                    Thread.Sleep(500);
+                }
+            }
         }
 
         public void Report(int value) => UpdateProgress?.Invoke(this, value);

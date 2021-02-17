@@ -32,6 +32,8 @@ namespace MtgDatabase.MtgJson
                     TypeLine = source.originalType,
                     SetCode = source.setCode,
                     OracleText = source.originalText,
+                    ScryfallId = source.scryfallId,
+                    CardMarketId = source.mcmId,
                 };
 
                 result.Add(card);
