@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgJson", "MtgJson\MtgJson.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgJson.Tests", "MtgJson.Tests\MtgJson.Tests.csproj", "{11EAEF89-842E-49CD-9A70-38FEBC9509D8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgJson.Sqlite", "MtgJson.Sqlite\MtgJson.Sqlite.csproj", "{A5D23CA6-7D21-49AF-AC2C-7287B3FAFFA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{11EAEF89-842E-49CD-9A70-38FEBC9509D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11EAEF89-842E-49CD-9A70-38FEBC9509D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11EAEF89-842E-49CD-9A70-38FEBC9509D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5D23CA6-7D21-49AF-AC2C-7287B3FAFFA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5D23CA6-7D21-49AF-AC2C-7287B3FAFFA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5D23CA6-7D21-49AF-AC2C-7287B3FAFFA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5D23CA6-7D21-49AF-AC2C-7287B3FAFFA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
