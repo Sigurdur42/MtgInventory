@@ -25,8 +25,8 @@ namespace MtgJson.Sqlite.Repository
             Connection.Dispose();
         }
 
-        public bool QueryTableExists(string tableName) 
-            => Connection.Query<bool>("SELECT name FROM sqlite_master WHERE type='table' AND name='{" + tableName + "}';")
-                        ?.FirstOrDefault() ?? false;
+        public bool QueryTableExists(string tableName)
+            => Connection.Query<string>("SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';")
+                        ?.Any() ?? false;
     }
 }
