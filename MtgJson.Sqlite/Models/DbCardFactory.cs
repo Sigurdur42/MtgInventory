@@ -12,9 +12,9 @@ namespace MtgJson.Sqlite.Models
         public IGrouping<Guid, CsvLegalities>[]? LegalitiesByCard { get; set; }
         public CsvSet[]? LoadedSets { get; set; }
 
-        public IList<DbCards> CreateCards()
+        public IList<DbCard> CreateCards()
         {
-            var result = new List<DbCards>();
+            var result = new List<DbCard>();
             if (AllCards == null || ForeignByCard == null || LegalitiesByCard == null || LoadedSets == null)
             {
                 return result;
@@ -23,7 +23,7 @@ namespace MtgJson.Sqlite.Models
             foreach (var sourceCard in AllCards)
             {
                 var source = sourceCard.Value;
-                var card = new DbCards()
+                var card = new DbCard()
                 {
                     Name = source.Name,
                     CollectorNumber = source.number,

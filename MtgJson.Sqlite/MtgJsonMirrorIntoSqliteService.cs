@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using Dapper;
 using Microsoft.Extensions.Logging;
 using MtgJson.Sqlite.Models;
 using MtgJson.Sqlite.Repository;
@@ -31,20 +31,84 @@ namespace MtgJson.Sqlite
 
             // https://dotnetcorecentral.com/blog/how-to-use-sqlite-with-dapper/
 
-            using var connection = new DbConnection(targetFile);
+            // using var connection = new DbConnection(targetFile);
 
-            var cards = await DownloadDatabase(connection);
+            var cards = await DownloadDatabase();
 
-            var insertStatement = @"INSERT INTO cards (Name, NameDE, Uuid, ScryfallId, TypeLine, OracleText, SetCode, CardMarketId, CollectorNumber) VALUES (@NameName, @NameDE, @Uuid, @ScryfallId, @TypeLine, @OracleText, @SetCode, @CardMarketId, @CollectorNumber);";
-
-            foreach (var card in cards)
+            using (var context = new SqliteDatabaseContext(targetFile))
             {
-                await connection.Connection.ExecuteAsync(insertStatement, card);
+                var insertTask= context.BulkInsertAsync(cards);
+
+                UpdatePriceData(context);
+
+                await insertTask;
             }
 
             // var exists = connection.QueryTableExists("cards");
 
             // TODO: continue here
+        }
+
+        private void UpdatePriceData(SqliteDatabaseContext databaseContext)
+        {
+            var insertTasks = new List<Task>();
+
+            _mtgJsonService.DownloadPriceDataAsync(
+                    //new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
+                    (header) =>
+                    {
+                        // Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
+                        return true;
+                    },
+                    (filteredBatch) =>
+                    {
+                        var filteredArray = filteredBatch.ToArray();
+                        var insertTask = Task.Factory.StartNew(() =>
+                        {
+                            var priceDataToInsert = new System.Collections.Generic.List<DbPrice>();
+
+                            foreach (var jsonCardPrice in filteredArray)
+                            {
+                                var priceRow = new DbPrice()
+                                {
+                                    Uuid = jsonCardPrice.Id.ToString(),
+                                };
+
+                                priceDataToInsert.Add(priceRow);
+
+                                // We can do MKM only at this time
+                                foreach (var jsonCardPriceItem in jsonCardPrice.Items)
+                                {
+                                    if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        priceRow.MkmFoil = (decimal)jsonCardPriceItem.Price;
+                                    }
+                                    else
+                                    {
+                                        priceRow.MkmNormal = (decimal)jsonCardPriceItem.Price;
+                                    }
+                                }
+                            }
+
+                            databaseContext.Price.BulkInsert(priceDataToInsert);
+                        });
+
+                        insertTasks.Add(insertTask);
+                    },
+                    new MtgJsonPriceFilter())
+                .GetAwaiter()
+                .GetResult();
+
+            while (insertTasks.Any())
+            {
+                var task = insertTasks.FirstOrDefault();
+                if (task != null)
+                {
+                    _logger.LogInformation($"{insertTasks.Count} insert tasks still in queue");
+                    task.Wait();
+                    insertTasks.Remove(task);
+                }
+            }
         }
 
         private void CopyReferenceDatabase(FileInfo targetFile)
@@ -61,7 +125,7 @@ namespace MtgJson.Sqlite
             File.Copy(source, targetFile.FullName, true);
         }
 
-        private async Task<IList<DbCards>> DownloadDatabase(DbConnection connection)
+        private async Task<IList<DbCard>> DownloadDatabase()
         {
             var tempFile = Path.GetTempFileName();
             try
@@ -72,7 +136,7 @@ namespace MtgJson.Sqlite
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogError($"Failed to download file: {response.StatusCode}");
-                    return new List<DbCards>();
+                    return new List<DbCard>();
                 }
 
                 using (var stream = await response.Content.ReadAsStreamAsync())
