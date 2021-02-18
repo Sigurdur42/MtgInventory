@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MtgJson.JsonModels;
 using MtgJson.Sqlite.Models;
 using MtgJson.Sqlite.Repository;
 
@@ -26,7 +28,8 @@ namespace MtgJson.Sqlite
 
         public async Task CreateLocalSqliteMirror(
             FileInfo targetFile,
-            bool updatePriceDataOnly)
+            bool updatePriceDataOnly,
+            bool optionsDebugMode)
         {
             IList<DbCard> cards;
             SqliteDatabaseContext context = null;
@@ -38,7 +41,7 @@ namespace MtgJson.Sqlite
                     CopyReferenceDatabase(targetFile);
 
                     _logger.LogInformation($"Downloading card data...");
-                    cards = await DownloadDatabase();
+                    cards = await DownloadDatabase(optionsDebugMode);
                     context = new SqliteDatabaseContext(targetFile);
                 }
                 else
@@ -49,7 +52,7 @@ namespace MtgJson.Sqlite
                 }
 
                 _logger.LogInformation($"Updating price data...");
-                UpdatePriceData(cards);
+                UpdatePriceData(cards, optionsDebugMode);
 
                 if (!updatePriceDataOnly)
                 {
@@ -82,27 +85,36 @@ namespace MtgJson.Sqlite
             File.Copy(source, targetFile.FullName, true);
         }
 
-        private async Task<IList<DbCard>> DownloadDatabase()
+        private async Task<IList<DbCard>> DownloadDatabase(bool useAlreadyDownloadedFile)
         {
-            var tempFile = Path.GetTempFileName();
+            var tempFile = useAlreadyDownloadedFile
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AllPrintingsCSVFiles.zip")
+            : Path.GetTempFileName();
+
             try
             {
-                _logger.LogInformation("Downloading AllPrintings now");
-                using var httpClient = new HttpClient();
-                using var response = await httpClient.GetAsync("https://mtgjson.com/api/v5/AllPrintingsCSVFiles.zip");
-                if (!response.IsSuccessStatusCode)
+                if (!useAlreadyDownloadedFile)
                 {
-                    _logger.LogError($"Failed to download file: {response.StatusCode}");
-                    return new List<DbCard>();
-                }
+                    _logger.LogInformation("Downloading AllPrintings now");
+                    using var httpClient = new HttpClient();
+                    using var response = await httpClient.GetAsync("https://mtgjson.com/api/v5/AllPrintingsCSVFiles.zip");
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogError($"Failed to download file: {response.StatusCode}");
+                        return new List<DbCard>();
+                    }
 
-                using (var stream = await response.Content.ReadAsStreamAsync())
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        await using var fileStream = File.Create(tempFile);
+                        await stream.CopyToAsync(fileStream);
+                    }
+                    _logger.LogInformation($"Downloaded AllPrintingsCSVFiles to temp folder - starting analysis");
+                }
+                else
                 {
-                    await using var fileStream = File.Create(tempFile);
-                    await stream.CopyToAsync(fileStream);
+                    _logger.LogInformation($"Using local file {tempFile} - starting analysis");
                 }
-
-                _logger.LogInformation($"Downloaded AllPrintingsCSVFiles to temp folder - starting analysis");
 
                 var cardFactory = new DbCardFactory();
 
@@ -140,57 +152,67 @@ namespace MtgJson.Sqlite
             }
             finally
             {
-                if (File.Exists(tempFile))
+                if (!useAlreadyDownloadedFile && File.Exists(tempFile))
                 {
                     File.Delete(tempFile);
                 }
             }
         }
 
-        private void UpdatePriceData(IList<DbCard> allCards)
+        private void UpdatePriceData(IList<DbCard> allCards, bool useLocalFile)
         {
             var insertTasks = new List<Task>();
             var byCardId = allCards.ToDictionary(c => c.Uuid);
 
-            _mtgJsonService.DownloadPriceDataAsync(
-                    new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
-                    (header) =>
+            var priceBatchLoaded = new Action<IEnumerable<JsonCardPrice>>((filteredBatch) =>
+            {
+                var filteredArray = filteredBatch.ToArray();
+                foreach (var jsonCardPrice in filteredArray)
+                {
+                    if (!byCardId.TryGetValue(jsonCardPrice.Id.ToString(), out var card))
                     {
-                        // Console.WriteLine($"Header: Header: {header.Date} - Version: {header.Version}");
-                        return true;
-                    },
-                    (filteredBatch) =>
+                        continue;
+                    }
+
+                    // We can do MKM only at this time
+                    foreach (var jsonCardPriceItem in jsonCardPrice.Items)
                     {
-                        var filteredArray = filteredBatch.ToArray();
-                        //var insertTask = Task.Factory.StartNew(() =>
-                        //{
-                            foreach (var jsonCardPrice in filteredArray)
-                            {
-                                if (!byCardId.TryGetValue(jsonCardPrice.Id.ToString(), out var card))
-                                {
-                                    continue;
-                                }
+                        if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            card.MkmFoil = (decimal)jsonCardPriceItem.Price;
+                        }
+                        else
+                        {
+                            card.MkmNormal = (decimal)jsonCardPriceItem.Price;
+                        }
+                    }
+                }
+            });
 
-                                // We can do MKM only at this time
-                                foreach (var jsonCardPriceItem in jsonCardPrice.Items)
-                                {
-                                    if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
-                                    {
-                                        card.MkmFoil = (decimal)jsonCardPriceItem.Price;
-                                    }
-                                    else
-                                    {
-                                        card.MkmNormal = (decimal)jsonCardPriceItem.Price;
-                                    }
-                                }
-                            }
-                        //});
+            var stopwatch = Stopwatch.StartNew();
 
-                        // insertTasks.Add(insertTask);
-                    },
-                    new MtgJsonPriceFilter())
-                .GetAwaiter()
-                .GetResult();
+            if (useLocalFile)
+            {
+                var localFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AllPrices.json");
+                _logger.LogInformation($"Using local file {localFile} for price download");
+                _mtgJsonService.DownloadPriceDataAsync(
+                        new FileInfo(localFile),
+                        (header) => true,
+                        priceBatchLoaded,
+                        new MtgJsonPriceFilter())
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            else
+            {
+                _logger.LogInformation($"Downloading price data from MtgJson.com");
+                _mtgJsonService.DownloadPriceDataAsync(
+                        (header) => true,
+                        priceBatchLoaded,
+                        new MtgJsonPriceFilter())
+                    .GetAwaiter()
+                    .GetResult();
+            }
 
             while (insertTasks.Any())
             {
@@ -202,6 +224,9 @@ namespace MtgJson.Sqlite
                     insertTasks.Remove(task);
                 }
             }
+
+            stopwatch.Stop();
+            _logger.LogInformation($"Price download took {stopwatch.Elapsed}");
         }
     }
 }

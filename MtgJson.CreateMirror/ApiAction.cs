@@ -25,7 +25,7 @@ namespace MtgJson.CreateMirror
             var stopwatch = Stopwatch.StartNew();
             _logger.LogInformation("Creating local Sqlite copy...");
 
-            _mirrorService.CreateLocalSqliteMirror(options.TargetFile, options.PriceOnly)
+            _mirrorService.CreateLocalSqliteMirror(options.TargetFile, options.PriceOnly, options.DebugMode)
                 .GetAwaiter()
                 .GetResult();
 

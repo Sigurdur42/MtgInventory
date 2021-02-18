@@ -11,5 +11,8 @@ namespace MtgJson.CreateMirror
 
         [Option('p', "priceOnly", Required = false, HelpText = "Specify this to only download price data.")]
         public bool PriceOnly { get; set; }
+
+        [Option('d', "DebugMode", Required = false, HelpText = "Debug mode - uses local files from your Downloads folder.")]
+        public bool DebugMode { get; set; }
     }
 }
