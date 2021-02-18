@@ -14,7 +14,6 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using Ionic.Zip;
 using Microsoft.Extensions.Logging;
-using MoreLinq;
 using MtgJson.CsvModels;
 using MtgJson.JsonModels;
 using Newtonsoft.Json;
@@ -358,7 +357,7 @@ namespace MtgJson
                 loadedBatch?.Invoke(readPrice);
             });
 
-            readBlocks.AsParallel().ForAll(analyzeAction);
+            readBlocks.AsParallel().WithDegreeOfParallelism(6).ForAll(analyzeAction);
         }
 
         private void ReadFromStreamByText(
