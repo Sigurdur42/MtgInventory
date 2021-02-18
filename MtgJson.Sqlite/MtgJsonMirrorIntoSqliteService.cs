@@ -162,8 +162,8 @@ namespace MtgJson.Sqlite
                     (filteredBatch) =>
                     {
                         var filteredArray = filteredBatch.ToArray();
-                        var insertTask = Task.Factory.StartNew(() =>
-                        {
+                        //var insertTask = Task.Factory.StartNew(() =>
+                        //{
                             foreach (var jsonCardPrice in filteredArray)
                             {
                                 if (!byCardId.TryGetValue(jsonCardPrice.Id.ToString(), out var card))
@@ -184,9 +184,9 @@ namespace MtgJson.Sqlite
                                     }
                                 }
                             }
-                        });
+                        //});
 
-                        insertTasks.Add(insertTask);
+                        // insertTasks.Add(insertTask);
                     },
                     new MtgJsonPriceFilter())
                 .GetAwaiter()

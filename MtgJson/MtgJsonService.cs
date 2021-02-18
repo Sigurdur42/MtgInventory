@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -304,8 +305,9 @@ namespace MtgJson
         {
             SkipUntilNextStart(reader);
 
-            var readCardPrices = new List<JsonCardPrice>();
+            var readBlocks = new List<string>();
 
+            // Read all and then analyze in threads
             var end = false;
             do
             {
@@ -315,26 +317,7 @@ namespace MtgJson
                     continue;
                 }
 
-                var deserializationInput = "{" + completeBlock + "}";
-                dynamic? analyzedBlock = JsonConvert.DeserializeObject<ExpandoObject>(
-                    deserializationInput,
-                    new ExpandoObjectConverter());
-
-                if (analyzedBlock == null)
-                {
-                    continue;
-                }
-
-                foreach (var level1 in analyzedBlock)
-                {
-                    readCardPrices.Add(ReadCardLevel(level1, priceFilter));
-                }
-
-                if (readCardPrices.Count >= batchSize)
-                {
-                    loadedBatch?.Invoke(readCardPrices);
-                    readCardPrices.Clear();
-                }
+                readBlocks.Add(completeBlock);
 
                 var next = (char)reader.Peek();
                 switch (next)
@@ -351,10 +334,32 @@ namespace MtgJson
             }
             while (!end);
 
-            if (readCardPrices.Any())
+            // Now analyse in multiple threads:
+            var analyzeAction = new Action<string>((completeBlock) =>
             {
-                loadedBatch?.Invoke(readCardPrices);
-            }
+                var deserializationInput = "{" + completeBlock + "}";
+                dynamic? analyzedBlock = JsonConvert.DeserializeObject<ExpandoObject>(
+                    deserializationInput,
+                    new ExpandoObjectConverter());
+
+                var readPrice = new List<JsonCardPrice>();
+
+                if (analyzedBlock == null)
+                {
+                    return;
+                }
+
+                foreach (var level1 in analyzedBlock)
+                {
+                    readPrice.Add(ReadCardLevel(level1, priceFilter));
+                }
+
+                loadedBatch?.Invoke(readPrice);
+
+            });
+
+            readBlocks.AsParallel().ForAll(analyzeAction);
+
         }
 
         private void ReadFromStreamByText(
