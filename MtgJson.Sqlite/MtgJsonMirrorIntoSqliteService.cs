@@ -120,13 +120,7 @@ namespace MtgJson.Sqlite
 
                 _mtgJsonService.DownloadAllPrintingsZip(
                     new FileInfo(tempFile),
-                    (header) =>
-                    {
-                        // TODO
-                        // cardDate = DateTime.Parse(header.Date, );
-                        return true;
-                        // return _mtgJsonLiteDbService.OnPriceDataHeaderLoaded(header);
-                    },
+                    (header) => true,
                     (sets) =>
                     {
                         cardFactory.LoadedSets = sets.ToArray();
@@ -177,14 +171,32 @@ namespace MtgJson.Sqlite
                     // We can do MKM only at this time
                     foreach (var jsonCardPriceItem in jsonCardPrice.Items)
                     {
-                        if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
+                        switch (jsonCardPriceItem.Seller)
                         {
-                            card.MkmFoil = (decimal)jsonCardPriceItem.Price;
+                            case "cardmarket":
+                                if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    card.MkmFoil = (decimal)jsonCardPriceItem.Price;
+                                }
+                                else
+                                {
+                                    card.MkmNormal = (decimal)jsonCardPriceItem.Price;
+                                }
+                                break;
+
+                            case "tcgplayer":
+                                if (jsonCardPriceItem.IsFoil.Equals("foil", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    card.TcgPlayerFoil = (decimal)jsonCardPriceItem.Price;
+                                }
+                                else
+                                {
+                                    card.TcgPlayerNormal = (decimal)jsonCardPriceItem.Price;
+                                }
+                                break;
                         }
-                        else
-                        {
-                            card.MkmNormal = (decimal)jsonCardPriceItem.Price;
-                        }
+
+                     
                     }
                 }
             });

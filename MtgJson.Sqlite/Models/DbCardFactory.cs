@@ -33,6 +33,11 @@ namespace MtgJson.Sqlite.Models
                     ScryfallId = source.scryfallId,
                     CardMarketId = source.mcmId,
                     Uuid = source.Id.ToString(),
+                    Rarity = source.rarity,
+                    Side = source.side,
+                    OtherFaceIds = source.otherFaceIds,
+
+                    // TODO: Buyer links for MKM, tcg
                 };
 
                 result.Add(card);

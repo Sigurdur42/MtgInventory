@@ -17,9 +17,15 @@ namespace MtgJson.Sqlite.Models
         public string? CardMarketId { get; set; }
         public string CollectorNumber { get; set; } = "";
 
+        public string Rarity { get; set; } = "";
+        public string OtherFaceIds { get; set; } = "";
+        public string Side { get; set; } = "";
+
         #region PriceData
         public decimal? MkmNormal { get; set; }
         public decimal? MkmFoil { get; set; }
+        public decimal? TcgPlayerFoil { get; set; }
+        public decimal? TcgPlayerNormal { get; set; }
         #endregion
     }
 }

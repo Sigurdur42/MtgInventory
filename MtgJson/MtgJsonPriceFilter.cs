@@ -3,7 +3,7 @@
     public class MtgJsonPriceFilter
     {
         public bool HideCardMarket { get; set; }
-        public bool HideTcgPlayer { get; set; } = true;
+        public bool HideTcgPlayer { get; set; } = false;
         public bool HideCardKingdom { get; set; } = true;
 
         public bool HideBuyList { get; set; } = true;

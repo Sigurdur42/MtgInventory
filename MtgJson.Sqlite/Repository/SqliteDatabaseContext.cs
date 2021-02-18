@@ -14,7 +14,6 @@ namespace MtgJson.Sqlite.Repository
         }
 
         public DbSet<DbCard>? Cards { get; set; }
-        public DbSet<DbPrice>? Price { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
