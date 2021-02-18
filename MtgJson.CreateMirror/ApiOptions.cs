@@ -8,5 +8,8 @@ namespace MtgJson.CreateMirror
     {
         [Option('t', "targetFile", Required = true, HelpText = "Specify the target file for the SQLite database.")]
         public FileInfo TargetFile { get; set; } = new FileInfo(@"c:\temp\localMirror.sqlite");
+
+        [Option('p', "priceOnly", Required = false, HelpText = "Specify this to only download price data.")]
+        public bool PriceOnly { get; set; }
     }
 }

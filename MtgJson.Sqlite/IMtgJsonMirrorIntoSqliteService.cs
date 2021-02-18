@@ -6,6 +6,7 @@ namespace MtgJson.Sqlite
     public interface IMtgJsonMirrorIntoSqliteService
     {
         Task CreateLocalSqliteMirror(
-            FileInfo targetFile);
+            FileInfo targetFile,
+            bool updatePriceDataOnly);
     }
 }

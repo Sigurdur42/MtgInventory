@@ -25,25 +25,47 @@ namespace MtgJson.Sqlite
         }
 
         public async Task CreateLocalSqliteMirror(
-            FileInfo targetFile)
+            FileInfo targetFile,
+            bool updatePriceDataOnly)
         {
-            CopyReferenceDatabase(targetFile);
-
-            // https://dotnetcorecentral.com/blog/how-to-use-sqlite-with-dapper/
-
-            // using var connection = new DbConnection(targetFile);
-
-            var cards = await DownloadDatabase();
-
-            using (var context = new SqliteDatabaseContext(targetFile))
+            IList<DbCard> cards;
+            SqliteDatabaseContext context = null;
+            try
             {
+                if (!updatePriceDataOnly)
+                {
+                    _logger.LogInformation($"Copying empty reference database...");
+                    CopyReferenceDatabase(targetFile);
+
+                    _logger.LogInformation($"Downloading card data...");
+                    cards = await DownloadDatabase();
+                    context = new SqliteDatabaseContext(targetFile);
+                }
+                else
+                {
+                    _logger.LogInformation($"Loading all cards from local database...");
+                    context = new SqliteDatabaseContext(targetFile);
+                    cards = context.Cards?.ToList() ?? new List<DbCard>();
+                }
+
+                _logger.LogInformation($"Updating price data...");
                 UpdatePriceData(cards);
-                await context.BulkInsertAsync(cards);
+
+                if (!updatePriceDataOnly)
+                {
+                    _logger.LogInformation($"Bulk insert card data...");
+                    await context.BulkInsertAsync(cards);
+                }
+                else
+                {
+                    _logger.LogInformation($"Bulk update card data...");
+                    await context.BulkUpdateAsync(cards);
+                }
             }
-
-            // var exists = connection.QueryTableExists("cards");
-
-            // TODO: continue here
+            finally
+            {
+                context?.Dispose();
+            }
         }
 
         private void CopyReferenceDatabase(FileInfo targetFile)
