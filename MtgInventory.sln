@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgJson", "MtgJson\MtgJson.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgJson.Tests", "MtgJson.Tests\MtgJson.Tests.csproj", "{11EAEF89-842E-49CD-9A70-38FEBC9509D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgJson.Sqlite", "MtgJson.Sqlite\MtgJson.Sqlite.csproj", "{A5D23CA6-7D21-49AF-AC2C-7287B3FAFFA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgJson.Sqlite", "MtgJson.Sqlite\MtgJson.Sqlite.csproj", "{A5D23CA6-7D21-49AF-AC2C-7287B3FAFFA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MtgJson.CreateMirror", "MtgJson.CreateMirror\MtgJson.CreateMirror.csproj", "{929E314D-FC86-4D74-BD7A-F69AAEAD794E}"
 EndProject
@@ -79,6 +79,10 @@ Global
 		{929E314D-FC86-4D74-BD7A-F69AAEAD794E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{929E314D-FC86-4D74-BD7A-F69AAEAD794E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{929E314D-FC86-4D74-BD7A-F69AAEAD794E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD20FE7E-1F22-404E-9795-C7487BCFFB79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD20FE7E-1F22-404E-9795-C7487BCFFB79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD20FE7E-1F22-404E-9795-C7487BCFFB79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD20FE7E-1F22-404E-9795-C7487BCFFB79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

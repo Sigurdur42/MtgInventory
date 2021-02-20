@@ -21,6 +21,15 @@ namespace MtgJson.Sqlite.Models
         public string OtherFaceIds { get; set; } = "";
         public string Side { get; set; } = "";
 
+        public string GetScryfallImageUrl()
+        {
+            var facePart = Side == "b"
+            ? "face=back"
+            : "face=front";
+
+            return $"https://api.scryfall.com/cards/{ScryfallId}?format=image&{facePart}";
+        }
+
         #region PriceData
         public decimal? MkmNormal { get; set; }
         public decimal? MkmFoil { get; set; }

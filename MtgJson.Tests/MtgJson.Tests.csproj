@@ -17,6 +17,7 @@
 
   <ItemGroup>
 	<ProjectReference Include="..\MtgJson\MtgJson.csproj" />
+	<ProjectReference Include="..\MtgJson.Sqlite\MtgJson.Sqlite.csproj" />
   </ItemGroup>
 
 </Project>
