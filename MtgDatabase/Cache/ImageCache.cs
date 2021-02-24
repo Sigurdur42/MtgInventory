@@ -5,16 +5,14 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MtgDatabase.Models;
-using ScryfallApiServices;
+using MtgDatabase.Scryfall;
 
 namespace MtgDatabase.Cache
 {
     public class ImageCache : IImageCache
     {
+        private readonly GoodCitizenAutoSleep _goodCitizenAutoSleep = new GoodCitizenAutoSleep();
         private readonly ILogger<ImageCache> _logger;
-
-        private readonly GoodCiticenAutoSleep _goodCiticenAutoSleep = new GoodCiticenAutoSleep();
-
         private DirectoryInfo? _baseFolder;
 
         private bool _isInitialized;
@@ -25,40 +23,6 @@ namespace MtgDatabase.Cache
         }
 
         public bool IsInitialized => _isInitialized;
-
-        public void Initialize(DirectoryInfo baseCacheFolder)
-        {
-            _baseFolder = baseCacheFolder;
-            _logger.LogInformation($"Initializing image cache in {baseCacheFolder.FullName}");
-            _isInitialized = true;
-        }
-
-        public void QueueForDownload(QueryableMagicCard[] cards)
-        {
-            if (!IsInitialized)
-            {
-                _logger.LogTrace($"Ignoring {nameof(QueueForDownload)} call as we are not initialized");
-                return;
-            }
-
-            Task.Factory.StartNew(() =>
-            {
-                var stopwatch = Stopwatch.StartNew();
-                _logger.LogInformation($"Starting download for {cards.Length} cards...");
-                foreach (var card in cards)
-                {
-                    DownloadSingleFile(card);
-                }
-
-                stopwatch.Stop();
-                _logger.LogInformation($"Finished download of {cards.Length} cards in {stopwatch.Elapsed}.");
-            });
-        }
-
-        public string GetCachedImage(QueryableMagicCard card)
-        {
-            return DownloadSingleFile(card);
-        }
 
         public string DownloadSingleFile(QueryableMagicCard card)
         {
@@ -89,19 +53,38 @@ namespace MtgDatabase.Cache
             return card.Images.Normal;
         }
 
-        private string GetLocalName(QueryableMagicCard card)
+        public string GetCachedImage(QueryableMagicCard card)
         {
-            var uniqueId = (card.UniqueId ?? "")
-                .Replace(":", "_")
-                .Replace(".", "_")
-                .Replace("/", "_")
-                .Replace("*", "_STAR_")
-                .Replace(",", "_");
+            return DownloadSingleFile(card);
+        }
 
-            var patchedSetCode = card.SetCode
-                .Replace("con", "conflux");
+        public void Initialize(DirectoryInfo baseCacheFolder)
+        {
+            _baseFolder = baseCacheFolder;
+            _logger.LogInformation($"Initializing image cache in {baseCacheFolder.FullName}");
+            _isInitialized = true;
+        }
 
-            return Path.Combine(_baseFolder!.FullName, "ImageCache", "normal", patchedSetCode, $"{uniqueId}.png");
+        public void QueueForDownload(QueryableMagicCard[] cards)
+        {
+            if (!IsInitialized)
+            {
+                _logger.LogTrace($"Ignoring {nameof(QueueForDownload)} call as we are not initialized");
+                return;
+            }
+
+            Task.Factory.StartNew(() =>
+            {
+                var stopwatch = Stopwatch.StartNew();
+                _logger.LogInformation($"Starting download for {cards.Length} cards...");
+                foreach (var card in cards)
+                {
+                    DownloadSingleFile(card);
+                }
+
+                stopwatch.Stop();
+                _logger.LogInformation($"Finished download of {cards.Length} cards in {stopwatch.Elapsed}.");
+            });
         }
 
         private void DownloadSingleFile(
@@ -121,7 +104,7 @@ namespace MtgDatabase.Cache
                     info.Directory.Create();
                 }
 
-                _goodCiticenAutoSleep.AutoSleep();
+                _goodCitizenAutoSleep.AutoSleep();
                 using var client = new WebClient();
                 client.DownloadFile(remoteUri, localFileName);
             }
@@ -129,6 +112,21 @@ namespace MtgDatabase.Cache
             {
                 _logger.LogError($"Error downloading {remoteUri}: {error.Message}", error);
             }
+        }
+
+        private string GetLocalName(QueryableMagicCard card)
+        {
+            var uniqueId = (card.UniqueId ?? "")
+                .Replace(":", "_")
+                .Replace(".", "_")
+                .Replace("/", "_")
+                .Replace("*", "_STAR_")
+                .Replace(",", "_");
+
+            var patchedSetCode = card.SetCode
+                .Replace("con", "conflux");
+
+            return Path.Combine(_baseFolder!.FullName, "ImageCache", "normal", patchedSetCode, $"{uniqueId}.png");
         }
     }
 }

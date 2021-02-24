@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using MtgDatabase;
 using MtgJson;
 using ScryfallApiConsole;
-using ScryfallApiServices;
 
 namespace MtgDatabaseConsole
 {
@@ -16,17 +15,14 @@ namespace MtgDatabaseConsole
         private readonly IMtgDatabaseService _mtgDatabaseService;
         private readonly ILiteDbService _mtgJsonLiteDbService;
         private readonly IMtgJsonService _mtgJsonService;
-        private readonly IScryfallService _scryfallService;
 
         public ApiAction(
             ILogger<ApiAction> logger,
-            IScryfallService scryfallService,
             IMtgDatabaseService mtgDatabaseService,
             IMtgJsonService mtgJsonService,
             ILiteDbService mtgJsonLiteDbService)
         {
             _logger = logger;
-            _scryfallService = scryfallService;
             _mtgDatabaseService = mtgDatabaseService;
             _mtgJsonService = mtgJsonService;
             _mtgJsonLiteDbService = mtgJsonLiteDbService;

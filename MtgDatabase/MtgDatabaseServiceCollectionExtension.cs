@@ -4,7 +4,6 @@ using MtgDatabase.Decks;
 using MtgDatabase.MtgJson;
 using MtgDatabase.Scryfall;
 using MtgJson;
-using ScryfallApiServices;
 
 namespace MtgDatabase
 {
@@ -12,8 +11,7 @@ namespace MtgDatabase
     {
         public static IServiceCollection AddMtgDatabase(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddScryfallApi();
-
+            serviceCollection.AddSingleton<GoodCitizenAutoSleep>();
             serviceCollection.AddSingleton<IMirrorScryfallDatabase, MirrorScryfallDatabase>();
             serviceCollection.AddSingleton<IMtgDatabaseService, MtgDatabaseService>();
             serviceCollection.AddSingleton<IImageCache, ImageCache>();

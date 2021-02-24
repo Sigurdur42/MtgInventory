@@ -12,7 +12,7 @@ namespace MtgInventoryWpf
     public class DatabaseInfoViewModel
     {
         private readonly IMtgDatabaseService _mtgDatabaseService;
-        private readonly IAutoUpdateMtgDatabaseService _autoAupdateMtgDatabaseService;
+        private readonly IAutoUpdateMtgDatabaseService _autoUpdateMtgDatabaseService;
         private readonly IImageCache _imageCache;
 
         public DatabaseSummary? DatabaseSummary { get; set; }
@@ -21,23 +21,23 @@ namespace MtgInventoryWpf
 
         public DatabaseInfoViewModel(
             IMtgDatabaseService mtgDatabaseService,
-            IAutoUpdateMtgDatabaseService autoAupdateMtgDatabaseService,
+            IAutoUpdateMtgDatabaseService autoUpdateMtgDatabaseService,
             IImageCache imageCache)
         {
-            _autoAupdateMtgDatabaseService = autoAupdateMtgDatabaseService;
+            _autoUpdateMtgDatabaseService = autoUpdateMtgDatabaseService;
             _imageCache = imageCache;
             LastUpdate = _noUpdateYet;
 
-            autoAupdateMtgDatabaseService.UpdateFinished += (sender, e) => UpdateDatabaseStatistics();
+            autoUpdateMtgDatabaseService.UpdateFinished += (sender, e) => UpdateDatabaseStatistics();
 
             Task.Factory.StartNew(() =>
             {
                 var debuggerAttached = Debugger.IsAttached;
-                if (!debuggerAttached
-                || (_mtgDatabaseService?.GetDatabaseSummary()?.NumberOfCards ?? 0) == 0)
-                {
-                    _autoAupdateMtgDatabaseService.Start();
-                }
+                ////if (!debuggerAttached
+                ////|| (_mtgDatabaseService?.GetDatabaseSummary()?.NumberOfCards ?? 0) == 0)
+                ////{
+                ////    _autoAupdateMtgDatabaseService.Start();
+                ////}
 
                 UpdateDatabaseStatistics();
             });
@@ -71,9 +71,9 @@ namespace MtgInventoryWpf
 
         private void UpdateDatabaseStatistics()
         {
-            DatabaseSummary = _mtgDatabaseService.GetDatabaseSummary();
-            var updated = DatabaseSummary?.LastUpdated ?? DateTime.MinValue;
-            LastUpdate = updated == DateTime.MinValue ? _noUpdateYet : updated.ToShortDateString();
+            ////DatabaseSummary = _mtgDatabaseService.GetDatabaseSummary();
+            ////var updated = DatabaseSummary?.LastUpdated ?? DateTime.MinValue;
+            ////LastUpdate = updated == DateTime.MinValue ? _noUpdateYet : updated.ToShortDateString();
         }
     }
 }

@@ -65,7 +65,6 @@ namespace MtgDatabase.Database
         internal void InsertOrUpdate(IList<QueryableMagicCard> allCards)
         {
             var stopwatch = Stopwatch.StartNew();
-            var cardFactory = new QueryableMagicCardFactory();
             var cardsToInsert = new List<QueryableMagicCard>();
             var cardsToUpdate = new List<QueryableMagicCard>();
             foreach (var card in allCards)

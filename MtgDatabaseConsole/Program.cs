@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using MtgDatabase;
 using MtgDatabaseConsole;
 using MtgJson;
-using ScryfallApiServices;
 
 namespace ScryfallApiConsole
 {
@@ -97,7 +96,7 @@ namespace ScryfallApiConsole
                 // configure service
                 var baseFolder = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MtgDatabase"));
                 var service = serviceProvider.GetService<IMtgDatabaseService>();
-                service?.Configure(baseFolder, new ScryfallConfiguration(), 3000);
+                service?.Configure(baseFolder, 3000);
 
                 var mtgJsonDatabaseService = serviceProvider.GetService<ILiteDbService>();
                 mtgJsonDatabaseService?.Configure(baseFolder);

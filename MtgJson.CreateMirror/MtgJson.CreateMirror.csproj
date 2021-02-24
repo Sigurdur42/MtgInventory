@@ -36,7 +36,6 @@
       <ProjectReference Include="..\MtgDatabase\MtgDatabase.csproj" />
       <ProjectReference Include="..\MtgJson.Sqlite\MtgJson.Sqlite.csproj" />
       <ProjectReference Include="..\MtgJson\MtgJson.csproj" />
-      <ProjectReference Include="..\ScryfallApiServices\ScryfallApiServices.csproj" />
     </ItemGroup>
 
 </Project>

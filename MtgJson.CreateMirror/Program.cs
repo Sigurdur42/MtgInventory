@@ -9,7 +9,6 @@ using MtgDatabase;
 
 using MtgJson;
 using MtgJson.Sqlite;
-using ScryfallApiServices;
 
 namespace MtgJson.CreateMirror
 {
