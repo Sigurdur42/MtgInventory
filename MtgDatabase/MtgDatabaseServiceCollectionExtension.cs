@@ -12,7 +12,6 @@ namespace MtgDatabase
         public static IServiceCollection AddMtgDatabase(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<GoodCitizenAutoSleep>();
-            serviceCollection.AddSingleton<IMirrorScryfallDatabase, MirrorScryfallDatabase>();
             serviceCollection.AddSingleton<IMtgDatabaseService, MtgDatabaseService>();
             serviceCollection.AddSingleton<IImageCache, ImageCache>();
             serviceCollection.AddSingleton<Database.MtgDatabase>();
