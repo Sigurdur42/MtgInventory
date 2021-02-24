@@ -153,7 +153,7 @@ namespace MtgDatabase.MtgJson
             var byCardId = allCards.ToDictionary(c => c.Id);
             var insertTasks = new List<Task>();
 
-            _jsonService.DownloadPriceDataAsync(
+            await _jsonService.DownloadPriceDataAsync(
                     //new FileInfo(@"C:\pCloudSync\MtgInventory\AllPrices.json"),
                     (header) =>
                     {
@@ -210,9 +210,7 @@ namespace MtgDatabase.MtgJson
 
                         insertTasks.Add(insertTask);
                     },
-                    new MtgJsonPriceFilter())
-                .GetAwaiter()
-                .GetResult();
+                    new MtgJsonPriceFilter());
 
             while (insertTasks.Any())
             {
