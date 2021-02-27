@@ -1,6 +1,6 @@
 ﻿namespace MtgJson.Sqlite.Models
 {
-    public class DbSets
+    public class DbSet
     {
         public int BaseSetSize { get; set; }
         public string Code { get; set; } = "";

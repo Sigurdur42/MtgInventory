@@ -46,5 +46,30 @@ namespace MtgJson.Sqlite.Models
 
             return result;
         }
+
+        public IList<DbSet> CreateSets()
+        {
+            var result = new List<DbSet>();
+            if (LoadedSets == null || !LoadedSets.Any())
+            {
+                return result;
+            }
+
+            foreach (var set in LoadedSets)
+            {
+                result.Add(new DbSet()
+                {
+                    BaseSetSize = set.BaseSetSize,
+                    Code = set.Code,
+                    IsFoilOnly = set.isFoilOnly,
+                    MkmName = set.mcmName,
+                    Name = set.Name,
+                    ReleaseDate = set.releaseDate,
+                    TotalSetSize = set.totalSetSize,
+                });
+            }
+
+            return result.ToArray();
+        }
     }
 }

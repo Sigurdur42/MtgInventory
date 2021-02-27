@@ -32,7 +32,7 @@ namespace MtgJson.CsvModels
         public string parentCode { get; set; } = "";
         public string releaseDate { get; set; } = "";
         public string tcgplayerGroupId { get; set; } = "";
-        public string totalSetSize { get; set; } = "";
+        public int totalSetSize { get; set; }
         public string type { get; set; } = "";
     }
 }

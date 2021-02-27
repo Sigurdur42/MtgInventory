@@ -32,6 +32,7 @@ namespace MtgJson.Sqlite
             bool optionsDebugMode)
         {
             IList<DbCard> cards;
+            IList<DbSet> sets;
             SqliteDatabaseContext context = null;
             try
             {
@@ -41,7 +42,11 @@ namespace MtgJson.Sqlite
                     CopyReferenceDatabase(targetFile);
 
                     _logger.LogInformation($"Downloading card data...");
-                    cards = await DownloadDatabase(optionsDebugMode);
+
+                    var result = await DownloadDatabase(optionsDebugMode);
+
+                    cards = result.cards;
+                    sets = result.sets;
                     context = new SqliteDatabaseContext(targetFile);
                 }
                 else
@@ -49,6 +54,7 @@ namespace MtgJson.Sqlite
                     _logger.LogInformation($"Loading all cards from local database...");
                     context = new SqliteDatabaseContext(targetFile);
                     cards = context.Cards?.ToList() ?? new List<DbCard>();
+                    sets = new List<DbSet>();
                 }
 
                 _logger.LogInformation($"Updating price data...");
@@ -57,6 +63,7 @@ namespace MtgJson.Sqlite
                 if (!updatePriceDataOnly)
                 {
                     _logger.LogInformation($"Bulk insert card data...");
+                    await context.BulkInsertAsync(sets);
                     await context.BulkInsertAsync(cards);
                 }
                 else
@@ -85,7 +92,7 @@ namespace MtgJson.Sqlite
             File.Copy(source, targetFile.FullName, true);
         }
 
-        private async Task<IList<DbCard>> DownloadDatabase(bool useAlreadyDownloadedFile)
+        private async Task<(IList<DbCard> cards, IList<DbSet> sets)> DownloadDatabase(bool useAlreadyDownloadedFile)
         {
             var tempFile = useAlreadyDownloadedFile
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AllPrintingsCSVFiles.zip")
@@ -101,7 +108,7 @@ namespace MtgJson.Sqlite
                     if (!response.IsSuccessStatusCode)
                     {
                         _logger.LogError($"Failed to download file: {response.StatusCode}");
-                        return new List<DbCard>();
+                        return (new List<DbCard>(), new List<DbSet>());
                     }
 
                     using (var stream = await response.Content.ReadAsStreamAsync())
@@ -142,7 +149,7 @@ namespace MtgJson.Sqlite
                         return true;
                     });
 
-                return cardFactory.CreateCards();
+                return (cardFactory.CreateCards(), cardFactory.CreateSets());
             }
             finally
             {
@@ -196,7 +203,7 @@ namespace MtgJson.Sqlite
                                 break;
                         }
 
-                     
+
                     }
                 }
             });
