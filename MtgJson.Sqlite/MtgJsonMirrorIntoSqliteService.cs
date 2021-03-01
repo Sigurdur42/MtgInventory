@@ -33,7 +33,7 @@ namespace MtgJson.Sqlite
         {
             IList<DbCard> cards;
             IList<DbSet> sets;
-            SqliteDatabaseContext context = null;
+            SqliteDatabaseContext? context = null;
             try
             {
                 if (!updatePriceDataOnly)

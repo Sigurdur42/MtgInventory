@@ -1,13 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using MtgDatabase.Database;
 using MtgDatabase.DatabaseDecks;
 using MtgDatabase.Models;
 
 namespace MtgDatabase
 {
-    public interface IMtgDatabaseService : IQueryableCardsProvider, IDisposable
+    public interface IMtgDatabaseService : IDisposable
     {
         event EventHandler<DatabaseRebuildingEventArgs> OnRebuilding;
 

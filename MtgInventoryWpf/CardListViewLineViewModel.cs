@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using MtgDatabase;
 using MtgDatabase.Models;
 using PropertyChanged;
@@ -27,16 +25,18 @@ namespace MtgInventoryWpf
             UpdatePrice();
         }
 
-        public int Quantity { get; set; }
-
-        public string Category { get; set; } = "";
-
         public QueryableMagicCard? Card { get; set; }
-
-        public QueryableMagicCard[] Reprints { get; set; } = Array.Empty<QueryableMagicCard>();
-
+        public string Category { get; set; } = "";
         public string Price { get; set; } = "---";
         public decimal? PriceValue { get; set; }
+        public int Quantity { get; set; }
+        public QueryableMagicCard[] Reprints { get; set; } = Array.Empty<QueryableMagicCard>();
+
+        public void ChangeSetOfCard(QueryableMagicCard newSelection)
+        {
+            Card = newSelection;
+            UpdatePrice();
+        }
 
         public void UpdateReprints()
         {
@@ -52,26 +52,17 @@ namespace MtgInventoryWpf
             }
 
             // TODO: Move to shared function
-            var id = Card.UniqueId ?? "";
-            var prints = _mtgDatabaseService.Cards?
-                                       .Query()
-                                       .Where(c=> c.Language == "en")
-                                       .Where(c => c.Name.Equals(Card.Name, StringComparison.InvariantCultureIgnoreCase))
-                                       .Where(c=>c.UniqueId != id)
-                                       .ToList() ?? new List<QueryableMagicCard>();
+            ////var id = Card.UniqueId ?? "";
+            ////var prints = _mtgDatabaseService.Cards?
+            ////                           .Query()
+            ////                           .Where(c=> c.Language == "en")
+            ////                           .Where(c => c.Name.Equals(Card.Name, StringComparison.InvariantCultureIgnoreCase))
+            ////                           .Where(c=>c.UniqueId != id)
+            ////                           .ToList() ?? new List<QueryableMagicCard>();
 
-                prints.Add(Card);
+            ////    prints.Add(Card);
 
-
-            Reprints = prints.ToArray();
-        }
-
-
-
-        public void ChangeSetOfCard(QueryableMagicCard newSelection)
-        {
-            Card = newSelection;
-            UpdatePrice();
+            ////Reprints = prints.ToArray();
         }
 
         private void UpdatePrice()

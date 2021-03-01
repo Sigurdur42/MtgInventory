@@ -46,17 +46,17 @@ namespace MtgInventoryWpf
 
         internal void DownloadAllImages()
         {
-            Task.Factory.StartNew(() =>
-            {
-                var allCards = _mtgDatabaseService.Cards
-                ?.Query()
-                ?.Where(c => c.Language == "en")
-                ?.ToArray()
-                ?? Array.Empty<QueryableMagicCard>();
+            ////Task.Factory.StartNew(() =>
+            ////{
+            ////    var allCards = _mtgDatabaseService.Cards
+            ////    ?.Query()
+            ////    ?.Where(c => c.Language == "en")
+            ////    ?.ToArray()
+            ////    ?? Array.Empty<QueryableMagicCard>();
 
-                _imageCache.QueueForDownload(allCards);
+            ////    _imageCache.QueueForDownload(allCards);
 
-            });
+            ////});
         }
         internal void DownloadDatabase()
         {

@@ -5,15 +5,16 @@ using System.Linq;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using MtgDatabase.Models;
+using MtgJson.Sqlite.Repository;
 
 namespace MtgDatabase.Database
 {
-    public interface IQueryableCardsProvider
+    public interface IMtgRepositoryProvider
     {
-        ILiteCollection<QueryableMagicCard>? Cards { get; }
+        IMtgDataRepository CreateRepository();
     }
 
-    public class MtgDatabase : IQueryableCardsProvider
+    public class MtgDatabase : IMtgRepositoryProvider
     {
         private readonly ILogger<MtgDatabase> _logger;
         private LiteDatabase? _database;
@@ -24,6 +25,7 @@ namespace MtgDatabase.Database
         }
 
         public ILiteCollection<QueryableMagicCard>? Cards { get; private set; }
+        public FileInfo? DatabaseFileName { get; private set; }
         public bool IsInitialized { get; private set; }
 
         public void Configure(DirectoryInfo folder)
@@ -33,7 +35,9 @@ namespace MtgDatabase.Database
                 folder.Create();
             }
 
-            _database = new LiteDatabase(Path.Combine(folder.FullName, "MtgDatabase.db"));
+            DatabaseFileName = new FileInfo(Path.Combine(folder.FullName, "MtgDatabase.sqlite"));
+
+            _database = new LiteDatabase(Path.Combine(folder.FullName, "MtgDatabase.d"));
             Cards = _database.GetCollection<QueryableMagicCard>();
 
             var mapper = BsonMapper.Global;
@@ -42,6 +46,16 @@ namespace MtgDatabase.Database
                 .Id(x => x.Id);
 
             IsInitialized = true;
+        }
+
+        public IMtgDataRepository CreateRepository()
+        {
+            if (DatabaseFileName == null)
+            {
+                return new EmptyMtgDataRepository();
+            }
+
+            return new SqliteDatabaseContext(DatabaseFileName);
         }
 
         public void ShutDown()
