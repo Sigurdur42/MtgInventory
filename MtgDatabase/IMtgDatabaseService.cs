@@ -13,7 +13,7 @@ namespace MtgDatabase
 
         bool IsRebuilding { get; }
 
-        void Configure(DirectoryInfo folder, int downloadCardBatchSize);
+        void Configure(DirectoryInfo folder);
 
         Task<DatabaseDeckReaderResult> ReadDeck(string name, string deckContent);
 

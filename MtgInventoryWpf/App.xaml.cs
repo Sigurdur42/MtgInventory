@@ -33,25 +33,36 @@ namespace MtgInventoryWpf
             var configFile = new FileInfo(Path.Combine(localPath, "MtgInventorySettings.yaml"));
             localSettings?.Initialize(configFile, SettingWriteMode.OnChange);
 
-            var downloadBatchSize = localSettings?.GetInt("ScryfallDownloadBatchSize") ?? 0;
-            if (downloadBatchSize < 1000)
-            {
-                downloadBatchSize = 5000;
-                localSettings?.Set("ScryfallDownloadBatchSize", downloadBatchSize);
-            }
-
             var imageCache = host.Services.GetService<IImageCache>();
             imageCache?.Initialize(new DirectoryInfo(localPath));
 
             var mtgService = host.Services.GetService<IMtgDatabaseService>();
             mtgService?.Configure(
-                new DirectoryInfo(localPath),
-                downloadBatchSize);
+                new DirectoryInfo(localPath));
+        }
 
+        protected override async void OnExit(ExitEventArgs e)
+        {
+            using (host)
+            {
+                await host.StopAsync(TimeSpan.FromSeconds(5));
+            }
+
+            base.OnExit(e);
+        }
+
+        protected override async void OnStartup(StartupEventArgs e)
+        {
+            await host.StartAsync();
+
+            var mainWindow = host.Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+
+            base.OnStartup(e);
         }
 
         private void ConfigureServices(
-            IConfiguration configuration,
+                            IConfiguration configuration,
             IServiceCollection services)
         {
             services.AddLogging(cfg =>
@@ -71,26 +82,6 @@ namespace MtgInventoryWpf
             services.AddSingleton<CardListViewModel>();
 
             services.AddSingleton<MainWindow>();
-        }
-
-        protected override async void OnStartup(StartupEventArgs e)
-        {
-            await host.StartAsync();
-
-            var mainWindow = host.Services.GetRequiredService<MainWindow>();
-            mainWindow.Show();
-
-            base.OnStartup(e);
-        }
-
-        protected override async void OnExit(ExitEventArgs e)
-        {
-            using (host)
-            {
-                await host.StopAsync(TimeSpan.FromSeconds(5));
-            }
-
-            base.OnExit(e);
         }
     }
 }

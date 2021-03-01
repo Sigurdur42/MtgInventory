@@ -22,7 +22,6 @@ namespace MtgDatabase
         private readonly IMirrorMtgJson _mirrorMtgJson;
         private readonly object _sync = new object();
 
-        private int _downloadCardBachSize = 100;
         private bool _isRebuilding;
 
         public MtgDatabaseService(
@@ -68,11 +67,8 @@ namespace MtgDatabase
         }
 
         public void Configure(
-            DirectoryInfo folder,
-            int downloadCardBachSize)
+            DirectoryInfo folder)
         {
-            _downloadCardBachSize = downloadCardBachSize;
-
             _logger.LogInformation(
                 $"Configuring {nameof(Database.MtgDatabase)} in {folder.FullName}");
             _database.Configure(folder);
